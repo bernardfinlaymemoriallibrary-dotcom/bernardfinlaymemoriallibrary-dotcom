@@ -1152,7 +1152,7 @@ function openBorrow(idx){
     '<form id="bform" onsubmit="submitBorrow(event)">'+ 
     '<label>Saved member</label><select id="borrowMember" onchange="fillBorrowMember()">'+opts+'</select>'+ 
     '<label>Borrower name *</label><input type="text" id="borrowName" placeholder="Borrower name" autocomplete="off" oninput="borrowNameSuggest()" onblur="hideBnSuggest()"><div id="bnSuggest" style="display:none;position:absolute;background:#fff;border:1px solid var(--warm);border-radius:var(--rs);z-index:99;width:100%;max-height:180px;overflow-y:auto;box-shadow:var(--sh1)"></div>'+ 
-    '<label>Borrower email <span style="font-weight:400;color:#aaa">(optional)</span></label><input type="email" id="borrowEmail" placeholder="borrower@example.com">'+ 
+    '<label>Borrower email <span style="font-weight:400;color:#aaa">(optional)</span></label><input type="text" id="borrowEmail" placeholder="borrower@example.com (optional)">'+ 
     '<label>Borrower phone</label><input type="text" id="borrowPhone" placeholder="Phone number">'+ 
     '<label>Date borrowed *</label><input type="date" id="borrowDate" value="'+today+'">'+ 
     '<label style="font-weight:normal;margin-top:12px"><input type="checkbox" id="saveBorrowMember" checked style="width:auto;margin-right:7px"> Save/update this member for next time</label>'+ 

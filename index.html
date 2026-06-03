@@ -239,7 +239,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:radial-gradient(circl
 }
 .card:hover{transform:translateY(-5px);box-shadow:var(--sh2);border-color:var(--copper)}
 .card.custom{border-color:var(--copper2)}
-.cw{display:none}
+.cw{display:block;height:210px;background:linear-gradient(135deg,var(--linen2),var(--linen));overflow:hidden;border-bottom:1px solid var(--warm)}
+.cw img{width:100%;height:100%;object-fit:cover;display:block}
+.cover-source{font-size:.62rem;color:var(--soft);margin-top:7px;line-height:1.3}
+.cover-source a{color:var(--copper);text-decoration:none}.cover-source a:hover{text-decoration:underline}
 .cb{padding:16px 16px 14px;flex:1;display:flex;flex-direction:column}
 .ct{
   font-family:'DM Serif Display',serif;
@@ -703,6 +706,27 @@ var FORMSPREE = "https://formspree.io/f/YOUR_FORM_ID";
 var CATS = ["All","Just Arrived","Fiction","Biographies","Non-Fiction","Holocaust","True Short Stories","Children & Teens","Hebrew Books"];
 var CAT = "All", FILT = "all";
 var CC = {};
+// Covers are added ONLY when manually verified against title + author from approved Jewish book sites.
+// Approved sources: Menucha Publishers, ArtScroll, Feldheim, Israel Bookshop Publications,
+// Tzufa/Tfutza Publications, Shanky's Judaica, and Judaica World.
+var COVER_MAP = {
+  "The Brave Boy|||Menucha Fuchs": {
+    img: "https://menuchapublishers.com/cdn/shop/files/the-brave-boy-430528_compact.jpg?v=1762457898",
+    source: "Menucha Publishers",
+    url: "https://menuchapublishers.com/products/the-brave-boy"
+  },
+  "The band|||Menucha Fuchs": {
+    img: "https://menuchapublishers.com/cdn/shop/files/the-band-607865_compact.jpg?v=1762457896",
+    source: "Menucha Publishers",
+    url: "https://menuchapublishers.com/products/the-band"
+  },
+  "All for the Boss|||Ruchama Shain": {
+    img: "https://feldheim.com/media/catalog/product/cache/ab20d7c1aca23c12f03a7bfeea67c31e/1/5/1583304703_1.jpg",
+    source: "Feldheim",
+    url: "https://feldheim.com/all-for-the-boss"
+  }
+};
+function coverForBook(b){return COVER_MAP[bookKey(b)]||null;}
 var filteredBooks = [];
 
 function getCust(){try{return JSON.parse(localStorage.getItem('lb2')||'[]')}catch(e){return[]}}
@@ -797,25 +821,9 @@ function ph(t,a){
   return '<div class="cph"><div class="pi">&#128218;</div><div class="pt">'+htmlEsc(t)+'</div>'+(a?'<div class="pa">'+htmlEsc(a)+'</div>':'')+'</div>';
 }
 
-async function fetchCover(title,author,key){
-  if(CC[key]!==undefined) return;
-  CC[key]=null;
-  try{
-    var q=encodeURIComponent(title+(author?' '+author:''));
-    var r=await fetch('https://www.googleapis.com/books/v1/volumes?q='+q+'&maxResults=1&fields=items(volumeInfo/imageLinks)');
-    var d=await r.json();
-    var l=d&&d.items&&d.items[0]&&d.items[0].volumeInfo&&d.items[0].volumeInfo.imageLinks;
-    if(l){
-      var u=(l.thumbnail||l.smallThumbnail||'').replace('http:','https:');
-      if(u){CC[key]=u;setImg(key,u);return;}
-    }
-  }catch(e){}
-  try{
-    var r2=await fetch('https://openlibrary.org/search.json?q='+encodeURIComponent(title)+'&limit=1&fields=cover_i');
-    var d2=await r2.json();
-    var ci=d2&&d2.docs&&d2.docs[0]&&d2.docs[0].cover_i;
-    if(ci){var u2='https://covers.openlibrary.org/b/id/'+ci+'-M.jpg';CC[key]=u2;setImg(key,u2);}
-  }catch(e){}
+function fetchCover(title,author,key){
+  // Disabled on purpose: covers are not pulled automatically from Google/OpenLibrary.
+  // Add covers to COVER_MAP only after exact title + author verification from approved sites.
 }
 
 function setImg(key,url){
@@ -858,11 +866,15 @@ function render(){
     html+='<div class="card'+(custSet[b.title]?' custom':'')+'">';
     if(isAdmin()) html+='<button class="editBtn" data-idx="'+idx+'">&#9998; Edit</button>';
     if(isAdmin()) html+='<button class="deleteBtn" data-idx="'+idx+'">&#215; Remove</button>';
-    html+='<div class="cw" data-key="'+htmlEsc(bookKey(b))+'"><div class="cph"><div class="pi">&#128218;</div><div class="pt">'+htmlEsc(b.title)+'</div>'+(b.author?'<div class="pa">'+htmlEsc(b.author)+'</div>':'')+'</div></div>';
+    var cover=coverForBook(b);
+    if(cover){
+      html+='<div class="cw" data-key="'+htmlEsc(bookKey(b))+'"><img src="'+htmlEsc(cover.img)+'" alt="Cover of '+htmlEsc(b.title)+'" loading="lazy" onerror="this.parentNode.remove()"></div>';
+    }
     html+='<div style="height:4px;background:'+(catColor[b.category]||'#7b1c3b')+'"></div>';
     html+='<div class="cb'+(isHeb(b.title)?' rtl':'')+'">';
     html+='<div class="ct">'+htmlEsc(b.title)+'</div>';
     html+=(b.author?'<div class="ca">'+htmlEsc(b.author)+'</div>':'');
+    if(cover){html+='<div class="cover-source">Cover verified from <a href="'+htmlEsc(cover.url)+'" target="_blank" rel="noopener">'+htmlEsc(cover.source)+'</a></div>';}
     html+='<div class="cf">';
     html+='<span class="badge '+(avail?'av':'iu')+'">'+(avail?'&#10003; Available':'&#128213; On loan')+'</span>';
     html+='</div>';

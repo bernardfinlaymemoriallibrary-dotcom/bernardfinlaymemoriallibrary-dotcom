@@ -466,8 +466,8 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
         <div class="hstat"><span class="hstat-n" id="lc">0</span><span class="hstat-l">On Loan</span></div>
       </div>
       <div class="hero-mini-grid">
-        <div class="hero-mini"><b>English adults</b><span>Fiction, biographies, non-fiction and new releases</span></div>
-        <div class="hero-mini"><b>Children & teens</b><span>Hebrew and English sections for younger readers</span></div>
+        <div class="hero-mini"><b>Adult books</b><span>Hebrew &amp; English — fiction, biographies, non-fiction and more</span></div>
+        <div class="hero-mini"><b>Children &amp; Teens</b><span>Hebrew &amp; English — books for younger readers</span></div>
       </div>
     </div>
   </div>
@@ -821,7 +821,7 @@ function htmlEsc(s){
 }
 
 function ph(t,a){
-  return '<div class="cph"><div class="pi">&#128218;</div><div class="pt">'+htmlEsc(t)+'</div>'+(a?'<div class="pa">'+htmlEsc(a)+'</div>':'')+'</div>';
+  return '<div class="cph"><div class="pi">&#128218;</div></div>';
 }
 
 function normalize(s){return (s||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();}
@@ -891,7 +891,7 @@ function render(){
     html+='<div class="card'+(custSet[b.title]?' custom':'')+'">';
     if(isAdmin()) html+='<button class="editBtn" data-idx="'+idx+'">&#9998; Edit</button>';
     if(isAdmin()) html+='<button class="deleteBtn" data-idx="'+idx+'">&#215; Remove</button>';
-    html+='<div class="cw" data-key="'+htmlEsc(bookKey(b))+'"><div class="cph"><div class="pi">&#128218;</div><div class="pt">'+htmlEsc(b.title)+'</div>'+(b.author?'<div class="pa">'+htmlEsc(b.author)+'</div>':'')+'</div></div>';
+    html+='<div class="cw" data-key="'+htmlEsc(bookKey(b))+'"><div class="cph"><div class="pi">&#128218;</div></div></div>';
     html+='<div style="height:4px;background:'+(catColor[b.category]||'#1c1209')+'"></div>';
     var cover=coverForBook(b);
     if(cover){
@@ -1378,8 +1378,8 @@ renderSaleBooks();
         <div class="hstat"><span class="hstat-n" id="lc">0</span><span class="hstat-l">On Loan</span></div>
       </div>
       <div class="hero-mini-grid">
-        <div class="hero-mini"><b>English adults</b><span>Fiction, biographies, non-fiction and new releases</span></div>
-        <div class="hero-mini"><b>Children & teens</b><span>Hebrew and English sections for younger readers</span></div>
+        <div class="hero-mini"><b>Adult books</b><span>Hebrew &amp; English — fiction, biographies, non-fiction and more</span></div>
+        <div class="hero-mini"><b>Children &amp; Teens</b><span>Hebrew &amp; English — books for younger readers</span></div>
       </div>
     </div>
   </div>

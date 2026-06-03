@@ -565,7 +565,7 @@ function render(){
   filteredBooks.forEach(function(b,idx){
     var st=statusOf(b);
     var avail=st==='Available';
-    html+='<div class="card'+(custSet[b.title]?' custom':'')+'">'+'<div style="height:5px;background:'+(catColor[b.category]||'#7b1c3b')+'"></div>'+
+    html+='<div class="card'+(custSet[b.title]?' custom':'')+'">'+'<div style="height:5px;background:'+(catColor[b.category]||'#7b1c3b')+'"></div>'+(isAdmin()?'<button class="deleteBtn" data-idx="'+idx+'">× Remove</button>':'')+
       '<div class="cb'+(isHeb(b.title)?' rtl':'')+'">'+
         '<div class="ct">'+htmlEsc(b.title)+'</div>'+
         (b.author?'<div class="ca">'+htmlEsc(b.author)+'</div>':'')+
@@ -584,6 +584,11 @@ function render(){
   grid.querySelectorAll('.borrowBtn').forEach(function(btn){btn.addEventListener('click',function(){openBorrow(parseInt(this.dataset.idx));});});
   grid.querySelectorAll('.reserveBtn').forEach(function(btn){btn.addEventListener('click',function(){openReserve(parseInt(this.dataset.idx));});});
   grid.querySelectorAll('.returnBtn:not([disabled])').forEach(function(btn){btn.addEventListener('click',function(){returnBook(parseInt(this.dataset.idx));});});
+  grid.querySelectorAll('.deleteBtn').forEach(function(btn){btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    var b=filteredBooks[parseInt(this.dataset.idx)];
+    if(b&&confirm('Remove "'+b.title+'" from the library?')){deleteBook(b);}
+  });});
 }
 
 var bBook=null;
@@ -737,6 +742,7 @@ function refreshAdminState(){
   if(nb){nb.classList.toggle('unlocked',isAdmin());nb.textContent=isAdmin()?'\u2705 Admin':'\uD83D\uDD10 Admin';}
   var ls=document.getElementById('adminLoginSection');if(ls)ls.style.display=isAdmin()?'none':'block';
   var ps=document.getElementById('adminPanelSection');if(ps)ps.style.display=isAdmin()?'block':'none';
+  document.body.classList.toggle('admin-mode',isAdmin());
   buildMemberList();
 }
 function openAdmin(){showPage('admin');buildReturnList();buildMemberList();}

@@ -620,6 +620,106 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
         <label class="fl">Date borrowed *</label><input class="fi" type="date" id="remDate">
         <button class="sbtn gold" style="max-width:220px;margin-top:16px" onclick="sendReminderEmail()">Send Reminder</button>
       </div>
+
+        <!-- Tabs -->
+        <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+          <button class="fbtn active" id="ctab-entry"   onclick="cheshTab('entry')">➕ Add Entry</button>
+          <button class="fbtn"        id="ctab-hours"   onclick="cheshTab('hours')">🕐 Worker Hours</button>
+          <button class="fbtn"        id="ctab-history" onclick="cheshTab('history')">📋 History</button>
+        </div>
+
+        <!-- Add Entry -->
+        <div id="cpanel-entry">
+          <div class="fr">
+            <div>
+              <label class="fl">Type</label>
+              <select class="fi" id="cf-type" onchange="cheshTypeChange()">
+                <option value="income">💵 Income</option>
+                <option value="expense">💸 Expense</option>
+              </select>
+            </div>
+            <div>
+              <label class="fl">Category</label>
+              <select class="fi" id="cf-cat">
+                <option>Borrowing Fee</option><option>Book Sale</option><option>Donation</option><option>Membership</option><option>Other Income</option>
+              </select>
+            </div>
+          </div>
+          <div class="fr" style="margin-top:0">
+            <div><label class="fl">Amount (₪)</label><input class="fi" type="number" id="cf-amount" placeholder="0.00" min="0" step="0.01"></div>
+            <div><label class="fl">Date</label><input class="fi" type="date" id="cf-date"></div>
+          </div>
+          <label class="fl">Notes</label>
+          <input class="fi" type="text" id="cf-notes" placeholder="e.g. Rivka Cohen – 2 books">
+          <button class="sbtn gold" style="max-width:180px;margin-top:14px" onclick="cheshAddEntry()">Add Entry</button>
+        </div>
+
+        <!-- Worker Hours -->
+        <div id="cpanel-hours" style="display:none">
+          <p class="smallnote" style="margin-bottom:14px">Rate: ₪9 per hour. Enter hours worked and minutes separately.</p>
+          <div class="fr">
+            <div><label class="fl">Worker name</label><input class="fi" type="text" id="wh-name" placeholder="e.g. Chana"></div>
+            <div><label class="fl">Date</label><input class="fi" type="date" id="wh-date"></div>
+          </div>
+          <div class="fr" style="margin-top:0">
+            <div><label class="fl">Hours</label><input class="fi" type="number" id="wh-hours" placeholder="0" min="0" max="12" step="1" oninput="calcWorkerPay()"></div>
+            <div><label class="fl">Minutes</label><input class="fi" type="number" id="wh-mins" placeholder="0" min="0" max="59" step="1" oninput="calcWorkerPay()"></div>
+            <div><label class="fl">Pay (₪)</label><input class="fi" type="text" id="wh-pay" placeholder="auto" readonly style="background:#f5ede0;font-weight:600"></div>
+          </div>
+          <label class="fl">Notes</label>
+          <input class="fi" type="text" id="wh-notes" placeholder="e.g. Sunday shift">
+          <button class="sbtn" style="max-width:220px;margin-top:14px" onclick="cheshAddHours()">Log Hours &amp; Deduct Pay</button>
+        </div>
+
+        <!-- History -->
+        <div id="cpanel-history" style="display:none">
+          <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;flex-wrap:wrap">
+            <select class="fi" id="ch-filter" style="max-width:160px;padding:7px 10px" onchange="renderCheshHistory()">
+              <option value="all">All entries</option>
+              <option value="income">Income only</option>
+              <option value="expense">Expenses only</option>
+              <option value="hours">Worker hours only</option>
+            </select>
+            <button class="fbtn" onclick="cheshClearAll()" style="color:#9b2020;border-color:#ffd0d0;margin-left:auto">🗑 Clear all</button>
+          </div>
+          <div id="cheshHistoryTable"></div>
+        </div>
+      </div>
+
+
+      <!-- ── CHESHBON ── -->
+      <div class="asec" id="cheshbonSec">
+        <h3>💰 Cheshbon — Fees Collected</h3>
+        <p class="smallnote">Books automatically add their fee when borrowed. Add late fees, sales, or refunds manually.</p>
+
+        <!-- Running total -->
+        <div id="cheshTotal" style="background:var(--linen2);border:1px solid var(--warm);border-radius:var(--rs);padding:16px 20px;margin:16px 0;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:.82rem;color:var(--mid);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Total Collected</span>
+          <span id="cheshTotalAmt" style="font-size:1.6rem;font-weight:700;color:var(--espresso)">₪0.00</span>
+        </div>
+
+        <!-- Manual entry -->
+        <div class="fr" style="margin-top:4px">
+          <div>
+            <label class="fl">Type</label>
+            <select class="fi" id="cf-type">
+              <option value="late">Late Fee</option>
+              <option value="sale">Book Sale</option>
+              <option value="other">Other</option>
+              <option value="refund">Refund / Correction</option>
+            </select>
+          </div>
+          <div><label class="fl">Amount (₪)</label><input class="fi" type="number" id="cf-amount" placeholder="0" min="0" step="0.5"></div>
+        </div>
+        <label class="fl">Name / Notes</label>
+        <input class="fi" type="text" id="cf-notes" placeholder="e.g. Chana Cohen – returned 3 days late">
+        <button class="sbtn gold" style="max-width:200px;margin-top:14px" onclick="cheshAddManual()">Add Entry</button>
+
+        <!-- History -->
+        <div id="cheshHistory" style="margin-top:20px"></div>
+        <button class="fbtn" style="margin-top:10px;color:#9b2020;border-color:#ffd0d0;font-size:.75rem" onclick="cheshClearAll()">🗑 Clear all entries</button>
+      </div>
+
       <button class="sbtn danger" style="max-width:160px" onclick="adminLogout()">🔒 Lock Admin</button>
     </div>
   </div>
@@ -666,6 +766,84 @@ var LIBRARY_EMAIL = "bernardfinlaymemoriallibrary@gmail.com";
 var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxB2gtzqFvm98iuv1E8yOELc2w-kfdGTY7FwU0qWpHn8UaDWrOVb415iAzgsD9erUdn/exec";
 var ADMIN_PASSWORD = "libraryadmin";
 // ════════════════════════════════════════════════════════
+
+
+
+// ── CHESHBON ──────────────────────────────────────────────
+var CHESH_KEY = 'bf_cheshbon_v2';
+
+function cheshData(){ try{return JSON.parse(localStorage.getItem(CHESH_KEY)||'[]');}catch(e){return [];} }
+function cheshSave(a){ localStorage.setItem(CHESH_KEY, JSON.stringify(a)); }
+
+function cheshAutoAdd(bookTitle, category, borrowerName){
+  var isHebrew = (category||'').toLowerCase().indexOf('hebrew') !== -1;
+  var fee = isHebrew ? 1 : 5;
+  var arr = cheshData();
+  arr.push({
+    type: 'borrow',
+    amount: fee,
+    date: new Date().toISOString().split('T')[0],
+    notes: bookTitle + (borrowerName ? ' — ' + borrowerName : ''),
+    label: isHebrew ? 'Hebrew Book (₪1)' : 'Book Borrowed (₪5)',
+    ts: Date.now()
+  });
+  cheshSave(arr);
+  renderCheshbon();
+}
+
+function cheshAddManual(){
+  var type   = document.getElementById('cf-type').value;
+  var amount = parseFloat(document.getElementById('cf-amount').value);
+  var notes  = document.getElementById('cf-notes').value.trim();
+  if(!amount || amount <= 0){ alert('Please enter an amount.'); return; }
+  var labels = {late:'Late Fee', sale:'Book Sale', other:'Other', refund:'Refund'};
+  var arr = cheshData();
+  var isRefund = type === 'refund';
+  arr.push({
+    type: type,
+    amount: isRefund ? -Math.abs(amount) : amount,
+    date: new Date().toISOString().split('T')[0],
+    notes: notes,
+    label: labels[type] || type,
+    ts: Date.now()
+  });
+  cheshSave(arr);
+  document.getElementById('cf-amount').value = '';
+  document.getElementById('cf-notes').value = '';
+  renderCheshbon();
+}
+
+function renderCheshbon(){
+  var arr = cheshData();
+  var total = arr.reduce(function(s,e){ return s + e.amount; }, 0);
+  var el = document.getElementById('cheshTotalAmt');
+  if(el) el.textContent = '₪' + total.toFixed(2);
+
+  var hist = document.getElementById('cheshHistory');
+  if(!hist) return;
+  if(!arr.length){ hist.innerHTML = '<p class="smallnote">No entries yet — fees will appear here automatically when books are borrowed.</p>'; return; }
+
+  var rows = arr.slice().sort(function(a,b){return b.ts-a.ts;}).map(function(e){
+    var pos = e.amount >= 0;
+    return '<div class="li"><div>'+
+      '<strong style="font-size:.84rem">'+htmlEsc(e.label)+'</strong>'+
+      (e.notes?'<br><em style="color:var(--mid);font-size:.78rem">'+htmlEsc(e.notes)+'</em>':'')+
+      '</div><div style="text-align:right;flex-shrink:0">'+
+      '<div style="font-weight:700;color:'+(pos?'var(--green)':'var(--red)')+'">'+
+      (pos?'+':'')+e.amount.toFixed(2)+'₪</div>'+
+      '<div style="font-size:.7rem;color:var(--soft)">'+e.date+'</div></div></div>';
+  }).join('');
+  hist.innerHTML = '<div style="border:1px solid var(--warm);border-radius:var(--rs);overflow:hidden;max-height:360px;overflow-y:auto">'+rows+'</div>';
+}
+
+function cheshClearAll(){
+  if(!confirm('Clear all fee entries? This cannot be undone.')) return;
+  localStorage.removeItem(CHESH_KEY);
+  renderCheshbon();
+}
+
+function initCheshbon(){ renderCheshbon(); }
+// ──────────────────────────────────────────────────────────
 
 // ── DELAYED BORROW CONFIRMATION EMAIL ──────────────────
 var pendingBorrowEmails = {}; // keyed by borrower email (lowercase)
@@ -994,6 +1172,7 @@ function submitBorrow(e){
   setBookStatus(bBook,'In use');
   setLoan(bBook,{name:name,email:email,phone:phone,dateBorrowed:date,dueDate:due,reminderDate:reminder,title:bBook.title,author:bBook.author||''});
   scheduleBorrowConfirmation(email, name, bBook.title, due);
+  cheshAutoAdd(bBook.title, bBook.category||'', name);
 
   var sent = sendToBackend({
     action:'borrow',
@@ -1107,9 +1286,11 @@ function refreshAdminState(){
   var ls=document.getElementById('adminLoginSection');if(ls)ls.style.display=isAdmin()?'none':'block';
   var ps=document.getElementById('adminPanelSection');if(ps)ps.style.display=isAdmin()?'block':'none';
   document.body.classList.toggle('admin-mode',isAdmin());
+  if(isAdmin()) setTimeout(initCheshbon,100);
+
   buildMemberList();
 }
-function openAdmin(){showPage('admin');buildReturnList();buildMemberList();}
+function openAdmin(){showPage('admin');buildReturnList();buildMemberList();initCheshbon();}
 
 function adminLogin(){
   var p=document.getElementById('adminPass').value;

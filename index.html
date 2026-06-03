@@ -84,7 +84,8 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:radial-gradient(circl
 .hstat-n{font-family:'DM Serif Display',serif;font-size:2.1rem;color:#fff;line-height:1;display:block}
 .hstat-n.gold{color:var(--copper3)}
 .hstat-l{font-size:.66rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-top:5px;display:block}
-.hero-gap{height:32px}
+.hero-phone{position:relative;z-index:2;text-align:center;font-size:.78rem;color:rgba(255,255,255,.45);letter-spacing:.5px;padding:8px 0 0}
+.hero-gap{height:20px}
 
 
 .hero{
@@ -470,7 +471,8 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
       </div>
     </div>
   </div>
-  <div class="hero-gap"></div>
+  <div class="hero-phone">📞 054-848-1728 &nbsp;|&nbsp; 02-582-3090</div>
+<div class="hero-gap"></div>
 </div>
 
 <div class="nav-strip">
@@ -1008,7 +1010,14 @@ function sendRequestEmail(){
   if(!name||!email||!title){alert('Please fill in your name, email and book title.');return}
   sendToBackend({action:'request',requestType:type,name:name,email:email,phone:phone,title:title,author:author,notes:notes});
   var card=document.getElementById('reserveFormCard');
-  if(card)card.innerHTML='<div class="sbox"><div class="ck">\u2705</div><h3>Request Sent!</h3><p>Thank you, '+htmlEsc(name)+'.<br>The library has been notified about <strong>'+htmlEsc(title)+'</strong>.</p></div>';
+  if(card){
+    var isRes=(type==='Reserve Book');
+    var heading=isRes?'Reservation Confirmed!':'Request Sent!';
+    var msg=isRes
+      ? 'Thank you, '+htmlEsc(name)+'!<br><br>We have your reservation for <strong>'+htmlEsc(title)+'</strong>.<br><br>When this book becomes available we will contact you — you will then have <strong>24 hours</strong> to collect it.'
+      : 'Thank you, '+htmlEsc(name)+'.<br>The library has received your request for <strong>'+htmlEsc(title)+'</strong>.';
+    card.innerHTML='<div class="sbox"><div class="ck">\u2705</div><h3>'+heading+'</h3><p>'+msg+'</p></div>';
+  }
 }
 
 function addBook(){

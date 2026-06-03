@@ -214,7 +214,7 @@ hr.div{border:none;border-top:1px solid var(--line);margin:40px 0}
     <button class="nav-btn" data-page="forsale" onclick="showPage('forsale')">🏷️ For Sale</button>
     <button class="nav-btn" data-page="contact" onclick="showPage('contact')">📞 Contact</button>
     <span class="nav-loc">📍 Yirmiyahu 16/8, Floor 1</span>
-    <button class="nav-btn admin-nav" id="adminNavBtn" data-page="admin" onclick="showPage('admin')" style="display:none">🔐 Admin</button>
+    <button class="nav-btn admin-nav" id="adminNavBtn" data-page="admin" onclick="showPage('admin')">🔐 Admin</button>
   </div>
 </div>
 
@@ -927,16 +927,6 @@ refreshAdminState();
 render();
 renderSaleBooks();
 
-// Secret admin access via URL hash #admin
-function checkHashNav(){
-  if(window.location.hash==='#admin'){
-    var nb=document.getElementById('adminNavBtn');
-    if(nb)nb.style.display='inline-block';
-    showPage('admin');
-  }
-}
-checkHashNav();
-window.addEventListener('hashchange', checkHashNav);
 </script>
 </body>
 </html>

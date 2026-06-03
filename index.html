@@ -876,7 +876,7 @@ function render(){
   updStats();
   updTabs();
   refreshAdminState();
-  filteredBooks.sort(function(a,b){var aa=(a.author||'zzz').toLowerCase(),ba=(b.author||'zzz').toLowerCase();return aa<ba?-1:aa>ba?1:0;});
+  filteredBooks.sort(function(a,b){function sur(n){var p=(n||'').trim().split(' ');return p[p.length-1].toLowerCase();}var aa=sur(a.author)||'zzz',ba=sur(b.author)||'zzz';return aa<ba?-1:aa>ba?1:0;});
   var ri=document.getElementById('ri');
   ri.textContent=filteredBooks.length<all.length?'Showing '+filteredBooks.length+' of '+all.length+' books':'';
   var grid=document.getElementById('grid');

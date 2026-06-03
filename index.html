@@ -1140,7 +1140,7 @@ function openBorrow(idx){
     '<form id="bform" onsubmit="submitBorrow(event)">'+ 
     '<label>Saved member</label><select id="borrowMember" onchange="fillBorrowMember()">'+opts+'</select>'+ 
     '<label>Borrower name *</label><input type="text" id="borrowName" placeholder="Borrower name">'+ 
-    '<label>Borrower email *</label><input type="email" id="borrowEmail" placeholder="borrower@example.com">'+ 
+    '<label>Borrower email <span style="font-weight:400;color:#aaa">(optional)</span></label><input type="email" id="borrowEmail" placeholder="borrower@example.com">'+ 
     '<label>Borrower phone</label><input type="text" id="borrowPhone" placeholder="Phone number">'+ 
     '<label>Date borrowed *</label><input type="date" id="borrowDate" value="'+today+'">'+ 
     '<label style="font-weight:normal;margin-top:12px"><input type="checkbox" id="saveBorrowMember" checked style="width:auto;margin-right:7px"> Save/update this member for next time</label>'+ 
@@ -1165,13 +1165,13 @@ function submitBorrow(e){
   var email=document.getElementById('borrowEmail').value.trim();
   var phone=document.getElementById('borrowPhone').value.trim();
   var date=document.getElementById('borrowDate').value||todayISO();
-  if(!name||!email){alert('Please add borrower name and email address.');return}
+  if(!name){alert('Please add the borrower\'s name.');return}
   if(document.getElementById('saveBorrowMember').checked){upsertMember({name:name,email:email,phone:phone});}
   var due=addDaysISO(date,14);
   var reminder=addDaysISO(date,13);
   setBookStatus(bBook,'In use');
   setLoan(bBook,{name:name,email:email,phone:phone,dateBorrowed:date,dueDate:due,reminderDate:reminder,title:bBook.title,author:bBook.author||''});
-  scheduleBorrowConfirmation(email, name, bBook.title, due);
+  if(email) scheduleBorrowConfirmation(email, name, bBook.title, due);
   cheshAutoAdd(bBook.title, bBook.category||'', name);
 
   var sent = sendToBackend({

@@ -208,6 +208,28 @@ hr.div{border:none;border-top:1px solid var(--line);margin:40px 0}
   .fr{grid-template-columns:1fr}
   .asec,.fc,.cc,.alock{padding:22px}
 }
+
+/* Edit/Remove — admin only, subtle hover buttons */
+.editBtn,.deleteBtn{
+  position:absolute;top:6px;
+  background:rgba(255,255,255,.95);
+  border:1px solid rgba(0,0,0,.1);
+  border-radius:4px;font-size:.58rem;
+  padding:2px 6px;cursor:pointer;
+  font-family:inherit;font-weight:600;
+  opacity:0;transition:opacity .18s;
+  display:none;
+  box-shadow:0 1px 4px rgba(0,0,0,.12);
+  z-index:10;line-height:1.4;
+}
+.editBtn{left:6px;color:#1a5c3a}
+.deleteBtn{right:6px;color:#b91c1c}
+.admin-mode .editBtn,
+.admin-mode .deleteBtn{display:block}
+.admin-mode .card:hover .editBtn,
+.admin-mode .card:hover .deleteBtn{opacity:1}
+.editBtn:hover{background:#f0faf5;border-color:#1a5c3a}
+.deleteBtn:hover{background:#fff1f2;border-color:#b91c1c}
 </style>
 </head>
 <body>

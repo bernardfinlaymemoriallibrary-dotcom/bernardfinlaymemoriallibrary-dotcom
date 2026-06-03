@@ -481,6 +481,7 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
     <button class="nav-btn active" data-page="books" onclick="showPage('books')">📖 Books</button>
     <button class="nav-btn" data-page="reserve" onclick="showPage('reserve')">🔖 Reserve</button>
     <button class="nav-btn" data-page="forsale" onclick="showPage('forsale')">🏷️ For Sale</button>
+    <button class="nav-btn" data-page="coming" onclick="showPage('coming')">⭐ Coming Soon</button>
     <button class="nav-btn" data-page="contact" onclick="showPage('contact')">📞 Contact</button>
     <span class="nav-loc">📍 Yirmiyahu 16/8, Floor 1</span>
     <button class="nav-btn admin-nav" id="adminNavBtn" data-page="admin" onclick="showPage('admin')">🔐 Admin</button>
@@ -552,6 +553,17 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
   </div>
 </div>
 
+<!-- COMING SOON -->
+<div class="page" id="page-coming">
+  <div class="pw pw-wide">
+    <div class="ph">
+      <h1>Coming Soon</h1>
+      <p>Books we're expecting soon. Check back to see when they arrive!</p>
+    </div>
+    <div class="grid" id="coming-grid" style="padding:0 0 48px"></div>
+  </div>
+</div>
+
 <!-- FOR SALE -->
 <div class="page" id="page-forsale">
   <div class="pw pw-wide">
@@ -619,6 +631,20 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
         <input class="fi" type="text" id="removeSearch" placeholder="Type title or author…" oninput="renderRemoveList()">
         <div id="removeList" style="margin-top:14px"><p class="smallnote">Start typing to search for a book.</p></div>
       </div>
+
+      <div class="asec">
+        <h3>⭐ Coming Soon</h3>
+        <p class="smallnote">Books expected to arrive. They'll show on the Coming Soon page.</p>
+        <label class="fl">Title *</label><input class="fi" type="text" id="coming-title" placeholder="Book title">
+        <label class="fl">Author</label><input class="fi" type="text" id="coming-author" placeholder="Author name">
+        <label class="fl">Expected (e.g. "Next week", "August")</label>
+        <input class="fi" type="text" id="coming-when" placeholder="When is it arriving?">
+        <label class="fl">Notes</label>
+        <input class="fi" type="text" id="coming-notes" placeholder="Any extra info">
+        <button class="sbtn gold" style="max-width:220px;margin-top:16px" onclick="addComingBook()">Add Coming Soon</button>
+        <div id="comingAdminList" style="margin-top:16px"></div>
+      </div>
+
       <div class="asec">
         <h3>🏷️ Books for Sale</h3>
         <p class="smallnote">These appear on the For Sale page.</p>
@@ -1167,6 +1193,7 @@ function showPage(name){
   window.scrollTo(0,0);
   if(name==='admin'){buildReturnList();buildMemberList();}
   if(name==='forsale'){renderSaleBooks();}
+  if(name==='coming'){renderComingBooks();}
 }
 
 // ── TOAST ──
@@ -1342,9 +1369,65 @@ function saveEditBook(){
   showToast('\u2705 Book updated.');
 }
 
+// ── COMING SOON ──
+function getComingBooks(){try{var s=localStorage.getItem('bf_coming');return s?JSON.parse(s):[];}catch(e){return[];}}
+function saveComingBooks(a){localStorage.setItem('bf_coming',JSON.stringify(a));}
+function addComingBook(){
+  var title=document.getElementById('coming-title').value.trim();
+  var author=document.getElementById('coming-author').value.trim();
+  var when=document.getElementById('coming-when').value.trim();
+  var notes=document.getElementById('coming-notes').value.trim();
+  if(!title){alert('Please enter a title.');return;}
+  var books=getComingBooks();
+  books.push({title:title,author:author,when:when,notes:notes});
+  saveComingBooks(books);
+  document.getElementById('coming-title').value='';
+  document.getElementById('coming-author').value='';
+  document.getElementById('coming-when').value='';
+  document.getElementById('coming-notes').value='';
+  renderComingBooks();
+  showToast('\u2705 "'+title+'" added to Coming Soon.');
+}
+function renderComingBooks(){
+  var books=getComingBooks();
+  var grid=document.getElementById('coming-grid');
+  var adminList=document.getElementById('comingAdminList');
+  if(grid){
+    if(!books.length){
+      grid.innerHTML='<div class="nores" style="grid-column:1/-1">Nothing announced yet — check back soon!</div>';
+    } else {
+      grid.innerHTML=books.map(function(b,i){
+        return '<div class="card">'
+          +'<div style="height:5px;background:linear-gradient(90deg,#b87333,#d4922a)"></div>'
+          +'<div class="cb">'
+          +'<div style="display:inline-block;background:#fff8ed;color:#b87333;font-size:.68rem;font-weight:700;padding:2px 9px;border-radius:20px;border:1px solid #e8c88a;margin-bottom:10px">'
+          +(b.when?'\u23f0 '+htmlEsc(b.when):'Coming soon')+'</div>'
+          +'<div class="ct">'+htmlEsc(b.title)+'</div>'
+          +(b.author?'<div class="ca">'+htmlEsc(b.author)+'</div>':'')
+          +(b.notes?'<div style="font-size:.75rem;color:#999;margin-top:4px">'+htmlEsc(b.notes)+'</div>':'')
+          +'</div></div>';
+      }).join('');
+    }
+  }
+  if(adminList){
+    if(!books.length){adminList.innerHTML='<p class="smallnote">No coming soon books yet.</p>';}
+    else{adminList.innerHTML=books.map(function(b,i){
+      return '<div class="li"><span><strong>'+htmlEsc(b.title)+'</strong>'+(b.when?' — <em>'+htmlEsc(b.when)+'</em>':'')+'</span>'
+        +'<div class="li-act"><button class="ib r" onclick="removeComingBook('+i+')">Remove</button></div></div>';
+    }).join('');}
+  }
+}
+function removeComingBook(i){
+  var books=getComingBooks();
+  if(confirm('Remove "'+books[i].title+'" from Coming Soon?')){
+    books.splice(i,1);saveComingBooks(books);renderComingBooks();showToast('Removed.');
+  }
+}
+
 refreshAdminState();
 render();
 renderSaleBooks();
+renderComingBooks();
 
 </script>
 </body>

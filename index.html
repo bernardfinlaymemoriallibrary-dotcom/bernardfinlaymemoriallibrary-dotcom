@@ -475,6 +475,7 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
 <div class="hero-gap"></div>
 </div>
 
+
 <div class="nav-strip">
   <div class="nav-inner">
     <button class="nav-btn active" data-page="books" onclick="showPage('books')">📖 Books</button>
@@ -823,9 +824,30 @@ function ph(t,a){
   return '<div class="cph"><div class="pi">&#128218;</div><div class="pt">'+htmlEsc(t)+'</div>'+(a?'<div class="pa">'+htmlEsc(a)+'</div>':'')+'</div>';
 }
 
-function fetchCover(title,author,key){
-  // Disabled on purpose: covers are not pulled automatically from Google/OpenLibrary.
-  // Add covers to COVER_MAP only after exact title + author verification from approved sites.
+function normalize(s){return (s||'').toLowerCase().replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();}
+function titleSimilarity(a,b){
+  var na=normalize(a),nb=normalize(b);
+  if(na===nb) return 1;
+  if(na.indexOf(nb)===0||nb.indexOf(na)===0) return 0.9;
+  var wa=na.split(' '),wb=nb.split(' ');
+  var common=wa.filter(function(w){return w.length>2&&wb.indexOf(w)>=0;}).length;
+  return common/Math.max(wa.length,wb.length);
+}
+async function fetchCover(title,author,key){
+  if(CC[key]!==undefined) return;
+  CC[key]=null;
+  if(!backendReady()) return;
+  try{
+    var url=WEB_APP_URL+'?action=cover'
+      +'&title='+encodeURIComponent(title)
+      +'&author='+encodeURIComponent(author||'');
+    var r=await fetch(url,{mode:'cors'});
+    var d=await r.json();
+    if(d&&d.img&&d.matchScore>=0.82){
+      CC[key]=d.img;
+      setImg(key,d.img);
+    }
+  }catch(e){}
 }
 
 function setImg(key,url){
@@ -854,6 +876,7 @@ function render(){
   updStats();
   updTabs();
   refreshAdminState();
+  filteredBooks.sort(function(a,b){var aa=(a.author||'zzz').toLowerCase(),ba=(b.author||'zzz').toLowerCase();return aa<ba?-1:aa>ba?1:0;});
   var ri=document.getElementById('ri');
   ri.textContent=filteredBooks.length<all.length?'Showing '+filteredBooks.length+' of '+all.length+' books':'';
   var grid=document.getElementById('grid');
@@ -868,6 +891,8 @@ function render(){
     html+='<div class="card'+(custSet[b.title]?' custom':'')+'">';
     if(isAdmin()) html+='<button class="editBtn" data-idx="'+idx+'">&#9998; Edit</button>';
     if(isAdmin()) html+='<button class="deleteBtn" data-idx="'+idx+'">&#215; Remove</button>';
+    html+='<div class="cw" data-key="'+htmlEsc(bookKey(b))+'"><div class="cph"><div class="pi">&#128218;</div><div class="pt">'+htmlEsc(b.title)+'</div>'+(b.author?'<div class="pa">'+htmlEsc(b.author)+'</div>':'')+'</div></div>';
+    html+='<div style="height:4px;background:'+(catColor[b.category]||'#1c1209')+'"></div>';
     var cover=coverForBook(b);
     if(cover){
       html+='<div class="cw" data-key="'+htmlEsc(bookKey(b))+'"><img src="'+htmlEsc(cover.img)+'" alt="Cover of '+htmlEsc(b.title)+'" loading="lazy" onerror="this.parentNode.remove()"></div>';
@@ -889,6 +914,7 @@ function render(){
     html+='</div>';
   });
   grid.innerHTML=html;
+  filteredBooks.forEach(function(b){fetchCover(b.title,b.author||'',bookKey(b));});
   grid.querySelectorAll('.borrowBtn').forEach(function(btn){btn.addEventListener('click',function(){openBorrow(parseInt(this.dataset.idx));});});
   grid.querySelectorAll('.reserveBtn').forEach(function(btn){btn.addEventListener('click',function(){openReserve(parseInt(this.dataset.idx));});});
   grid.querySelectorAll('.returnBtn:not([disabled])').forEach(function(btn){btn.addEventListener('click',function(){returnBook(parseInt(this.dataset.idx));});});
@@ -1322,4 +1348,42 @@ renderSaleBooks();
 
 </script>
 </body>
-</html>
+</html
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-eyebrow">Bet Shemesh &nbsp;·&nbsp; Community Library</div>
+      <div class="hero-title">Bernard Finlay<br><em>Memorial Library</em></div>
+      <p class="hero-copy">A warm local library with English adult books, Hebrew and English children’s books, biographies, fiction, new releases, and books for sale.</p>
+      <div class="hero-leilui">לעילוי נשמת בנימין נחום בן חיים יעקב ע״ה</div>
+      <div class="hero-actions">
+        <a class="hero-cta primary" href="#page-books" onclick="showPage('books')">Browse the catalogue</a>
+        <a class="hero-cta secondary" href="#page-reserve" onclick="showPage('reserve')">Reserve a book</a>
+      </div>
+      <div class="hero-contact-strip" aria-label="Library phone numbers">
+        <a class="hero-phone" href="tel:+972548481728">📱 Cell: <strong>054-848-1728</strong></a>
+        <a class="hero-phone" href="tel:+97225823090">☎️ Landline: <strong>02-582-3090</strong></a>
+      </div>
+    </div>
+    <div class="hero-panel">
+      <div class="hero-panel-title">No membership fee</div>
+      <div class="hero-highlight">
+        <h3>Pay per book. Help buy more books.</h3>
+        <p>Adult books are ₪5 for 2 weeks. Children’s books are ₪1 for 2 weeks. All proceeds go towards adding new titles to the library.</p>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><span class="hstat-n" id="tc">0</span><span class="hstat-l">Books</span></div>
+        <div class="hstat"><span class="hstat-n gold" id="ac">0</span><span class="hstat-l">Available</span></div>
+        <div class="hstat"><span class="hstat-n" id="lc">0</span><span class="hstat-l">On Loan</span></div>
+      </div>
+      <div class="hero-mini-grid">
+        <div class="hero-mini"><b>English adults</b><span>Fiction, biographies, non-fiction and new releases</span></div>
+        <div class="hero-mini"><b>Children & teens</b><span>Hebrew and English sections for younger readers</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-phone">📞 054-848-1728 &nbsp;|&nbsp; 02-582-3090</div>
+<div class="hero-gap"></div>
+</div>
+>

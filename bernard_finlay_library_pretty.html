@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bernard Finlay Memorial Library</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff;--bg2:#f8f5f0;
+  --burg:#7b1c3b;--burg2:#9b2448;--burg3:#5a1129;
+  --gold:#c9891a;--gold2:#e8a020;
+  --ink:#1a1208;--mid:#6b5e4e;--soft:#c4b8a8;--line:#e8e0d4;
+  --green:#1a5c3a;--red:#b91c1c;
+  --sh:0 2px 12px rgba(0,0,0,.08);--sh2:0 8px 32px rgba(0,0,0,.14);--sh3:0 24px 64px rgba(0,0,0,.2);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+/* HERO */
+.hero{background:var(--burg);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(201,137,26,.18),transparent 65%),radial-gradient(ellipse at 10% 80%,rgba(0,0,0,.3),transparent 60%)}
+.hero-inner{position:relative;max-width:1400px;margin:0 auto;padding:44px 48px 0;display:grid;grid-template-columns:1fr auto;align-items:center;gap:40px}
+.hero-eyebrow{font-size:.68rem;letter-spacing:4px;text-transform:uppercase;color:rgba(201,137,26,.9);font-weight:500;margin-bottom:12px}
+.hero-title{font-family:'DM Serif Display',Georgia,serif;font-size:clamp(2rem,5vw,3.4rem);color:#fff;line-height:1.08;font-weight:400}
+.hero-title em{font-style:italic;color:var(--gold2)}
+.hero-leilui{font-family:'DM Serif Display',serif;font-style:italic;font-size:.85rem;color:rgba(255,255,255,.65);margin-top:6px;letter-spacing:.3px;text-align:left;direction:rtl;unicode-bidi:plaintext}
+.hero-stats{display:flex;border:1px solid rgba(255,255,255,.14);border-radius:12px;overflow:hidden;background:rgba(255,255,255,.06);flex-shrink:0}
+.hstat{padding:20px 26px;text-align:center;border-right:1px solid rgba(255,255,255,.1)}
+.hstat:last-child{border-right:none}
+.hstat-n{font-family:'DM Serif Display',serif;font-size:2.2rem;color:#fff;line-height:1;display:block}
+.hstat-n.gold{color:var(--gold2)}
+.hstat-l{font-size:.68rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-top:5px;display:block}
+.hero-gap{height:32px}
+
+/* NAV */
+.nav-strip{background:var(--burg3);position:sticky;top:0;z-index:300;box-shadow:0 4px 20px rgba(90,17,41,.4)}
+.nav-inner{max-width:1400px;margin:0 auto;padding:0 48px;display:flex;align-items:center}
+.nav-btn{padding:14px 22px;color:rgba(255,255,255,.5);font-size:.82rem;font-weight:500;cursor:pointer;border:none;background:none;font-family:inherit;letter-spacing:.3px;border-bottom:3px solid transparent;transition:all .18s;white-space:nowrap}
+.nav-btn:hover{color:rgba(255,255,255,.85)}
+.nav-btn.active{color:#fff;border-bottom-color:var(--gold2)}
+.nav-btn.admin-nav{color:rgba(255,255,255,.3);margin-left:auto}
+.nav-btn.admin-nav.unlocked{color:#74d9a2;border-bottom-color:#74d9a2}
+.nav-loc{font-size:.74rem;color:rgba(255,255,255,.3);padding:0 20px;border-left:1px solid rgba(255,255,255,.1);margin-left:auto;white-space:nowrap}
+
+/* PAGES */
+.page{display:none}
+.page.active{display:block;animation:fadeUp .25s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* TOOLBAR */
+.toolbar{background:#fff;border-bottom:1px solid var(--line);padding:12px 48px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;box-shadow:var(--sh)}
+.search-wrap{flex:1;min-width:220px;position:relative}
+.search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--soft);pointer-events:none}
+#sb{width:100%;padding:10px 14px 10px 40px;border:1.5px solid var(--line);border-radius:8px;font-size:.88rem;font-family:inherit;outline:none;background:var(--bg2);transition:all .2s;color:var(--ink)}
+#sb:focus{border-color:var(--burg);box-shadow:0 0 0 3px rgba(123,28,59,.1);background:#fff}
+#sb::placeholder{color:var(--soft)}
+.fbtn{padding:9px 18px;border:1.5px solid var(--line);border-radius:8px;background:#fff;font-size:.81rem;font-weight:500;cursor:pointer;font-family:inherit;transition:all .18s;color:var(--mid)}
+.fbtn:hover{border-color:var(--burg);color:var(--burg)}
+.fbtn.active{background:var(--burg);color:#fff;border-color:var(--burg)}
+
+/* CATEGORY TABS */
+.tabs-row{display:flex;gap:6px;padding:10px 48px;overflow-x:auto;background:var(--bg2);border-bottom:1px solid var(--line);scrollbar-width:none}
+.tabs-row::-webkit-scrollbar{display:none}
+.ctab{white-space:nowrap;padding:6px 16px;border-radius:6px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-size:.78rem;font-weight:500;font-family:inherit;transition:all .18s;color:var(--mid)}
+.ctab:hover{border-color:var(--burg);color:var(--burg)}
+.ctab.active{background:var(--burg);color:#fff;border-color:var(--burg)}
+.ctab .cn{background:rgba(0,0,0,.08);border-radius:6px;padding:1px 6px;font-size:.68rem;margin-left:3px}
+.ctab.active .cn{background:rgba(255,255,255,.2)}
+
+/* RESULTS BAR */
+.results-bar{padding:10px 48px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rpill{font-size:.75rem;color:var(--mid);background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:3px 12px}
+.rpill b{color:var(--burg);font-weight:600}
+.rinfo{font-size:.76rem;color:var(--soft);margin-left:auto}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:18px;padding:20px 48px 48px;max-width:1500px;margin:0 auto}
+.card{background:#fff;border-radius:10px;border:1px solid var(--line);box-shadow:var(--sh);display:flex;flex-direction:column;overflow:hidden;transition:transform .22s,box-shadow .22s,border-color .22s}
+.card:hover{transform:translateY(-5px);box-shadow:var(--sh2);border-color:var(--soft)}
+.card.custom{border-color:var(--gold)}
+.cw{display:none}
+.cb{padding:16px 16px 14px;flex:1;display:flex;flex-direction:column}
+.ct{font-family:'DM Serif Display',serif;font-size:.92rem;color:var(--ink);line-height:1.35;margin-bottom:5px;font-weight:400}
+.ca{font-size:.73rem;color:var(--mid);font-style:italic;margin-bottom:12px}
+.cf{margin-top:auto;padding-top:8px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:.67rem;padding:3px 9px;border-radius:5px;font-weight:600;letter-spacing:.2px}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.av{background:#ecfdf5;color:var(--green)}.av::before{background:var(--green)}
+.iu{background:#fff1f2;color:var(--red)}.iu::before{background:var(--red)}
+.book-actions{margin-top:10px;display:flex;gap:5px;flex-wrap:wrap}
+.book-actions .bbtn{flex:1;text-align:center}
+.bbtn{font-size:.7rem;padding:7px 10px;border-radius:6px;border:none;background:var(--burg);color:#fff;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap;transition:all .15s}
+.bbtn:hover{background:var(--burg2);transform:scale(1.03)}
+.bbtn:disabled{background:#f0ece8;color:#bbb;cursor:not-allowed;transform:none}
+.reserveBtn{background:var(--ink)}.reserveBtn:hover{background:#2c2010}
+.returnBtn{background:var(--green)}.returnBtn:hover:not([disabled]){background:#134528}
+.rtl{direction:rtl;text-align:right}
+.nores{text-align:center;padding:80px;color:var(--soft);grid-column:1/-1;font-family:'DM Serif Display',serif;font-size:1.2rem}
+
+/* PAGE WRAPPER */
+.pw{max-width:800px;margin:0 auto;padding:52px 48px}
+.pw-wide{max-width:960px}
+.ph{margin-bottom:40px}
+.ph h1{font-family:'DM Serif Display',serif;font-size:2.4rem;color:var(--ink);font-weight:400;margin-bottom:8px}
+.ph p{font-size:.92rem;color:var(--mid);line-height:1.65;max-width:540px}
+hr.div{border:none;border-top:1px solid var(--line);margin:40px 0}
+
+/* FORM CARDS */
+.fc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:36px;box-shadow:var(--sh);margin-bottom:28px}
+.fc h3{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--ink);margin-bottom:6px;font-weight:400}
+.fc .fd{font-size:.85rem;color:var(--mid);line-height:1.6;margin-bottom:24px}
+.fl{display:block;font-size:.7rem;font-weight:600;color:var(--burg);margin:15px 0 5px;text-transform:uppercase;letter-spacing:.7px}
+.fi{width:100%;padding:10px 14px;border:1.5px solid var(--line);border-radius:8px;font-size:.88rem;font-family:inherit;outline:none;background:var(--bg2);color:var(--ink);transition:all .2s}
+.fi:focus{border-color:var(--burg);box-shadow:0 0 0 3px rgba(123,28,59,.08);background:#fff}
+.fi.tall{height:90px;resize:vertical}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sbtn{width:100%;margin-top:24px;padding:13px;background:var(--burg);color:#fff;border:none;border-radius:8px;font-size:.92rem;font-family:inherit;font-weight:600;cursor:pointer;letter-spacing:.3px;box-shadow:0 2px 12px rgba(123,28,59,.3);transition:all .2s}
+.sbtn:hover{background:var(--burg2);box-shadow:0 4px 20px rgba(123,28,59,.4)}
+.sbtn.gold{background:var(--gold);color:var(--ink);box-shadow:0 2px 12px rgba(201,137,26,.3)}.sbtn.gold:hover{background:var(--gold2)}
+.sbtn.danger{background:#991b1b;color:#fff;box-shadow:none}.sbtn.danger:hover{background:#7f1d1d}
+.sbox{text-align:center;padding:40px 24px;background:#fdf8f5;border:1px solid var(--line);border-radius:12px}
+.sbox .ck{font-size:3rem;display:block;margin-bottom:14px}
+.sbox h3{font-family:'DM Serif Display',serif;color:var(--green);font-size:1.3rem;margin-bottom:8px;font-weight:400}
+.sbox p{color:var(--mid);font-size:.88rem;line-height:1.6}
+
+/* CONTACT */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:20px;margin-bottom:36px}
+.cc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:28px;box-shadow:var(--sh);transition:transform .2s,box-shadow .2s;word-break:break-all}
+.cc:hover{transform:translateY(-4px);box-shadow:var(--sh2)}
+.cc-ic{width:50px;height:50px;border-radius:12px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:16px}
+.cc h3{font-family:'DM Serif Display',serif;color:var(--ink);font-size:1.05rem;margin-bottom:8px;font-weight:400}
+.cc p{font-size:.86rem;color:var(--mid);line-height:1.7}
+.cc a{color:var(--burg);text-decoration:none;font-weight:500}.cc a:hover{text-decoration:underline}
+.ptbl{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--sh)}
+.ptbl-h{background:var(--burg);color:#fff;padding:20px 28px;font-family:'DM Serif Display',serif;font-size:1.1rem;font-weight:400}
+.ptbl-r{display:flex;justify-content:space-between;align-items:center;padding:16px 28px;border-bottom:1px solid var(--line);font-size:.88rem}
+.ptbl-r:last-child{border-bottom:none}
+.ptbl-r .lang{color:var(--ink)}
+.ptbl-r .amt{color:var(--gold);font-weight:700;font-size:1rem}
+
+/* ADMIN */
+.alock{background:#fff;border:1px solid var(--line);border-radius:12px;padding:52px;text-align:center;max-width:420px;margin:0 auto;box-shadow:var(--sh)}
+.alock .lk{font-size:3rem;display:block;margin-bottom:18px}
+.alock h3{font-family:'DM Serif Display',serif;color:var(--ink);font-size:1.5rem;margin-bottom:8px;font-weight:400}
+.alock p{font-size:.85rem;color:var(--mid);margin-bottom:22px}
+.asec{background:#fff;border:1px solid var(--line);border-radius:12px;padding:30px;margin-bottom:22px;box-shadow:var(--sh)}
+.asec h3{font-family:'DM Serif Display',serif;color:var(--ink);font-size:1.05rem;font-weight:400;padding-bottom:14px;margin-bottom:18px;border-bottom:1px solid var(--line)}
+.li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--bg2);font-size:.84rem}
+.li:last-child{border-bottom:none}
+.li-act{display:flex;gap:6px;flex-shrink:0}
+.ib{padding:6px 14px;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:600;font-size:.75rem;white-space:nowrap;transition:all .15s}
+.ib.g{background:var(--green);color:#fff}.ib.g:hover{background:#134528}
+.ib.r{background:#fff1f2;color:var(--red);border:1px solid #fecdd3}.ib.r:hover{background:#ffe4e6}
+.smallnote{font-size:.79rem;color:var(--mid);line-height:1.6;margin-top:6px}
+
+/* MODALS */
+.overlay{display:none;position:fixed;inset:0;background:rgba(10,5,2,.65);z-index:1000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:14px;padding:34px;max-width:480px;width:100%;position:relative;box-shadow:var(--sh3);max-height:90vh;overflow-y:auto}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--burg),var(--gold));border-radius:14px 14px 0 0}
+.mc{position:absolute;top:16px;right:18px;background:var(--bg2);border:none;font-size:.95rem;cursor:pointer;color:var(--mid);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.mc:hover{background:var(--line);color:var(--ink)}
+.modal h2{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--ink);margin-bottom:4px;padding-right:36px;font-weight:400}
+.bsub{font-size:.83rem;color:var(--mid);font-style:italic;margin-bottom:18px;line-height:1.4}
+.modal label{display:block;font-size:.7rem;font-weight:600;color:var(--burg);margin:13px 0 4px;text-transform:uppercase;letter-spacing:.7px}
+.modal input,.modal select,.modal textarea{width:100%;padding:9px 13px;border:1.5px solid var(--line);border-radius:8px;font-size:.88rem;font-family:inherit;outline:none;transition:all .2s;background:var(--bg2)}
+.modal input:focus,.modal select:focus,.modal textarea:focus{border-color:var(--burg);box-shadow:0 0 0 3px rgba(123,28,59,.08);background:#fff}
+.modal textarea{height:68px;resize:vertical}
+.mbtn{width:100%;margin-top:18px;padding:12px;background:var(--burg);color:#fff;border:none;border-radius:8px;font-size:.92rem;font-family:inherit;font-weight:600;cursor:pointer;transition:background .2s}
+.mbtn:hover{background:var(--burg2)}
+.mbtn.gold{background:var(--gold);color:var(--ink)}.mbtn.gold:hover{background:var(--gold2)}
+.return-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--bg2);font-size:.84rem}
+.return-item:last-child{border-bottom:none}
+.return-item button{padding:6px 14px;border:none;border-radius:6px;background:var(--green);color:#fff;cursor:pointer;font-family:inherit;font-weight:600;font-size:.76px;white-space:nowrap}
+
+/* RESPONSIVE */
+@media(max-width:800px){
+  .hero-inner{grid-template-columns:1fr;padding:28px 20px 0;gap:20px}
+  .hero-stats{width:100%}
+  .hstat{flex:1;padding:14px 10px}
+  .nav-inner{padding:0 16px}
+  .nav-loc{display:none}
+  .toolbar,.tabs-row,.results-bar{padding-left:16px;padding-right:16px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;padding:16px 16px 40px}
+  .pw{padding:32px 20px}
+  .fr{grid-template-columns:1fr}
+  .asec,.fc,.cc,.alock{padding:22px}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-eyebrow">Bet Shemesh &nbsp;·&nbsp; Community Library</div>
+      <div class="hero-title">Bernard Finlay<br><em>Memorial Library</em></div>
+      <div class="hero-leilui">לעילוי נשמת בנימין נחום בן חיים יעקב ע״ה</div>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><span class="hstat-n" id="tc">0</span><span class="hstat-l">Books</span></div>
+      <div class="hstat"><span class="hstat-n gold" id="ac">0</span><span class="hstat-l">Available</span></div>
+      <div class="hstat"><span class="hstat-n" id="lc">0</span><span class="hstat-l">On Loan</span></div>
+    </div>
+  </div>
+  <div class="hero-gap"></div>
+</div>
+
+<div class="nav-strip">
+  <div class="nav-inner">
+    <button class="nav-btn active" data-page="books" onclick="showPage('books')">📖 Books</button>
+    <button class="nav-btn" data-page="reserve" onclick="showPage('reserve')">🔖 Reserve</button>
+    <button class="nav-btn" data-page="forsale" onclick="showPage('forsale')">🏷️ For Sale</button>
+    <button class="nav-btn" data-page="contact" onclick="showPage('contact')">📞 Contact</button>
+    <span class="nav-loc">📍 Yirmiyahu 16/8, Floor 1</span>
+    <button class="nav-btn admin-nav" id="adminNavBtn" data-page="admin" onclick="showPage('admin')">🔐 Admin</button>
+  </div>
+</div>
+
+<!-- BOOKS -->
+<div class="page active" id="page-books">
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="sb" placeholder="Search by title or author…" oninput="render()">
+    </div>
+    <button class="fbtn active" onclick="setF('all')">All Books</button>
+    <button class="fbtn" onclick="setF('available')">Available only</button>
+  </div>
+  <div class="tabs-row" id="ct"></div>
+  <div class="results-bar">
+    <div class="rpill">Total <b id="tc2">0</b></div>
+    <div class="rpill"><b id="ac2">0</b> available</div>
+    <span class="rinfo" id="ri"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- RESERVE -->
+<div class="page" id="page-reserve">
+  <div class="pw">
+    <div class="ph"><h1>Reserve &amp; Request</h1><p>Reserve a book on loan, or request a title we don't carry yet — goes straight to the library.</p></div>
+    <div class="fc" id="reserveFormCard">
+      <h3>Reserve a Book</h3>
+      <p class="fd">Fill in your details and we'll hold it when it's returned.</p>
+      <div class="fr">
+        <div><label class="fl">Your name *</label><input class="fi" type="text" id="rname" placeholder="Your name"></div>
+        <div><label class="fl">Your email *</label><input class="fi" type="email" id="remail" placeholder="you@example.com"></div>
+      </div>
+      <label class="fl">Phone (optional)</label><input class="fi" type="text" id="rphone" placeholder="Phone number">
+      <label class="fl">Book title *</label><input class="fi" type="text" id="rtitle" placeholder="Book title">
+      <label class="fl">Author (if known)</label><input class="fi" type="text" id="rauthor" placeholder="Author name">
+      <label class="fl">Notes</label><textarea class="fi tall" id="rnotes" placeholder="Any extra details…"></textarea>
+      <input type="hidden" id="rtype" value="Reserve Book">
+      <button class="sbtn" onclick="sendRequestEmail()">Submit Reservation →</button>
+    </div>
+    <hr class="div">
+    <div class="fc">
+      <h3>Request a New Book</h3>
+      <p class="fd">Don't see a book you're looking for? Let us know.</p>
+      <div class="fr">
+        <div><label class="fl">Your name *</label><input class="fi" type="text" id="req2name" placeholder="Your name"></div>
+        <div><label class="fl">Your email *</label><input class="fi" type="email" id="req2email" placeholder="you@example.com"></div>
+      </div>
+      <label class="fl">Phone (optional)</label><input class="fi" type="text" id="req2phone" placeholder="Phone number">
+      <label class="fl">Book title *</label><input class="fi" type="text" id="req2title" placeholder="Book title">
+      <label class="fl">Author (if known)</label><input class="fi" type="text" id="req2author" placeholder="Author name">
+      <label class="fl">Notes</label><textarea class="fi tall" id="req2notes" placeholder="Any extra details…"></textarea>
+      <button class="sbtn gold" onclick="sendNewBookRequest()">Submit Request →</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOR SALE -->
+<div class="page" id="page-forsale">
+  <div class="pw pw-wide">
+    <div class="ph"><h1>Books for Sale</h1><p>Available to purchase. Click Enquire to contact the library.</p></div>
+    <div class="grid" id="sale-grid" style="padding:0 0 48px"></div>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div class="page" id="page-contact">
+  <div class="pw">
+    <div class="ph"><h1>Contact &amp; Info</h1><p>We'd love to hear from you.</p></div>
+    <div class="cgrid">
+      <div class="cc"><div class="cc-ic">📍</div><h3>Location</h3><p>Yirmiyahu 16/8<br>Floor 1, Bet Shemesh</p></div>
+      <div class="cc"><div class="cc-ic">📞</div><h3>Phone</h3><p><a href="tel:+972548481728">054-848-1728</a><br><a href="tel:+97225823090">02-582-3090</a></p></div>
+      <div class="cc"><div class="cc-ic">✉️</div><h3>Email</h3><p><a href="mailto:bernardfinlaymemoriallibrary@gmail.com">bernardfinlaymemoriallibrary@gmail.com</a></p></div>
+    </div>
+    <div class="ptbl">
+      <div class="ptbl-h">📖 Borrowing Fees</div>
+      <div class="ptbl-r"><span class="lang">English books</span><span class="amt">₪5 / 2 weeks</span></div>
+      <div class="ptbl-r"><span class="lang">Hebrew books (עברית)</span><span class="amt">₪1 / 2 weeks</span></div>
+      <div class="ptbl-r"><span class="lang">Every additional 2 weeks</span><span class="amt">+₪5 / +₪1</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="page" id="page-admin">
+  <div class="pw">
+    <div class="ph"><h1>Admin Area</h1></div>
+    <div id="adminLoginSection">
+      <div class="alock">
+        <span class="lk">🔐</span>
+        <h3>Admin Login</h3>
+        <p>Only the library admin should use this area.</p>
+        <label class="fl">Password</label>
+        <input class="fi" type="password" id="adminPass" placeholder="Enter password" style="text-align:center">
+        <button class="sbtn" style="margin-top:18px" onclick="adminLogin()">Unlock Admin</button>
+      </div>
+    </div>
+    <div id="adminPanelSection" style="display:none">
+      <div class="asec">
+        <h3>➕ Add a Book</h3>
+        <p class="smallnote">Saved in this browser and shown in the catalog immediately.</p>
+        <label class="fl">Title *</label><input class="fi" type="text" id="nt" placeholder="Book title">
+        <label class="fl">Author</label><input class="fi" type="text" id="na" placeholder="Author name">
+        <div class="fr" style="margin-top:14px">
+          <div><label class="fl">Category *</label>
+            <select class="fi" id="nc">
+              <option>Just Arrived</option><option>Fiction</option><option>Biographies</option>
+              <option>Non-Fiction</option><option>Holocaust</option><option>True Short Stories</option>
+              <option>Children &amp; Teens</option><option>Hebrew Books</option>
+            </select>
+          </div>
+          <div><label class="fl">Status</label>
+            <select class="fi" id="ns"><option value="Available">Available</option><option value="In use">In use (On loan)</option></select>
+          </div>
+        </div>
+        <button class="sbtn" style="max-width:200px;margin-top:16px" onclick="addBook()">Add to Library</button>
+      </div>
+      <div class="asec">
+        <h3>🗑️ Remove a Book</h3>
+        <p class="smallnote">Search for a book to permanently remove it from the catalog.</p>
+        <label class="fl">Search</label>
+        <input class="fi" type="text" id="removeSearch" placeholder="Type title or author…" oninput="renderRemoveList()">
+        <div id="removeList" style="margin-top:14px"><p class="smallnote">Start typing to search for a book.</p></div>
+      </div>
+      <div class="asec">
+        <h3>🏷️ Books for Sale</h3>
+        <p class="smallnote">These appear on the For Sale page.</p>
+        <label class="fl">Title *</label><input class="fi" type="text" id="sale-title" placeholder="Book title">
+        <label class="fl">Author</label><input class="fi" type="text" id="sale-author" placeholder="Author name">
+        <div class="fr" style="margin-top:0">
+          <div><label class="fl">Price</label><input class="fi" type="text" id="sale-price" placeholder="e.g. ₪20"></div>
+          <div><label class="fl">Notes</label><input class="fi" type="text" id="sale-notes" placeholder="e.g. Like new"></div>
+        </div>
+        <button class="sbtn gold" style="max-width:200px;margin-top:16px" onclick="addSaleBook()">Add for Sale</button>
+        <div id="saleAdminList" style="margin-top:16px"></div>
+      </div>
+      <div class="asec">
+        <h3>👥 Saved Members</h3>
+        <p class="smallnote">Add regular borrowers — select them when lending to save time.</p>
+        <div class="fr" style="margin-top:14px">
+          <div><label class="fl">Name *</label><input class="fi" type="text" id="memName" placeholder="Member name"></div>
+          <div><label class="fl">Email *</label><input class="fi" type="email" id="memEmail" placeholder="member@example.com"></div>
+        </div>
+        <label class="fl">Phone</label><input class="fi" type="text" id="memPhone" placeholder="Phone number">
+        <button class="sbtn" style="max-width:180px;margin-top:14px" onclick="saveMemberFromAdmin()">Save Member</button>
+        <div id="memberList" style="margin-top:16px"></div>
+      </div>
+      <div class="asec">
+        <h3>📤 Return Books</h3>
+        <div id="returnList"></div>
+      </div>
+      <div class="asec">
+        <h3>⏰ Send Reminder</h3>
+        <p class="smallnote">Send a reminder 1 day before a book is due (13 days after borrowing).</p>
+        <div class="fr" style="margin-top:14px">
+          <div><label class="fl">Borrower name</label><input class="fi" type="text" id="remName" placeholder="Borrower name"></div>
+          <div><label class="fl">Borrower email *</label><input class="fi" type="email" id="remEmail" placeholder="borrower@example.com"></div>
+        </div>
+        <label class="fl">Book title *</label><input class="fi" type="text" id="remTitle" placeholder="Book title">
+        <label class="fl">Date borrowed *</label><input class="fi" type="date" id="remDate">
+        <button class="sbtn gold" style="max-width:220px;margin-top:16px" onclick="sendReminderEmail()">Send Reminder</button>
+      </div>
+      <button class="sbtn danger" style="max-width:160px" onclick="adminLogout()">🔒 Lock Admin</button>
+    </div>
+  </div>
+</div>
+
+<!-- Borrow Modal -->
+<div class="overlay" id="bo" onclick="if(event.target===this)closeModal('bo')">
+  <div class="modal"><button class="mc" onclick="closeModal('bo')">✕</button><div id="bc"></div></div>
+</div>
+<div class="overlay" id="ao"></div>
+<div class="overlay" id="ro"></div>
+<div class="overlay" id="admo"></div>
+<script>
+// ════════════════════════════════════════════════════════
+// GOOGLE FORM SETUP — edit these 3 lines after creating your form
+// See instructions below the website for how to get these values
+var GFORM_URL   = "https://docs.google.com/forms/d/e/1FAIpQLScI-4jDTmPPRoQV6CmyMIGmovrnwMnr53bkMFpEwhnRRHEY0A/viewform";
+var ENTRY_TITLE  = "entry.1328877423";  // Book Title
+var ENTRY_AUTHOR = "entry.314852588";   // Author
+// Optional: add matching questions to your Google Borrow Form, then paste their entry IDs below.
+// Leave blank if you have not added these questions yet.
+var ENTRY_NAME   = "";  // Borrower Name
+var ENTRY_EMAIL  = "";  // Borrower Email
+var ENTRY_PHONE  = "";  // Borrower Phone
+var ENTRY_DATE   = "";  // Date Borrowed
+var LIBRARY_EMAIL = "bernardfinlaymemoriallibrary@gmail.com";
+// After you deploy the Google Apps Script, paste the Web App URL here.
+var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxS6BQFE_-BEW8PiL2UvCNDjEp7rHbthlTm0Bj-pibEpq2IN6AhRP8ely2OXXjCkeGX/exec";
+var ADMIN_PASSWORD = "libraryadmin";
+// ════════════════════════════════════════════════════════
+
+var BASE =[{"title": "R Meir Zlotowitz", "author": "Yisroel Besser", "category": "Biographies", "status": "Available"}, {"title": "Rav Shayele", "author": "Yisrael Besser", "category": "Biographies", "status": "Available"}, {"title": "R' Dovid Feinstein (Biography)", "author": "Yisroel Besser", "category": "Biographies", "status": "In use"}, {"title": "Building for Eternity (R Moshe Reichmann)", "author": "Yisrael Besser", "category": "Biographies", "status": "Available"}, {"title": "The Rebbe on Beacon Street (Bostoner Rebbe)", "author": "Rabbi Shimon Finkelman", "category": "Biographies", "status": "Available"}, {"title": "R' Moshe Feinstein", "author": "Shimon Finkelman", "category": "Biographies", "status": "Available"}, {"title": "A life of chesed: Rabbi Chaim Gelb", "author": "David Fisher", "category": "Biographies", "status": "Available"}, {"title": "Portraits of Greatness", "author": "Yisroel Friedman", "category": "Biographies", "status": "Available"}, {"title": "Rav Chaim Shmulevitz", "author": "Reuven Rabbi Grossman", "category": "Biographies", "status": "Available"}, {"title": "Maran Harav Ovadia", "author": "Yehuda Rabbi Heimowitz", "category": "Biographies", "status": "Available"}, {"title": "Rebetzin Vichna Kaplan", "author": "Danielle Lebovitz", "category": "Biographies", "status": "Available"}, {"title": "Rav Gustman (Biography)", "author": "David Page", "category": "Biographies", "status": "Available"}, {"title": "Emunah with love and chicken soup (Rebbetzin Machlis)", "author": "Sara Yoheved Rigler", "category": "Biographies", "status": "Available"}, {"title": "Holy woman", "author": "Sara Yoheved Rigler", "category": "Biographies", "status": "Available"}, {"title": "A tzaddik in our times R Aryeh Levin", "author": "", "category": "Biographies", "status": "In use"}, {"title": "A tap on the shoulder", "author": "Yonason Rabbi Rosenblum", "category": "Biographies", "status": "Available"}, {"title": "Rav Yitzchok Scheiner", "author": "Rabbi Nachman Seltzer", "category": "Biographies", "status": "Available"}, {"title": "The Rebbetzin (Rebbetzin Esther Jungreis)", "author": "Nachman Seltzer", "category": "Biographies", "status": "Available"}, {"title": "All for the Boss", "author": "Ruchama Shain", "category": "Biographies", "status": "Available"}, {"title": "Voices in the silence", "author": "SZ Sonnenfeld", "category": "Biographies", "status": "Available"}, {"title": "Rav Scheinberg", "author": "Rabbi Yechiel Spero", "category": "Biographies", "status": "Available"}, {"title": "Rav Gifter", "author": "Yechiel Spero", "category": "Biographies", "status": "Available"}, {"title": "An angel in Yerushalayim", "author": "Yechiel Spero", "category": "Biographies", "status": "Available"}, {"title": "Biography on R Chaim Kanievsky", "author": "Naftali Weinberger", "category": "Biographies", "status": "Available"}, {"title": "Rav Avigdor Miller - His Life and His Revolution", "author": "", "category": "Biographies", "status": "Available"}, {"title": "R' Shraga Feivel", "author": "", "category": "Biographies", "status": "Available"}, {"title": "The Rabbanit (Rebbetzin Kanievsky)", "author": "", "category": "Biographies", "status": "Available"}, {"title": "In every generation (R' Shabsi Yudelevitch)", "author": "", "category": "Biographies", "status": "Available"}, {"title": "They called him Mike (Mike Tress)", "author": "", "category": "Biographies", "status": "Available"}, {"title": "R' Yaakov Kamenetzky", "author": "", "category": "Biographies", "status": "Available"}, {"title": "The Chofetz Chaim", "author": "", "category": "Biographies", "status": "Available"}, {"title": "The Klausenberger Rebbe, the war years", "author": "", "category": "Biographies", "status": "Available"}, {"title": "Rav Aharon Kotler", "author": "", "category": "Biographies", "status": "Available"}, {"title": "The Chazon Ish", "author": "", "category": "Biographies", "status": "Available"}, {"title": "R' Michel Yehuda Lefkowitz", "author": "", "category": "Biographies", "status": "Available"}, {"title": "Rav Ahron Leah Shteinman", "author": "", "category": "Biographies", "status": "In use"}, {"title": "Rav Elyashiv", "author": "", "category": "Biographies", "status": "Available"}, {"title": "Where the Heart Is", "author": "Ruth Arielli Rapaport", "category": "Fiction", "status": "Available"}, {"title": "Where we belong", "author": "Ruth Arielli Rapaport", "category": "Fiction", "status": "Available"}, {"title": "Sun inside Rain", "author": "M Bassara", "category": "Fiction", "status": "Available"}, {"title": "Diamonds from the past", "author": "Ruth Benjamin", "category": "Fiction", "status": "Available"}, {"title": "All the hidden children", "author": "Ruth Benjamin", "category": "Fiction", "status": "Available"}, {"title": "Pride and preference", "author": "Barbara Bensoussan", "category": "Fiction", "status": "Available"}, {"title": "Pain relief", "author": "Peri Berger", "category": "Fiction", "status": "Available"}, {"title": "Jamilah", "author": "Rachel Berger", "category": "Fiction", "status": "In use"}, {"title": "Zero tolerance", "author": "Peri Berger", "category": "Fiction", "status": "Available"}, {"title": "Broken Mirrors", "author": "Peri Berger", "category": "Fiction", "status": "Available"}, {"title": "A recipe for disaster", "author": "ZC Berry", "category": "Fiction", "status": "Available"}, {"title": "One day and forever", "author": "Sarah Birnhack", "category": "Fiction", "status": "Available"}, {"title": "Family secrets", "author": "Sarah Birnhack", "category": "Fiction", "status": "Available"}, {"title": "Makeover", "author": "Rochel Braverman", "category": "Fiction", "status": "Available"}, {"title": "Out of mind", "author": "Rochel Burstyn", "category": "Fiction", "status": "Available"}, {"title": "Invisible me", "author": "Tzippy Caton", "category": "Fiction", "status": "Available"}, {"title": "The General", "author": "Y Danzinger", "category": "Fiction", "status": "Available"}, {"title": "The tip of the iceberg", "author": "F.H. Einhorn", "category": "Fiction", "status": "Available"}, {"title": "Yedidya", "author": "Naomi Elbinger", "category": "Fiction", "status": "Available"}, {"title": "The Four", "author": "Chaim Eliav", "category": "Fiction", "status": "Available"}, {"title": "The envelope", "author": "Chaim Eliav", "category": "Fiction", "status": "Available"}, {"title": "The Run-Away", "author": "Chaim Eliav", "category": "Fiction", "status": "Available"}, {"title": "Mission", "author": "Chaim Eliav", "category": "Fiction", "status": "Available"}, {"title": "In the Spider's Web", "author": "Chaim Eliav", "category": "Fiction", "status": "Available"}, {"title": "Courtyard of dreams", "author": "Sarah Feldbrand", "category": "Fiction", "status": "Available"}, {"title": "Set me free", "author": "Esti Florans", "category": "Fiction", "status": "Available"}, {"title": "Conquer the darkness", "author": "Esti Florans", "category": "Fiction", "status": "Available"}, {"title": "Tightrope", "author": "Leah Fried", "category": "Fiction", "status": "Available"}, {"title": "Coming Home", "author": "Leah Fried", "category": "Fiction", "status": "Available"}, {"title": "Nothing but the truth", "author": "Leah Friedman", "category": "Fiction", "status": "Available"}, {"title": "Flight of the dove", "author": "Susie Garber", "category": "Fiction", "status": "Available"}, {"title": "Secrets in Disguise", "author": "Susie Garber", "category": "Fiction", "status": "Available"}, {"title": "Denver Dreams", "author": "Susie Garber", "category": "Fiction", "status": "Available"}, {"title": "Rocking horse", "author": "Leah Gebber", "category": "Fiction", "status": "Available"}, {"title": "Map the Starlight", "author": "Leah Gebber", "category": "Fiction", "status": "Available"}, {"title": "Sisters under Siege", "author": "Leah Gebber", "category": "Fiction", "status": "Available"}, {"title": "Good behavior", "author": "Shifra Glick", "category": "Fiction", "status": "Available"}, {"title": "Full circle", "author": "Gita Gordon", "category": "Fiction", "status": "Available"}, {"title": "The Harp", "author": "Meir Uri Gottesman", "category": "Fiction", "status": "Available"}, {"title": "The Lion", "author": "Meir Uri Gottesman", "category": "Fiction", "status": "Available"}, {"title": "The chase", "author": "Meir Uri Gottesman", "category": "Fiction", "status": "Available"}, {"title": "Walls of fire", "author": "Meir Uri Gottesman", "category": "Fiction", "status": "Available"}, {"title": "The lonely shul", "author": "Meir Uri Gottesman", "category": "Fiction", "status": "Available"}, {"title": "The Morning Star", "author": "Meir Uri Gottesman", "category": "Fiction", "status": "Available"}, {"title": "Wings and other stories", "author": "Meir Uri Gottesman", "category": "Fiction", "status": "Available"}, {"title": "Fingerprint", "author": "Chaim Greenbaum", "category": "Fiction", "status": "Available"}, {"title": "Turf War", "author": "A Greenfeld", "category": "Fiction", "status": "Available"}, {"title": "Where wild marigolds grow", "author": "Rachel Miriam Gross", "category": "Fiction", "status": "Available"}, {"title": "Stargazing", "author": "Rochel Grunewald", "category": "Fiction", "status": "Available"}, {"title": "In the dark", "author": "Deborah Guttentag", "category": "Fiction", "status": "Available"}, {"title": "Saving soraya", "author": "Deborah Guttentag", "category": "Fiction", "status": "Available"}, {"title": "On the wings of eagles", "author": "Chaya Diane Hager", "category": "Fiction", "status": "Available"}, {"title": "The agent", "author": "G Halevi", "category": "Fiction", "status": "Available"}, {"title": "Operation magic wand", "author": "G Halevi", "category": "Fiction", "status": "Available"}, {"title": "Maelstrom", "author": "Ruth Halevi", "category": "Fiction", "status": "Available"}, {"title": "Prisoner of his mind", "author": "Ruth Halevy", "category": "Fiction", "status": "Available"}, {"title": "A promising past", "author": "Dov Haller", "category": "Fiction", "status": "Available"}, {"title": "In black and white", "author": "Dov Haller", "category": "Fiction", "status": "Available"}, {"title": "Yardsticks", "author": "Esty Heller", "category": "Fiction", "status": "Available"}, {"title": "Regards from abroad", "author": "Devorah Herbst", "category": "Fiction", "status": "Available"}, {"title": "Roadblock", "author": "Naomi Hirsch", "category": "Fiction", "status": "Available"}, {"title": "Hidden", "author": "Rochel Istrin", "category": "Fiction", "status": "Available"}, {"title": "The captives", "author": "Rochel Istrin", "category": "Fiction", "status": "Available"}, {"title": "Stepping stones", "author": "Rochel Istrin", "category": "Fiction", "status": "Available"}, {"title": "Chapter two", "author": "Azriella Jaffe", "category": "Fiction", "status": "Available"}, {"title": "Unexpected gifts", "author": "Azriela Jaffe", "category": "Fiction", "status": "Available"}, {"title": "Growing with my cousin", "author": "Ester Katz Silvers", "category": "Fiction", "status": "Available"}, {"title": "Abandoned", "author": "M Kenan", "category": "Fiction", "status": "Available"}, {"title": "The wildlands", "author": "M Kenan", "category": "Fiction", "status": "Available"}, {"title": "Dark secrets", "author": "M. Kenan", "category": "Fiction", "status": "Available"}, {"title": "Light years away", "author": "Ruti Kepler", "category": "Fiction", "status": "Available"}, {"title": "Homeward bound", "author": "Tzippy Kestenbaum", "category": "Fiction", "status": "Available"}, {"title": "Race to the top", "author": "Sarah Kisner", "category": "Fiction", "status": "Available"}, {"title": "With this ring", "author": "Sarah Kisner", "category": "Fiction", "status": "Available"}, {"title": "Hidden in the deep", "author": "Sarah Kisner", "category": "Fiction", "status": "Available"}, {"title": "Truth on trial", "author": "Sarah Kisner", "category": "Fiction", "status": "Available"}, {"title": "Don't tell", "author": "Sarah Kisner", "category": "Fiction", "status": "Available"}, {"title": "The legacy", "author": "Sarah Kisner", "category": "Fiction", "status": "Available"}, {"title": "Operation London", "author": "Sarah Kisner", "category": "Fiction", "status": "Available"}, {"title": "Chocolate liquer", "author": "Sarah Kisner", "category": "Fiction", "status": "Available"}, {"title": "What if (sequel to even then even now)", "author": "Libby Klein", "category": "Fiction", "status": "Available"}, {"title": "Even Then Even Now", "author": "Libby Klein", "category": "Fiction", "status": "Available"}, {"title": "The Last Slave", "author": "Yehudis Kormornick", "category": "Fiction", "status": "In use"}, {"title": "Rule of three", "author": "Esther Kurtz", "category": "Fiction", "status": "Available"}, {"title": "The Last Lie (Part II sequel to Deception)", "author": "Libby Lazewnik", "category": "Fiction", "status": "Available"}, {"title": "Between the thorns", "author": "Libby Lazewnik", "category": "Fiction", "status": "Available"}, {"title": "The Judge", "author": "Libby Lazewnik", "category": "Fiction", "status": "Available"}, {"title": "Deception (Part I)", "author": "Libby Lazewnik", "category": "Fiction", "status": "Available"}, {"title": "The Quest", "author": "Libby Lazewnik", "category": "Fiction", "status": "Available"}, {"title": "Fool's gold", "author": "Libby Lazewnik", "category": "Fiction", "status": "Available"}, {"title": "Give me the moon", "author": "Libby Lazewnik", "category": "Fiction", "status": "Available"}, {"title": "Secret Accounts", "author": "Libby Lazewnik", "category": "Fiction", "status": "Available"}, {"title": "Fortune Seekers", "author": "Libby Lazewnik", "category": "Fiction", "status": "Available"}, {"title": "Song of the Sparrow", "author": "Libby Lazewnik", "category": "Fiction", "status": "Available"}, {"title": "The youngest bride", "author": "Menucha Chana Levin", "category": "Fiction", "status": "Available"}, {"title": "Castle builders", "author": "Menucha Chana Levin", "category": "Fiction", "status": "Available"}, {"title": "Stand Tall", "author": "Rhona Lewis", "category": "Fiction", "status": "Available"}, {"title": "Shimmer of hope", "author": "Rhona Lewis", "category": "Fiction", "status": "Available"}, {"title": "A tale of two sisters", "author": "Adeena Lieber", "category": "Fiction", "status": "Available"}, {"title": "City of dreams", "author": "Hannah Ludzker", "category": "Fiction", "status": "Available"}, {"title": "Not easily severed", "author": "Miriam Luxembourg", "category": "Fiction", "status": "Available"}, {"title": "Cash or charge", "author": "Miriam Luxembourg", "category": "Fiction", "status": "Available"}, {"title": "Field of Dreams", "author": "Miriam Luxembourg", "category": "Fiction", "status": "Available"}, {"title": "Victory garden", "author": "Miriam Luxembourg", "category": "Fiction", "status": "Available"}, {"title": "Code blue", "author": "Miriam Luxembourg", "category": "Fiction", "status": "Available"}, {"title": "Ice cubes (novel)", "author": "Malvesky Sara", "category": "Fiction", "status": "Available"}, {"title": "Tomorrow", "author": "Shuli Mensch", "category": "Fiction", "status": "Available"}, {"title": "Brain waves", "author": "Shuli Mensch", "category": "Fiction", "status": "Available"}, {"title": "Heart rhythms", "author": "Shuli Mensch", "category": "Fiction", "status": "Available"}, {"title": "Final Judgment", "author": "Yisroel Meir Merkin", "category": "Fiction", "status": "Available"}, {"title": "Fatal Judgment", "author": "Yisroel Mayer Merkin", "category": "Fiction", "status": "Available"}, {"title": "Chutes and Ladders", "author": "Yael Mermelstein", "category": "Fiction", "status": "Available"}, {"title": "A face in the mirror", "author": "Yael Mermelstein", "category": "Fiction", "status": "Available"}, {"title": "Second Chances", "author": "Yael Mermelstein", "category": "Fiction", "status": "Available"}, {"title": "Dual Secrets", "author": "Yael Mermelstein", "category": "Fiction", "status": "Available"}, {"title": "Petals", "author": "Yael Mermelstein", "category": "Fiction", "status": "Available"}, {"title": "Detective by Design", "author": "Henya Meyer", "category": "Fiction", "status": "Available"}, {"title": "Who is like your People?", "author": "Henya Meyer", "category": "Fiction", "status": "Available"}, {"title": "Starlight", "author": "Henya Meyer", "category": "Fiction", "status": "Available"}, {"title": "Silent Alarm", "author": "MC Millman", "category": "Fiction", "status": "Available"}, {"title": "Juggling Act", "author": "MC Millman", "category": "Fiction", "status": "Available"}, {"title": "One step ahead", "author": "MC Millman", "category": "Fiction", "status": "Available"}, {"title": "Amen Allowed", "author": "MC Millman", "category": "Fiction", "status": "Available"}, {"title": "Windows to destiny", "author": "Shia Moseson", "category": "Fiction", "status": "Available"}, {"title": "Passage to Darkness", "author": "A Myzlik", "category": "Fiction", "status": "Available"}, {"title": "102 short stories volume 2", "author": "Tzvi Nakar", "category": "Fiction", "status": "Available"}, {"title": "Geraniums on the Porch", "author": "Penina Paksher", "category": "Fiction", "status": "Available"}, {"title": "The protocols", "author": "Yitzchok Parker", "category": "Fiction", "status": "Available"}, {"title": "Bloodline", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "Coercion", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "The group", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "Daniel my son", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "Dark Tapestry", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "The movement", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "Carers Ltd", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "Foundling (Yael Reed Mysteries)", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "A school of secrets (First in the series of Yael Reed Mysteries)", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "Working it out", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "Getting it right", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "Making it last", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "Reality Check", "author": "Faigy Peritzman", "category": "Fiction", "status": "Available"}, {"title": "Lost and found", "author": "Tzipporah Pollack", "category": "Fiction", "status": "Available"}, {"title": "See you", "author": "Riva Pomerantz", "category": "Fiction", "status": "In use"}, {"title": "Bridges across the world", "author": "Rachel Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "Enough", "author": "Riva Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "Beyond the prism 2", "author": "Riva Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "Split Ends", "author": "Riva Pomerantz", "category": "Fiction", "status": "In use"}, {"title": "Charades", "author": "Riva Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "Breaking Point", "author": "Riva Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "Diamond Dust", "author": "Riva Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "As mountains around Jerusalem", "author": "Rachel Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "A time to rend , a time to sew", "author": "Rachel Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "Bells and Pomegrantes", "author": "Rachel Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "Cactus Blossoms", "author": "Rachel Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "Prisms", "author": "Riva Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "Into the whirlwind", "author": "Tzipporah Price", "category": "Fiction", "status": "Available"}, {"title": "New Money", "author": "Shani Pruzansky", "category": "Fiction", "status": "Available"}, {"title": "Not by accident", "author": "Naomi Raksin", "category": "Fiction", "status": "Available"}, {"title": "More or Less", "author": "Devora Rand", "category": "Fiction", "status": "Available"}, {"title": "To be continued", "author": "Devora Rand", "category": "Fiction", "status": "Available"}, {"title": "Freedom of Choice", "author": "Devorah Rand", "category": "Fiction", "status": "Available"}, {"title": "The Cuckoo Clock", "author": "Esther Rapaport", "category": "Fiction", "status": "Available"}, {"title": "Night Flower", "author": "Esther Rapaport", "category": "Fiction", "status": "Available"}, {"title": "A dance of the puppet", "author": "Esther Rapoport", "category": "Fiction", "status": "Available"}, {"title": "Diamond in the rough", "author": "Esther Rappoport", "category": "Fiction", "status": "Available"}, {"title": "Blood Brother", "author": "Esther Rappoport", "category": "Fiction", "status": "Available"}, {"title": "Guilty as Charged", "author": "Ruth Rappoport Arieli", "category": "Fiction", "status": "Available"}, {"title": "I'll never leave you", "author": "Ruth Rappoport Arieli", "category": "Fiction", "status": "Available"}, {"title": "Harp Strings", "author": "Ruth Rappoport Arieli", "category": "Fiction", "status": "Available"}, {"title": "Silver and Gold", "author": "Zivia Reischer", "category": "Fiction", "status": "Available"}, {"title": "Trust in me", "author": "Chaya Rosen", "category": "Fiction", "status": "Available"}, {"title": "Lone star", "author": "Devorah Rosen", "category": "Fiction", "status": "Available"}, {"title": "Whispers", "author": "Chava Rosenberg", "category": "Fiction", "status": "Available"}, {"title": "Mists of time", "author": "Chava Rosenberg", "category": "Fiction", "status": "Available"}, {"title": "Choices", "author": "Chava Rosenberg", "category": "Fiction", "status": "Available"}, {"title": "Echoes", "author": "Chava Rosenberg", "category": "Fiction", "status": "Available"}, {"title": "Yours truly", "author": "Chava Rosenberg", "category": "Fiction", "status": "Available"}, {"title": "Echoes", "author": "Chava Rosenberg", "category": "Fiction", "status": "Available"}, {"title": "Promise me Jerusalem", "author": "Chany G. Rosengarten", "category": "Fiction", "status": "Available"}, {"title": "Don't look back", "author": "Bracha Rosman", "category": "Fiction", "status": "Available"}, {"title": "Hide and seek", "author": "Bracha Rosman", "category": "Fiction", "status": "Available"}, {"title": "Over the gate", "author": "Bracha Rosman", "category": "Fiction", "status": "Available"}, {"title": "Silver linings", "author": "Bracha Rosman", "category": "Fiction", "status": "Available"}, {"title": "Production", "author": "Ellen Rotenman", "category": "Fiction", "status": "Available"}, {"title": "Hold on tight", "author": "Chana Rochel Rubinstein", "category": "Fiction", "status": "Available"}, {"title": "False Fronts", "author": "Batya Ruddel", "category": "Fiction", "status": "Available"}, {"title": "Picture perfect", "author": "Batya Ruddell", "category": "Fiction", "status": "Available"}, {"title": "Ready to fly", "author": "Batya Ruddell", "category": "Fiction", "status": "Available"}, {"title": "Double Agent part 1", "author": "Yonah Sapir", "category": "Fiction", "status": "In use"}, {"title": "Double Agent part 2", "author": "Yonah Sapir", "category": "Fiction", "status": "In use"}, {"title": "The Assassin Part 1", "author": "Yonah Sapir", "category": "Fiction", "status": "Available"}, {"title": "Wanted", "author": "Yonah Sapir", "category": "Fiction", "status": "Available"}, {"title": "The Assassin (Part 2)", "author": "Yonah Sapir", "category": "Fiction", "status": "Available"}, {"title": "Rocky Rhodes", "author": "Bina Scharf", "category": "Fiction", "status": "Available"}, {"title": "Mind Games", "author": "P Scharf", "category": "Fiction", "status": "Available"}, {"title": "Bricks and stones", "author": "Ariella Schiller", "category": "Fiction", "status": "Available"}, {"title": "Out of step", "author": "Ariella Schiller", "category": "Fiction", "status": "Available"}, {"title": "Dreams delayed", "author": "Ariella Schiller", "category": "Fiction", "status": "Available"}, {"title": "Silent Storms", "author": "Ariella Schiller", "category": "Fiction", "status": "Available"}, {"title": "Price tags", "author": "Ariella Schiller", "category": "Fiction", "status": "Available"}, {"title": "Far from the place we called home", "author": "Sarah Schlemer", "category": "Fiction", "status": "Available"}, {"title": "Twists and Ties", "author": "Rachel Schorr", "category": "Fiction", "status": "Available"}, {"title": "One Flight up", "author": "Rachel Schorr", "category": "Fiction", "status": "Available"}, {"title": "After the Darkness", "author": "Rachel Schorr", "category": "Fiction", "status": "Available"}, {"title": "Shadows and Light", "author": "Rachel Schorr", "category": "Fiction", "status": "Available"}, {"title": "Autumn Rain", "author": "Rachel Schorr", "category": "Fiction", "status": "Available"}, {"title": "The Darkest Hour", "author": "Rachel Schorr", "category": "Fiction", "status": "Available"}, {"title": "A promise of freedom", "author": "Shevy Schottenstein", "category": "Fiction", "status": "Available"}, {"title": "Long to belong", "author": "Yehudis Schreiber", "category": "Fiction", "status": "Available"}, {"title": "When the clouds part", "author": "Yehudis Schreiber", "category": "Fiction", "status": "Available"}, {"title": "The atonement", "author": "Sarah Schwartman", "category": "Fiction", "status": "Available"}, {"title": "In full bloom", "author": "Shoshanna Schwartz", "category": "Fiction", "status": "Available"}, {"title": "Full Harvest", "author": "Etka Gittel Schwartz", "category": "Fiction", "status": "Available"}, {"title": "Tangled Ties", "author": "Shoshana Schwartz", "category": "Fiction", "status": "Available"}, {"title": "Three steps", "author": "Shoshana Schwartz", "category": "Fiction", "status": "Available"}, {"title": "Caravan", "author": "Etka Gittel Schwartz", "category": "Fiction", "status": "Available"}, {"title": "Little pink shoes", "author": "Sara Schwartzman", "category": "Fiction", "status": "Available"}, {"title": "The network", "author": "Nachman Rabbi seltzer", "category": "Fiction", "status": "Available"}, {"title": "The edge", "author": "Nachman Seltzer", "category": "Fiction", "status": "Available"}, {"title": "The link", "author": "Nachman Seltzer", "category": "Fiction", "status": "Available"}, {"title": "The Shadows", "author": "Nachman Seltzer", "category": "Fiction", "status": "Available"}, {"title": "Last Chance", "author": "Efrat Singer", "category": "Fiction", "status": "Available"}, {"title": "Next Please!", "author": "Efrat Singer", "category": "Fiction", "status": "Available"}, {"title": "Dollhouse", "author": "Miri Sonnenfeld", "category": "Fiction", "status": "Available"}, {"title": "For my child", "author": "Chaya Spiegel", "category": "Fiction", "status": "Available"}, {"title": "Cohens of Tzefat", "author": "Miri Stark Zakon", "category": "Fiction", "status": "Available"}, {"title": "Trapped in Cyberspace", "author": "Ayala Stimler", "category": "Fiction", "status": "Available"}, {"title": "Whirlpool", "author": "Ayala Stimler", "category": "Fiction", "status": "Available"}, {"title": "Song at sea", "author": "Rivka Streicher", "category": "Fiction", "status": "Available"}, {"title": "Beyond the river", "author": "Debbie Strom", "category": "Fiction", "status": "Available"}, {"title": "Wherever you are", "author": "Sara Sumner", "category": "Fiction", "status": "Available"}, {"title": "Sparks of Radiance", "author": "Bracha Pearl Toporowitch", "category": "Fiction", "status": "Available"}, {"title": "Darkness to Dawn", "author": "Bracha Pearl Toporowitch", "category": "Fiction", "status": "Available"}, {"title": "Facing the music", "author": "Eva Vogiel", "category": "Fiction", "status": "Available"}, {"title": "Hidden Diamonds", "author": "Eva Vogiel", "category": "Fiction", "status": "Available"}, {"title": "Invisible Chains", "author": "Eva Vogiel", "category": "Fiction", "status": "Available"}, {"title": "Friend or Foe", "author": "Eva Vogiel", "category": "Fiction", "status": "Available"}, {"title": "4 seasons of Golda Mirel", "author": "Eva Vogiel", "category": "Fiction", "status": "Available"}, {"title": "Distant cousins", "author": "Eva Vogiel", "category": "Fiction", "status": "Available"}, {"title": "Just between friends", "author": "Sara Weiderblank", "category": "Fiction", "status": "Available"}, {"title": "Pass or fail", "author": "Sara Weiderblank", "category": "Fiction", "status": "Available"}, {"title": "Beneath the surface", "author": "Sara Weiderblank", "category": "Fiction", "status": "Available"}, {"title": "Chasing Illusions", "author": "Devorah Weiner", "category": "Fiction", "status": "Available"}, {"title": "Escape to reality", "author": "Devorah Weiner", "category": "Fiction", "status": "Available"}, {"title": "Still waters", "author": "Devorah Weiner", "category": "Fiction", "status": "Available"}, {"title": "White Ice", "author": "Devorah Weiner", "category": "Fiction", "status": "Available"}, {"title": "Silent Dreams", "author": "Devorah Weiner", "category": "Fiction", "status": "Available"}, {"title": "Hearts of Gold 1", "author": "Devorah Weiner", "category": "Fiction", "status": "Available"}, {"title": "Hearts of Gold 2", "author": "Devorah Weiner", "category": "Fiction", "status": "Available"}, {"title": "An unexpected detour and other stories", "author": "CB Weinfeld", "category": "Fiction", "status": "Available"}, {"title": "Shattered world", "author": "Yair Weinstock", "category": "Fiction", "status": "Available"}, {"title": "Burning Questions", "author": "Yair Weinstock", "category": "Fiction", "status": "Available"}, {"title": "Delayed Reaction", "author": "Yair Weinstock", "category": "Fiction", "status": "Available"}, {"title": "Borrowed time", "author": "Yair Weinstock", "category": "Fiction", "status": "Available"}, {"title": "Timebomb", "author": "Yair Weinstock", "category": "Fiction", "status": "Available"}, {"title": "Eye of the storm", "author": "Yair Weinstock", "category": "Fiction", "status": "Available"}, {"title": "Calculated Risk", "author": "Yair Weinstock", "category": "Fiction", "status": "Available"}, {"title": "The Gordian Knot", "author": "Yair Weinstock", "category": "Fiction", "status": "Available"}, {"title": "Blackout", "author": "Yair Weinstock", "category": "Fiction", "status": "Available"}, {"title": "Dual Alliegance", "author": "Yair Weinstock", "category": "Fiction", "status": "Available"}, {"title": "Untold fortunes", "author": "Penina Weiser", "category": "Fiction", "status": "Available"}, {"title": "The nurse", "author": "Pia Wolcowitz", "category": "Fiction", "status": "Available"}, {"title": "The Pomegrante Pendant", "author": "Devorah Wysman", "category": "Fiction", "status": "Available"}, {"title": "Switched Identity", "author": "AB Yishai", "category": "Fiction", "status": "Available"}, {"title": "Freefall", "author": "Miriam Zakon", "category": "Fiction", "status": "Available"}, {"title": "The next pair of shoes", "author": "Chaya Rochel Zimmerman", "category": "Fiction", "status": "Available"}, {"title": "Lemons in the fog", "author": "Chaya Rochel Zimmerman", "category": "Fiction", "status": "Available"}, {"title": "The thirteenth gate", "author": "Ester Zirkind", "category": "Fiction", "status": "Available"}, {"title": "And Rachel was his wife", "author": "", "category": "Fiction", "status": "Available"}, {"title": "Believe in me", "author": "Esther Toker", "category": "Fiction", "status": "Available"}, {"title": "Truth or dare", "author": "Chavi Singer", "category": "Fiction", "status": "Available"}, {"title": "Return from captivity (Sequel to the captives)", "author": "Rochel Istrin", "category": "Fiction", "status": "Available"}, {"title": "Escape room", "author": "Devorah Rand", "category": "Fiction", "status": "Available"}, {"title": "30 hours", "author": "Yair Weinstock", "category": "Fiction", "status": "Available"}, {"title": "A time to run", "author": "Rachel Schorr", "category": "Fiction", "status": "Available"}, {"title": "See the good", "author": "Libby Klein", "category": "Fiction", "status": "Available"}, {"title": "Formerly my sister", "author": "Tamar Mor", "category": "Fiction", "status": "Available"}, {"title": "Nowhere to hide", "author": "Ruth halevi", "category": "Fiction", "status": "Available"}, {"title": "Innocent Deceptions", "author": "Naomi Hirsch", "category": "Fiction", "status": "Available"}, {"title": "Close to home", "author": "Rena Kohn", "category": "Fiction", "status": "Available"}, {"title": "The clockmakers apprentice", "author": "Eva Vogiel", "category": "Fiction", "status": "Available"}, {"title": "Lockdown", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "Off limits", "author": "Esther Rapoport", "category": "Fiction", "status": "Available"}, {"title": "A second look", "author": "Sara Weiderblank", "category": "Fiction", "status": "Available"}, {"title": "Adrenaline Rush", "author": "Henya Meyer", "category": "Fiction", "status": "Available"}, {"title": "Dancing in the dark", "author": "Shoshana Mael", "category": "Fiction", "status": "Available"}, {"title": "Mind games", "author": "Shuli Mensch", "category": "Fiction", "status": "Available"}, {"title": "The narrow bridge", "author": "Peri Berger", "category": "Fiction", "status": "Available"}, {"title": "Out of sight", "author": "Bracha Rosman", "category": "Fiction", "status": "Available"}, {"title": "Search my heart", "author": "Sarah Birnhack", "category": "Fiction", "status": "Available"}, {"title": "Orange Groves", "author": "Rachel Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "The new song", "author": "Barbara Bensoussan", "category": "Fiction", "status": "Available"}, {"title": "Green Fences", "author": "Riva Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "This is America", "author": "Henya Meyer", "category": "Fiction", "status": "Available"}, {"title": "Against the wall", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "Wildflower", "author": "Rachel Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "Breaking free", "author": "Esther Rapoport", "category": "Fiction", "status": "Available"}, {"title": "Divided Attention", "author": "Esther Rapoport", "category": "Fiction", "status": "Available"}, {"title": "The Scribe", "author": "Uri Raskin", "category": "Fiction", "status": "Available"}, {"title": "Pillars of smoke", "author": "P Scharff", "category": "Fiction", "status": "Available"}, {"title": "Musawi", "author": "A Shalom", "category": "Fiction", "status": "Available"}, {"title": "Captive soul", "author": "Shoshana Schwartz", "category": "Fiction", "status": "Available"}, {"title": "Sondra’s search", "author": "Ester Katz Silvers", "category": "Fiction", "status": "Available"}, {"title": "Guest house", "author": "Gita Gordon", "category": "Fiction", "status": "Available"}, {"title": "Thirteenth Avenue", "author": "Miriam Friedman", "category": "Fiction", "status": "Available"}, {"title": "I can call you ima", "author": "Leah Fried", "category": "Fiction", "status": "In use"}, {"title": "A fragile thread", "author": "Yael Mermelstein", "category": "Fiction", "status": "Available"}, {"title": "Double life of Chani Greenberg", "author": "Menucha Beckerman", "category": "Fiction", "status": "Available"}, {"title": "Mountain climbers", "author": "Malky Feig", "category": "Fiction", "status": "Available"}, {"title": "The meshulach", "author": "Meir Uri Gottesman", "category": "Fiction", "status": "Available"}, {"title": "The birdsong", "author": "Meir Uri Gottesman", "category": "Fiction", "status": "Available"}, {"title": "The betrayal", "author": "M Kenan", "category": "Fiction", "status": "Available"}, {"title": "Moonlight", "author": "Yael Mermelstein", "category": "Fiction", "status": "Available"}, {"title": "Mountain climbers 2", "author": "Malky Feig", "category": "Fiction", "status": "Available"}, {"title": "Circle of Secrets", "author": "Esty Schlanger", "category": "Fiction", "status": "Available"}, {"title": "Modeling Clay", "author": "Rochel Braverman", "category": "Fiction", "status": "Available"}, {"title": "Long Story Short", "author": "Esty Heller", "category": "Fiction", "status": "Available"}, {"title": "Fault Lines", "author": "Rachel Newton", "category": "Fiction", "status": "Available"}, {"title": "Lift my eyes", "author": "Libby Klein", "category": "Fiction", "status": "Available"}, {"title": "The final battle", "author": "M Kenan", "category": "Fiction", "status": "Available"}, {"title": "No one's child", "author": "Tamar Mor", "category": "Fiction", "status": "In use"}, {"title": "Driving force", "author": "Yair Weinstock", "category": "Fiction", "status": "Available"}, {"title": "2 oclock Tatty", "author": "Rachel Schorr", "category": "Fiction", "status": "Available"}, {"title": "Upper Class", "author": "Ariella Schiller", "category": "Fiction", "status": "Available"}, {"title": "The Greener Path", "author": "Sara Malovitsky", "category": "Fiction", "status": "Available"}, {"title": "Following the piper", "author": "Esther Malky Neiman", "category": "Fiction", "status": "Available"}, {"title": "Running in Circles", "author": "Batya Ruddell", "category": "Fiction", "status": "Available"}, {"title": "Shades of Normal", "author": "Rochel Samet", "category": "Fiction", "status": "In use"}, {"title": "Stars of dust", "author": "Rachel Berger", "category": "Fiction", "status": "Available"}, {"title": "The black sheep", "author": "Esther Rapoport", "category": "Fiction", "status": "Available"}, {"title": "Chevron", "author": "Meir Uri Gottesman", "category": "Fiction", "status": "Available"}, {"title": "Suspicion", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "Captives reunited", "author": "Rochel Istrin", "category": "Fiction", "status": "In use"}, {"title": "Hold the line", "author": "Brocha Miller", "category": "Fiction", "status": "Available"}, {"title": "In cold blood (2)", "author": "Yonah Sapir", "category": "Fiction", "status": "Available"}, {"title": "Canceled", "author": "Miriam Luxembourg", "category": "Fiction", "status": "Available"}, {"title": "In cold blood (1)", "author": "Yonah Sapir", "category": "Fiction", "status": "Available"}, {"title": "Nowhere to hide", "author": "Ruth halevi", "category": "Fiction", "status": "Available"}, {"title": "Innocent Deceptions", "author": "Naomi Hirsch", "category": "Fiction", "status": "Available"}, {"title": "Close to home", "author": "Rena Kohn", "category": "Fiction", "status": "Available"}, {"title": "The clockmakers apprentice", "author": "Eva Vogiel", "category": "Fiction", "status": "Available"}, {"title": "Lockdown", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "Off limits", "author": "Esther Rapoport", "category": "Fiction", "status": "Available"}, {"title": "A second look", "author": "Sara Weiderblank", "category": "Fiction", "status": "Available"}, {"title": "Adrenaline Rush", "author": "Henya Meyer", "category": "Fiction", "status": "Available"}, {"title": "Dancing in the dark", "author": "Shoshana Mael", "category": "Fiction", "status": "Available"}, {"title": "Mind games", "author": "Shuli Mensch", "category": "Fiction", "status": "Available"}, {"title": "The narrow bridge", "author": "Peri Berger", "category": "Fiction", "status": "Available"}, {"title": "Out of sight", "author": "Bracha Rosman", "category": "Fiction", "status": "Available"}, {"title": "Search my heart", "author": "Sarah Birnhack", "category": "Fiction", "status": "Available"}, {"title": "Orange Groves", "author": "Rachel Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "The new song", "author": "Barbara Bensoussan", "category": "Fiction", "status": "Available"}, {"title": "Green Fences", "author": "Riva Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "This is America", "author": "Henya Meyer", "category": "Fiction", "status": "Available"}, {"title": "Against the wall", "author": "Ruthie Pearlman", "category": "Fiction", "status": "Available"}, {"title": "Wildflower", "author": "Rachel Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "Breaking free", "author": "Esther Rapoport", "category": "Fiction", "status": "Available"}, {"title": "Divided Attention", "author": "Esther Rapoport", "category": "Fiction", "status": "Available"}, {"title": "The Scribe", "author": "Uri Raskin", "category": "Fiction", "status": "Available"}, {"title": "Pillars of smoke", "author": "P Scharff", "category": "Fiction", "status": "Available"}, {"title": "Musawi", "author": "A Shalom", "category": "Fiction", "status": "Available"}, {"title": "Captive soul", "author": "Shoshana Schwartz", "category": "Fiction", "status": "Available"}, {"title": "Sondra’s search", "author": "Ester Katz Silvers", "category": "Fiction", "status": "Available"}, {"title": "Guest house", "author": "Gita Gordon", "category": "Fiction", "status": "Available"}, {"title": "Thirteenth Avenue", "author": "Miriam Friedman", "category": "Fiction", "status": "Available"}, {"title": "I can call you ima", "author": "Leah Fried", "category": "Fiction", "status": "Available"}, {"title": "A fragile thread", "author": "Yael Mermelstein", "category": "Fiction", "status": "Available"}, {"title": "Double life of Chani Greenberg", "author": "Menucha Beckerman", "category": "Fiction", "status": "Available"}, {"title": "Mountain climbers", "author": "Malky Feig", "category": "Fiction", "status": "Available"}, {"title": "The meshulach", "author": "Meir Uri Gottesman", "category": "Fiction", "status": "Available"}, {"title": "The birdsong", "author": "Meir Uri Gottesman", "category": "Fiction", "status": "Available"}, {"title": "The betrayal", "author": "M Kenan", "category": "Fiction", "status": "Available"}, {"title": "Moonlight", "author": "Yael Mermelstein", "category": "Fiction", "status": "Available"}, {"title": "Mountain climbers 2", "author": "Malky Feig", "category": "Fiction", "status": "Available"}, {"title": "Circle of Secrets", "author": "Esty Schlanger", "category": "Fiction", "status": "Available"}, {"title": "Modeling Clay", "author": "Rochel Braverman", "category": "Fiction", "status": "Available"}, {"title": "Long Story Short", "author": "Esty Heller", "category": "Fiction", "status": "In use"}, {"title": "Fault Lines", "author": "Rachel Newton", "category": "Fiction", "status": "In use"}, {"title": "Lift my eyes", "author": "Libby Klein", "category": "Fiction", "status": "Available"}, {"title": "The final battle", "author": "M Kenan", "category": "Fiction", "status": "Available"}, {"title": "No one's child", "author": "Tamar Mor", "category": "Fiction", "status": "Available"}, {"title": "Driving force", "author": "Yair Weinstock", "category": "Fiction", "status": "Available"}, {"title": "2 oclock Tatty", "author": "Rachel Schorr", "category": "Fiction", "status": "Available"}, {"title": "Upper Class", "author": "Ariella Schiller", "category": "Fiction", "status": "Available"}, {"title": "The Greener Path", "author": "Sara Malovitsky", "category": "Fiction", "status": "Available"}, {"title": "Following the piper", "author": "Esther Malky Neiman", "category": "Fiction", "status": "Available"}, {"title": "Running in Circles", "author": "Batya Ruddell", "category": "Fiction", "status": "Available"}, {"title": "Flashes of greatness (True short stories)", "author": "R Yitzchak Landau", "category": "Fiction", "status": "Available"}, {"title": "Within my walls", "author": "Leah Gebber", "category": "Fiction", "status": "Available"}, {"title": "String of secrets", "author": "Tamar Shy", "category": "Fiction", "status": "Available"}, {"title": "Take Two", "author": "Riva Pomerantz", "category": "Fiction", "status": "Available"}, {"title": "Dream on", "author": "Gila Arnold", "category": "Fiction", "status": "Available"}, {"title": "Behind the walls", "author": "Miriam Cohen", "category": "Holocaust", "status": "In use"}, {"title": "The youngest partisan", "author": "Romi Cohen", "category": "Holocaust", "status": "Available"}, {"title": "Tatteh Said Run", "author": "Yeshaya Kornbluth", "category": "Holocaust", "status": "Available"}, {"title": "Miracles in Switzerland", "author": "Judith Luksenberg", "category": "Holocaust", "status": "Available"}, {"title": "Angel of Orphans (Story of R Yona Tiefenbrunner)", "author": "Malky Weinstock", "category": "Holocaust", "status": "Available"}, {"title": "It Happened at Heritage House", "author": "DB Estrin", "category": "True Short Stories", "status": "Available"}, {"title": "Major impact", "author": "Dovid Kaplan", "category": "True Short Stories", "status": "Available"}, {"title": "Sparks of majesty", "author": "Genendal Krohn", "category": "True Short Stories", "status": "Available"}, {"title": "Lifelines 2", "author": "C Sapir", "category": "True Short Stories", "status": "Available"}, {"title": "I have an amazing story for you 1", "author": "Nachman Seltzer", "category": "True Short Stories", "status": "Available"}, {"title": "I have an amazing story for you 2", "author": "Nachman Seltzer", "category": "True Short Stories", "status": "Available"}, {"title": "I have an amazing story for you 3", "author": "Nachman Seltzer", "category": "True Short Stories", "status": "Available"}, {"title": "Class Acts", "author": "Nachman Seltzer", "category": "True Short Stories", "status": "Available"}, {"title": "Class Acts II", "author": "Nachman Seltzer", "category": "True Short Stories", "status": "Available"}, {"title": "48", "author": "Nachman Seltzer", "category": "True Short Stories", "status": "Available"}, {"title": "A tiny taste of heaven", "author": "Nachman Seltzer", "category": "True Short Stories", "status": "Available"}, {"title": "What a story", "author": "Rabbi Yechiel Spero", "category": "True Short Stories", "status": "Available"}, {"title": "A touch of warmth", "author": "Yechiel Spero", "category": "True Short Stories", "status": "Available"}, {"title": "Touched by a spirit", "author": "Yechiel Spero", "category": "True Short Stories", "status": "Available"}, {"title": "One small spark", "author": "Yechiel Spero", "category": "True Short Stories", "status": "Available"}, {"title": "To light a spark", "author": "Yechiel Spero", "category": "True Short Stories", "status": "Available"}, {"title": "Front Row Seat", "author": "CB Weinfeld", "category": "True Short Stories", "status": "Available"}, {"title": "When the curtains part", "author": "C.B. Weinfeld", "category": "True Short Stories", "status": "Available"}, {"title": "A canopy of stars", "author": "CB Weinfeld", "category": "True Short Stories", "status": "Available"}, {"title": "Stardust", "author": "CB Weinfeld", "category": "True Short Stories", "status": "Available"}, {"title": "A handful of stars", "author": "CB Weinfeld CB", "category": "True Short Stories", "status": "Available"}, {"title": "Center Stage", "author": "CB Weinfeld", "category": "True Short Stories", "status": "Available"}, {"title": "Let's get Bentching", "author": "Tamar Ansch", "category": "Children & Teens", "status": "Available"}, {"title": "Living Emunah for children", "author": "David Rabbi Ashear", "category": "Children & Teens", "status": "Available"}, {"title": "Living Emunah 2 for children", "author": "David Rabbi Ashear", "category": "Children & Teens", "status": "In use"}, {"title": "Moshe's amazing discovery", "author": "Reuven Bauman", "category": "Children & Teens", "status": "Available"}, {"title": "To share with love", "author": "Menucha Beckerman", "category": "Children & Teens", "status": "Available"}, {"title": "The crying clown", "author": "Menucha Beckerman", "category": "Children & Teens", "status": "Available"}, {"title": "All kinds of chesed", "author": "Ruth Beifus", "category": "Children & Teens", "status": "Available"}, {"title": "Let's go Shopping", "author": "Rifky Beinifeld", "category": "Children & Teens", "status": "In use"}, {"title": "Let's go to the dentist", "author": "Rifky Beinifeld", "category": "Children & Teens", "status": "In use"}, {"title": "Let's go to the dentist", "author": "Rifky Beinifeld", "category": "Children & Teens", "status": "In use"}, {"title": "Let's meet Community Helpers", "author": "Rifky Beinifeld", "category": "Children & Teens", "status": "Available"}, {"title": "Let's go Visiting", "author": "Rifky Beinifeld", "category": "Children & Teens", "status": "Available"}, {"title": "Let's go to the farm", "author": "Rifky Beinifeld", "category": "Children & Teens", "status": "In use"}, {"title": "Let's go to School", "author": "Rifky Beinifeld", "category": "Children & Teens", "status": "Available"}, {"title": "Let's go to Shul", "author": "Rivky Beinifeld", "category": "Children & Teens", "status": "Available"}, {"title": "I go to the doctor", "author": "Rivky Beinifeld", "category": "Children & Teens", "status": "Available"}, {"title": "Let's go to a wedding", "author": "Rivky Beinifeld", "category": "Children & Teens", "status": "Available"}, {"title": "Let's go to the park", "author": "Rikki Beinifeld", "category": "Children & Teens", "status": "Available"}, {"title": "I can help", "author": "Rikki Beinifeld", "category": "Children & Teens", "status": "Available"}, {"title": "I go to sleep", "author": "Rikki Beinifeld", "category": "Children & Teens", "status": "In use"}, {"title": "I kiss the mezuza", "author": "Rikki Beinifeld", "category": "Children & Teens", "status": "Available"}, {"title": "I Can wait", "author": "Rikki Beinifeld", "category": "Children & Teens", "status": "Available"}, {"title": "More 3 minute middos stories", "author": "Devorah Benedict", "category": "Children & Teens", "status": "Available"}, {"title": "I want a friend", "author": "Devorah Benedict", "category": "Children & Teens", "status": "Available"}, {"title": "Shavous with Bina, Benny and Chagai Hayonah", "author": "Liat Benyamy Ariel", "category": "Children & Teens", "status": "Available"}, {"title": "More Jewish Bedtimes Stories", "author": "Shmuel Blitz", "category": "Children & Teens", "status": "Available"}, {"title": "Bedtime stories of Jewish values", "author": "Shmuel Blitz", "category": "Children & Teens", "status": "Available"}, {"title": "Bedtime stories of torah values", "author": "Shmuel Blitz", "category": "Children & Teens", "status": "Available"}, {"title": "Bedtime stories to make you smile", "author": "Shmuel Blitz", "category": "Children & Teens", "status": "Available"}, {"title": "Flying colors", "author": "Rochel Braverman", "category": "Children & Teens", "status": "Available"}, {"title": "VIP", "author": "Yehuda Cahn", "category": "Children & Teens", "status": "Available"}, {"title": "Dollars and Sense", "author": "Tehila Deutsch", "category": "Children & Teens", "status": "In use"}, {"title": "Tell me a tale ( 8 great stories)", "author": "Yitzi Erps", "category": "Children & Teens", "status": "Available"}, {"title": "The burksfield bike club", "author": "Chaim Finkelstein", "category": "Children & Teens", "status": "Available"}, {"title": "Do you know what I'm going to be?", "author": "Ruth Finkelstein", "category": "Children & Teens", "status": "Available"}, {"title": "Mrs Honigs Cake", "author": "Pessy Frenkel", "category": "Children & Teens", "status": "In use"}, {"title": "Marvelous Moishe dresses himself", "author": "Menucha Fuchs", "category": "Children & Teens", "status": "Available"}, {"title": "Marvelous Moishe entertains himself", "author": "Menucha Fuchs", "category": "Children & Teens", "status": "Available"}, {"title": "The band", "author": "Menucha Fuchs", "category": "Children & Teens", "status": "Available"}, {"title": "Mitzva kids", "author": "Menucha Fuchs", "category": "Children & Teens", "status": "Available"}, {"title": "The Brave Boy", "author": "Menucha Fuchs", "category": "Children & Teens", "status": "Available"}, {"title": "Marvellous Moishe learns not to be afraid", "author": "Menucha Fuchs", "category": "Children & Teens", "status": "Available"}, {"title": "Marvellous Moishe eats healthy food", "author": "Menucha Fuchs", "category": "Children & Teens", "status": "Available"}, {"title": "Marvellous Moishe doesn't run into the street", "author": "Menucha Fuchs", "category": "Children & Teens", "status": "Available"}, {"title": "Hello Heddy Levi", "author": "Yaffa Ganz", "category": "Children & Teens", "status": "Available"}, {"title": "Savta Simcha and the Incredible Shabbos bag", "author": "Yaffa Ganz", "category": "Children & Teens", "status": "Available"}, {"title": "The Little Old Lady who couldnt fall asleep", "author": "Yaffa Ganz", "category": "Children & Teens", "status": "In use"}, {"title": "The very good fisherman", "author": "Yaffa Ganz", "category": "Children & Teens", "status": "Available"}, {"title": "Pesach with Bina, Benny and Chagai Hanyonah", "author": "Yaffa Ganz", "category": "Children & Teens", "status": "Available"}, {"title": "The road less traveled", "author": "Susie Garber", "category": "Children & Teens", "status": "Available"}, {"title": "Mrs. Make a mentsch", "author": "Dvorah Glick", "category": "Children & Teens", "status": "Available"}, {"title": "Talking private places", "author": "Bracha Goetz", "category": "Children & Teens", "status": "Available"}, {"title": "Let's appreciate everyone", "author": "Bracha Goetz", "category": "Children & Teens", "status": "Available"}, {"title": "The Invisible book", "author": "Bracha Goetz", "category": "Children & Teens", "status": "Available"}, {"title": "Let's stay safe", "author": "Bracha Goetz", "category": "Children & Teens", "status": "Available"}, {"title": "Framed", "author": "", "category": "Children & Teens", "status": "In use"}, {"title": "The fearless four Rescue Operation", "author": "Yehudit Golan", "category": "Children & Teens", "status": "In use"}, {"title": "Hurry, Friday's a short day", "author": "Yeshara Gold", "category": "Children & Teens", "status": "Available"}, {"title": "Simcha's Smiles", "author": "Gold", "category": "Children & Teens", "status": "Available"}, {"title": "Footprints in the sand", "author": "Brocho Goykadosh", "category": "Children & Teens", "status": "Available"}, {"title": "Lemonade girls- forever", "author": "Sara Miriam Gross", "category": "Children & Teens", "status": "Available"}, {"title": "The very best place for a Penny", "author": "Dena Herman Rosenfeld", "category": "Children & Teens", "status": "Available"}, {"title": "The wedding dance", "author": "Holt", "category": "Children & Teens", "status": "Available"}, {"title": "Elimelech wakes up", "author": "Chana Rivka Jacobs", "category": "Children & Teens", "status": "Available"}, {"title": "Kaila Kvetches no more", "author": "M Jacobwitz", "category": "Children & Teens", "status": "In use"}, {"title": "Midnight watch", "author": "Jakobowitz", "category": "Children & Teens", "status": "Available"}, {"title": "Round trip", "author": "M Jakobowitz", "category": "Children & Teens", "status": "Available"}, {"title": "Here comes Shabbos", "author": "Ilana Kehlson", "category": "Children & Teens", "status": "In use"}, {"title": "The Marvelous Mix-Up and other tales of Reb Shalom", "author": "Ruchama King Feuerman", "category": "Children & Teens", "status": "Available"}, {"title": "Feldman Five", "author": "Chayele Kohane", "category": "Children & Teens", "status": "Available"}, {"title": "More Maggid Stories for Children", "author": "Chaviva Krohn Pfieffer", "category": "Children & Teens", "status": "Available"}, {"title": "Boruch learns his brochos", "author": "Shmuel Kunda", "category": "Children & Teens", "status": "In use"}, {"title": "The talking coins", "author": "Rabbi Shmuel Kunda", "category": "Children & Teens", "status": "Available"}, {"title": "See for yourself", "author": "Meir Lamberski", "category": "Children & Teens", "status": "Available"}, {"title": "Too many secrets", "author": "Libby Lazewnik", "category": "Children & Teens", "status": "Available"}, {"title": "The thank you note and other stories", "author": "Libby Lazewnik", "category": "Children & Teens", "status": "In use"}, {"title": "The lemonade lesson and other stories", "author": "Libby Lazewnik", "category": "Children & Teens", "status": "Available"}, {"title": "Don't look down and other stories", "author": "Libby Lazewnik", "category": "Children & Teens", "status": "Available"}, {"title": "Bubbles and other stories", "author": "Libby Lazewnik", "category": "Children & Teens", "status": "Available"}, {"title": "Happy birthday to me", "author": "Channah Lieberman", "category": "Children & Teens", "status": "Available"}, {"title": "Modeh Ani means thank you", "author": "Ruth Lipson", "category": "Children & Teens", "status": "Available"}, {"title": "Let's discover the world", "author": "E Mark", "category": "Children & Teens", "status": "Available"}, {"title": "Accidental adventures", "author": "Henya Meyer", "category": "Children & Teens", "status": "Available"}, {"title": "Windfall", "author": "MC Millman", "category": "Children & Teens", "status": "Available"}, {"title": "zundel of chelm", "author": "", "category": "Children & Teens", "status": "In use"}, {"title": "Around the clock", "author": "E Paz", "category": "Children & Teens", "status": "Available"}, {"title": "Messes of dresses", "author": "F. Pertzig", "category": "Children & Teens", "status": "Available"}, {"title": "Whatever the weather", "author": "Shainy Peysin", "category": "Children & Teens", "status": "Available"}, {"title": "Once upon a tale, Dubno Maggid Parables (comics)", "author": "Gadi Pollack", "category": "Children & Teens", "status": "Available"}, {"title": "Forward into the past", "author": "Gadi Pollack", "category": "Children & Teens", "status": "In use"}, {"title": "The lost Treasure of Tikkun Hamidos Island", "author": "Chait Rabbi Baruch", "category": "Children & Teens", "status": "Available"}, {"title": "Round and round the jewish year", "author": "Tziporah Rosenberg", "category": "Children & Teens", "status": "Available"}, {"title": "Labels for Laibel", "author": "Dina Rosenfeld", "category": "Children & Teens", "status": "Available"}, {"title": "The little leaf", "author": "Dina Rosenfeld", "category": "Children & Teens", "status": "Available"}, {"title": "All about us", "author": "Dina Rosenfeld", "category": "Children & Teens", "status": "Available"}, {"title": "Kind little Rivka", "author": "Dina Rosenfeld", "category": "Children & Teens", "status": "Available"}, {"title": "A little boy named Avram", "author": "Dina Rosenfeld", "category": "Children & Teens", "status": "Available"}, {"title": "Dovid the little shepherd", "author": "Dina Rosenfeld", "category": "Children & Teens", "status": "Available"}, {"title": "A little girl named Miriam", "author": "Dina Rosenfeld", "category": "Children & Teens", "status": "Available"}, {"title": "Yossi and Label share", "author": "Dina Rosenfeld", "category": "Children & Teens", "status": "Available"}, {"title": "A kosher fish tale", "author": "Leah Chana Rubashkin", "category": "Children & Teens", "status": "Available"}, {"title": "ur unique", "author": "Reva Rubinstein", "category": "Children & Teens", "status": "Available"}, {"title": "\"Mommy, I\"m bored.\" Keeping busy with Uncle Izzy", "author": "Rochel Scheller", "category": "Children & Teens", "status": "Available"}, {"title": "F is for friendship", "author": "Schnaidman", "category": "Children & Teens", "status": "Available"}, {"title": "My friend the bully", "author": "Rivka Schonfeld", "category": "Children & Teens", "status": "Available"}, {"title": "Anonymous donor", "author": "Rachel Schorr", "category": "Children & Teens", "status": "Available"}, {"title": "The Secret of the Purple Bottle", "author": "Rachel Schorr", "category": "Children & Teens", "status": "Available"}, {"title": "Time for torah", "author": "Devorah Schwebel", "category": "Children & Teens", "status": "Available"}, {"title": "All for the Boss (Youth edition)", "author": "Ruchama Shain", "category": "Children & Teens", "status": "Available"}, {"title": "Rav Avigdor Miller and the apple seed", "author": "Nachum Shapiro", "category": "Children & Teens", "status": "Available"}, {"title": "Rav Avigdor Miller and the rainy day", "author": "Nachum Shapiro", "category": "Children & Teens", "status": "Available"}, {"title": "Two and a Tevi (2)", "author": "R Shatz", "category": "Children & Teens", "status": "Available"}, {"title": "Touched by a story for children", "author": "Yechiel Rabbi Spero", "category": "Children & Teens", "status": "In use"}, {"title": "Benjys room", "author": "Esther Van Handel", "category": "Children & Teens", "status": "In use"}, {"title": "Moshe of Japan", "author": "Ella Verzov", "category": "Children & Teens", "status": "Available"}, {"title": "Mommy tell me more", "author": "C Wachs", "category": "Children & Teens", "status": "Available"}, {"title": "Yossi the boy who wouldn't speak Loshon Hora", "author": "Phyliss Weinberg", "category": "Children & Teens", "status": "Available"}, {"title": "The Jungle Swap", "author": "Goldie Weltscher", "category": "Children & Teens", "status": "Available"}, {"title": "Around the clock", "author": "Aviva Werner", "category": "Children & Teens", "status": "Available"}, {"title": "One-of-a-kind Yanky and other stories", "author": "Pia Wolcovitz", "category": "Children & Teens", "status": "Available"}, {"title": "Gemarakup Super Sleuth Lost on Skull Mountain", "author": "Miriam Zakon", "category": "Children & Teens", "status": "Available"}, {"title": "Rebbe Mendel Groundscrapers", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Big Like Me", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "A treasury of bedtimes tales", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Is it Shabbos yet?", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Baruch's Magical Bedtime", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "The Royal Mission", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Riki Solves the Problem", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Storytime with Rabbi Juravel - Ahavas Yisrael", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Storytime with Rabbi Juravel 1", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Storytime with Rabbi Juravel 2", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Storytime with Rabbi Juravel 3", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "The Bravest Fireman", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Take me to Europe", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Take me to the holy land", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Mystery in Spain", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Tell me the story of: Kislev", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Hashem is truly everywhere", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Rainbow World", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "My first parsha reader Devorim", "author": "", "category": "Children & Teens", "status": "Available"}, {"title": "Living with Emunah", "author": "David Rabbi Ashear", "category": "Non-Fiction", "status": "Available"}, {"title": "Living with Emunah 2", "author": "David Rabbi Ashear", "category": "Non-Fiction", "status": "Available"}, {"title": "Live Learn Teach", "author": "Esther Leah Avner", "category": "Non-Fiction", "status": "Available"}, {"title": "A well spiced life", "author": "Barbara Bensoussan", "category": "Non-Fiction", "status": "Available"}, {"title": "It's about time", "author": "Nechama/Chaya Berg/Levine", "category": "Non-Fiction", "status": "Available"}, {"title": "Conversations with Rav Shach", "author": "Rav Asher Bergman", "category": "Non-Fiction", "status": "Available"}, {"title": "No different than you", "author": "Yehudis Bogatz", "category": "Non-Fiction", "status": "Available"}, {"title": "Labor of Love", "author": "Rachel Broncher", "category": "Non-Fiction", "status": "Available"}, {"title": "Let My Nation Ascend", "author": "Yosef Deutsch", "category": "Non-Fiction", "status": "Available"}, {"title": "Let my nation wander", "author": "Yosef Deutsch", "category": "Non-Fiction", "status": "Available"}, {"title": "Let my nation live", "author": "Yosef Deutsch", "category": "Non-Fiction", "status": "Available"}, {"title": "Let me nation go", "author": "Yosef Deutsch", "category": "Non-Fiction", "status": "Available"}, {"title": "Rebels in the Holy Land", "author": "Sam Finkel", "category": "Non-Fiction", "status": "Available"}, {"title": "Delivery from Darkness", "author": "Michal Finkelstein", "category": "Non-Fiction", "status": "Available"}, {"title": "The night is not dark", "author": "Yehudit Golan", "category": "Non-Fiction", "status": "Available"}, {"title": "Home of Miracles", "author": "Yehudit Golan", "category": "Non-Fiction", "status": "Available"}, {"title": "Patient", "author": "Ann Goldberg", "category": "Non-Fiction", "status": "Available"}, {"title": "Dear Daughter", "author": "Eliyohu Goldschmidt", "category": "Non-Fiction", "status": "Available"}, {"title": "The Balancing Act", "author": "Tzipporah Heller", "category": "Non-Fiction", "status": "Available"}, {"title": "Heartstrings", "author": "Ella Katz", "category": "Non-Fiction", "status": "Available"}, {"title": "Petals and thorns", "author": "Esther Klein", "category": "Non-Fiction", "status": "Available"}, {"title": "Out of the depths", "author": "Rabbi Yisrael Meir Lau", "category": "Non-Fiction", "status": "Available"}, {"title": "From Djerbba to Jerusalem", "author": "Libby Lazewnik", "category": "Non-Fiction", "status": "Available"}, {"title": "My Sister in China", "author": "Danielle S. and Devorah M Leibowitz and Rothenberg", "category": "Non-Fiction", "status": "Available"}, {"title": "As long as I live", "author": "Aharon Margalit", "category": "Non-Fiction", "status": "Available"}, {"title": "Just one Jew", "author": "Moshe Mendelowitz", "category": "Non-Fiction", "status": "Available"}, {"title": "A world of difference", "author": "Elisheva Mintzberg", "category": "Non-Fiction", "status": "Available"}, {"title": "Escape from India", "author": "Avigail Myzlik", "category": "Non-Fiction", "status": "Available"}, {"title": "The mountain Family", "author": "Penina Neiman", "category": "Non-Fiction", "status": "Available"}, {"title": "My life on wheels", "author": "Shaindy Perl", "category": "Non-Fiction", "status": "Available"}, {"title": "Why bad things don’t happen to good people", "author": "Shaul Rosenblatt", "category": "Non-Fiction", "status": "Available"}, {"title": "Terror and Emuna in Har Nof", "author": "Risa Rotman", "category": "Non-Fiction", "status": "Available"}, {"title": "Sholom Mordechai Rubashkin: The Inside Story", "author": "Getzel Rubashkin", "category": "Non-Fiction", "status": "Available"}, {"title": "Grab the Reins", "author": "Shoshana Schwartz", "category": "Non-Fiction", "status": "In use"}, {"title": "The bamboo cradle", "author": "Avraham Schwartzbaum", "category": "Non-Fiction", "status": "Available"}, {"title": "90 Seconds (book on Eli Beer)", "author": "Nachman Seltzer", "category": "Non-Fiction", "status": "In use"}, {"title": "From Sinai to Yerushalayim", "author": "Nachman Seltzer", "category": "Non-Fiction", "status": "In use"}, {"title": "The Insider: Famed war journalist Yisroel Katzover (A. Peer) and his unforgettable adventures and encounters with gedolim and world leaders", "author": "Nachman Seltzer", "category": "Non-Fiction", "status": "In use"}, {"title": "Incredible 2", "author": "Nachman Seltzer", "category": "Non-Fiction", "status": "Available"}, {"title": "Our man in Jerusalem", "author": "Nachman Seltzer", "category": "Non-Fiction", "status": "Available"}, {"title": "Living legend", "author": "Nachman Seltzer", "category": "Non-Fiction", "status": "Available"}, {"title": "Incredible", "author": "Nachman Seltzer", "category": "Non-Fiction", "status": "Available"}, {"title": "Women talk", "author": "Debbie Shapiro", "category": "Non-Fiction", "status": "In use"}, {"title": "Touched by the tears", "author": "Yechiel Spero", "category": "Non-Fiction", "status": "Available"}, {"title": "Touched by a prayer Volume 2", "author": "Yechiel Rabbi Spero", "category": "Non-Fiction", "status": "Available"}, {"title": "Jerusalem recycled", "author": "Shaindel Weinbach", "category": "Non-Fiction", "status": "Available"}, {"title": "How does She manage", "author": "Yael Weisner", "category": "Non-Fiction", "status": "In use"}, {"title": "Spare the Child", "author": "Rav Yechiel Yakovson", "category": "Non-Fiction", "status": "Available"}, {"title": "Where's the daughter I raised?", "author": "Esther Zirkind", "category": "Non-Fiction", "status": "In use"}, {"title": "To remain a jew", "author": "Rav Yitzchak Zilber", "category": "Non-Fiction", "status": "Available"}, {"title": "Be a blessing", "author": "Esther Jungreis", "category": "Non-Fiction", "status": "In use"}, {"title": "There's more to the story", "author": "Yechiel Spero", "category": "Non-Fiction", "status": "Available"}, {"title": "Lifelines 4", "author": "C Sapir", "category": "Non-Fiction", "status": "Available"}, {"title": "Backstage", "author": "CB Weinfeld", "category": "Non-Fiction", "status": "Available"}, {"title": "Fallout", "author": "Miriam Zakon Cooper", "category": "Just Arrived", "status": "In use"}, {"title": "Unhappy", "author": "Sara Malovitsky", "category": "Just Arrived", "status": "Available"}, {"title": "The duplicates", "author": "Yonah Sapir", "category": "Just Arrived", "status": "In use"}, {"title": "Crossing the divide", "author": "Rachel Pomerantz", "category": "Just Arrived", "status": "In use"}, {"title": "Stay with me", "author": "Libby Lazewnik", "category": "Just Arrived", "status": "In use"}, {"title": "Give or Take", "author": "Rena Kohn", "category": "Just Arrived", "status": "In use"}, {"title": "Lie of the land", "author": "Bashie Lisker", "category": "Just Arrived", "status": "In use"}, {"title": "Yedidya 2", "author": "Yonason Harris", "category": "Just Arrived", "status": "In use"}, {"title": "50 50", "author": "Devora Rand", "category": "Just Arrived", "status": "In use"}, {"title": "Letterbox by the lake", "author": "Deborah Guttentag", "category": "Just Arrived", "status": "In use"}, {"title": "Unreachable", "author": "Leah Smilanski", "category": "Just Arrived", "status": "In use"}, {"title": "Borrowed Blessing", "author": "Michal Ofek", "category": "Just Arrived", "status": "In use"}, {"title": "Suri Epstein", "author": "The maybe last year", "category": "Just Arrived", "status": "Available"}, {"title": "Bracha Rosman", "author": "Look both ways", "category": "Just Arrived", "status": "Available"}, {"title": "Riva Pomerantz", "author": "Illusion", "category": "Just Arrived", "status": "Available"}, {"title": "Avi birnbaum", "author": "R matisyahu", "category": "Just Arrived", "status": "Available"}, {"title": "Libby Lazewnik", "author": "Destination unknown", "category": "Just Arrived", "status": "In use"}, {"title": "Chaya Gross", "author": "The Beckmans", "category": "Just Arrived", "status": "In use"}, {"title": "Ariella Schiller", "author": "Picture it", "category": "Just Arrived", "status": "In use"}, {"title": "Ruthie Pearlman", "author": "The guy next door", "category": "Just Arrived", "status": "Available"}, {"title": "Rochel Samet", "author": "Home ground", "category": "Just Arrived", "status": "In use"}, {"title": "chaya loberbaum", "author": "walls of glass", "category": "Just Arrived", "status": "In use"}, {"title": "ruti kepler", "author": "landscape girl", "category": "Just Arrived", "status": "In use"}, {"title": "yonah sapir", "author": "execution of justice", "category": "Just Arrived", "status": "In use"}, {"title": "tamar mor", "author": "longing and belonging", "category": "Just Arrived", "status": "Available"}, {"title": "Tzvi Nakar", "author": "102 stories", "category": "Just Arrived", "status": "Available"}, {"title": "rachel schorr", "author": "counterforce", "category": "Just Arrived", "status": "Available"}, {"title": "Riva Pomerantz", "author": "I'm not alone (True story)", "category": "Just Arrived", "status": "Available"}, {"title": "Nachman Seltzer", "author": "Chesed under fire", "category": "Just Arrived", "status": "Available"}, {"title": "Libby klein", "author": "always there", "category": "Just Arrived", "status": "Available"}, {"title": "Ruti Tanenwald", "author": "Thanks to her", "category": "Just Arrived", "status": "Available"}, {"title": "The impersonator", "author": "Ester Rapoport", "category": "Just Arrived", "status": "Available"}, {"title": "Without a trace", "author": "Ester Rapoport", "category": "Just Arrived", "status": "Available"}, {"title": "Last one standing", "author": "Menucha Ceitlin", "category": "Just Arrived", "status": "Available"}, {"title": "Angel of mercy (Miriam Lubling)", "author": "Shoshana Friedman", "category": "Just Arrived", "status": "Available"}, {"title": "I cant call you mommy", "author": "As told to CB Weinfeld", "category": "Just Arrived", "status": "Available"}, {"title": "R Yitzchak Hisiger", "author": "Moments of greatness", "category": "Just Arrived", "status": "Available"}, {"title": "Michal Bourne", "author": "Land of the unfree", "category": "Just Arrived", "status": "Available"}, {"title": "M KENAN", "author": "Heart of Ice", "category": "Just Arrived", "status": "Available"}, {"title": "Nachman Seltzer", "author": "Missiles, miracles and mesiras nefesh", "category": "Just Arrived", "status": "Available"}, {"title": "Yonah Sapir", "author": "Human Shield part 2", "category": "Just Arrived", "status": "Available"}, {"title": "Devora Rand", "author": "AH", "category": "Just Arrived", "status": "Available"}, {"title": "Leah Similanski", "author": "Hit and run", "category": "Just Arrived", "status": "In use"}, {"title": "Ruti Tanenwald", "author": "Sisters in the snow", "category": "Just Arrived", "status": "Available"}, {"title": "Chaya Beer", "author": "Ice Storms", "category": "Just Arrived", "status": "Available"}, {"title": "Chavi Bar", "author": "Death Trap", "category": "Just Arrived", "status": "In use"}, {"title": "Yonah Sapir", "author": "Human Shield part 1", "category": "Just Arrived", "status": "Available"}, {"title": "Penina Neiman", "author": "It's all hers", "category": "Just Arrived", "status": "Available"}, {"title": "R Yehoshua Frankenhaus", "author": "Miracle Baby", "category": "Just Arrived", "status": "Available"}, {"title": "Mindy Blumenfeld", "author": "Short but lived", "category": "Just Arrived", "status": "Available"}, {"title": "Pessie Frankel", "author": "Mrs Honigs Cakes 4", "category": "Just Arrived", "status": "In use"}, {"title": "Pessie Frankel", "author": "Mrs Honigs Cakes 7", "category": "Just Arrived", "status": "In use"}, {"title": "Shuli Mensch", "author": "Today", "category": "Just Arrived", "status": "In use"}, {"title": "יפה גנז", "author": "סבתא שמחה ועץ הקנימון", "category": "Just Arrived", "status": "Available"}, {"title": "רות רפופורט", "author": "21 בבית אחד, 16", "category": "Just Arrived", "status": "Available"}, {"title": "R Shmuel Auerbach", "author": "Eytan Kobre", "category": "Just Arrived", "status": "Available"}, {"title": "Catch the sunrise", "author": "Tamar Shy", "category": "Just Arrived", "status": "Available"}, {"title": "Flying Higher", "author": "Tamar Shy", "category": "Just Arrived", "status": "Available"}, {"title": "Nachman Seltzer", "author": "Angels in Orange (Hatzolo on October 7th)", "category": "Just Arrived", "status": "Available"}, {"title": "Shmuel Botnick", "author": "R'Nota Greenblatt", "category": "Just Arrived", "status": "Available"}, {"title": "Yisroel besser", "author": "Benny b'ahava", "category": "Just Arrived", "status": "Available"}, {"title": "R'Menachem Nissel", "author": "R' Moshe Shapiro", "category": "Just Arrived", "status": "Available"}, {"title": "R' Yehoshua Schwab", "author": "Biography on R' Mordechai Schwab", "category": "Just Arrived", "status": "Available"}, {"title": "Yael Mermelstein", "author": "Hospital Corridors", "category": "Just Arrived", "status": "Available"}, {"title": "מ. קינן", "author": "פראת אדמה", "category": "Just Arrived", "status": "Available"}, {"title": "שרה ליאון", "author": "חלונות אור 8  בשבי מלכת בהוטן - חדש", "category": "Just Arrived", "status": "Available"}, {"title": "Chaya Gross", "author": "Crossroads", "category": "Just Arrived", "status": "Available"}, {"title": "Rachel Pomerantz", "author": "Alone Together", "category": "Just Arrived", "status": "Available"}, {"title": "Ruthie Pearlman", "author": "The infiltrator", "category": "Just Arrived", "status": "Available"}, {"title": "Freidy Feldman", "author": "Flawless", "category": "Just Arrived", "status": "Available"}, {"title": "R Binyamin Pruzansky", "author": "Lift me higher", "category": "Just Arrived", "status": "Available"}, {"title": "מנוחה פוקס", "author": "יומנה של המורה נדיבה", "category": "Just Arrived", "status": "Available"}, {"title": "Second Thoughts", "author": "Esther Kurtz", "category": "Just Arrived", "status": "Available"}, {"title": "כל הילדים טובים 3", "author": "משה גוטמן", "category": "Hebrew Books", "status": "Available"}, {"title": "שני אחים ואח", "author": "אסתי כץ", "category": "Hebrew Books", "status": "Available"}, {"title": "בוחר בחיים ר' גרשוני (על ר' חיים קנייבסקי)", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "הרשלה אמריקה", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "צדיק יסוד עולם", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "חבורת-לא-אירא במבצע סבתוש", "author": "יהודית גולן", "category": "Hebrew Books", "status": "In use"}, {"title": "חבורת-לא-אירא-במבצע-חילוץ", "author": "גולן גולן", "category": "Hebrew Books", "status": "In use"}, {"title": "ילדי שי (1)", "author": "מנוחה בקרמן", "category": "Hebrew Books", "status": "Available"}, {"title": "לייבי מבריח גבולות", "author": "שרה ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "מנדי ילד יהודי ביער", "author": "שרה ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "מתוך ההפיכה", "author": "פועה שטיינר", "category": "Hebrew Books", "status": "Available"}, {"title": "מלכהל’ה", "author": "אביגיל מייזליק", "category": "Hebrew Books", "status": "In use"}, {"title": "שלט רחוק", "author": "אסתר קווין", "category": "Hebrew Books", "status": "In use"}, {"title": "שלום וברכה", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקסבא מרביצי התורה – כל הסדרה (10)", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "ילדי שי(9) משבר", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "ילדים צועדים עם המועדים חנוכה", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "דודי ואודי ספר 4 - בני הערובה באי האוצר", "author": "שרה ליאון", "category": "Hebrew Books", "status": "Available"}, {"title": "ים-בירושלים-רבי-מנדל", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "מול העיניים שלי 6", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "ספרי מבוגרים בעברית", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "מי ל\"ה אלי", "author": "סיפורים על ר הירש", "category": "Hebrew Books", "status": "Available"}, {"title": "פרח מוגן", "author": "אסתר קווין", "category": "Hebrew Books", "status": "In use"}, {"title": "שלא ישאר סימן", "author": "אסתר קווין", "category": "Hebrew Books", "status": "In use"}, {"title": "קירות של חול", "author": "י  .שפרן", "category": "Hebrew Books", "status": "In use"}, {"title": "קורמו מסע הגאולה", "author": "זכריה הופמן", "category": "Hebrew Books", "status": "Available"}, {"title": "לוחמי הצללים", "author": "יונה ספיר", "category": "Hebrew Books", "status": "In use"}, {"title": "מבוקש", "author": "יונה ספיר", "category": "Hebrew Books", "status": "In use"}, {"title": "חברה לאט", "author": "שפרה גליק", "category": "Hebrew Books", "status": "In use"}, {"title": "מותק של ילדה", "author": "דבורה ראנד", "category": "Hebrew Books", "status": "Available"}, {"title": "סודות קטנים", "author": "ד. ניוגרשל", "category": "Hebrew Books", "status": "Available"}, {"title": "בחצי הלילה", "author": "חיים גרינבאום", "category": "Hebrew Books", "status": "Available"}, {"title": "קשר גורדי", "author": "מ. ארבל", "category": "Hebrew Books", "status": "In use"}, {"title": "המסע הארוך של נאן", "author": "לאה פריד", "category": "Hebrew Books", "status": "Available"}, {"title": "המסע הארוך של נאן", "author": "לאה פריד", "category": "Hebrew Books", "status": "In use"}, {"title": "נאן – לא תם המסע", "author": "לאה פריד", "category": "Hebrew Books", "status": "Available"}, {"title": "תקוותה הגדולה של נאן", "author": "לאה פריד", "category": "Hebrew Books", "status": "In use"}, {"title": "ליד נהר המיין", "author": "דבורה צוף", "category": "Hebrew Books", "status": "Available"}, {"title": "סיפור במשפחתי", "author": "לאה פריד", "category": "Hebrew Books", "status": "Available"}, {"title": "אבא חוזר", "author": "לאה פריד", "category": "Hebrew Books", "status": "In use"}, {"title": "אפשר לקרוא לך אמא", "author": "לאה פריד", "category": "Hebrew Books", "status": "Available"}, {"title": "במשעול", "author": "לאה פריד", "category": "Hebrew Books", "status": "In use"}, {"title": "לא הלכתי רחוק", "author": "לאה פריד", "category": "Hebrew Books", "status": "Available"}, {"title": "טביעת אצבע", "author": "חיים גרינבאום", "category": "Hebrew Books", "status": "In use"}, {"title": "בית על גלגלים", "author": "דבורה צוף", "category": "Hebrew Books", "status": "Available"}, {"title": "מקום אחר", "author": "מ. קינן", "category": "Hebrew Books", "status": "In use"}, {"title": "פריחת חבצלת", "author": "שרה קיסנר", "category": "Hebrew Books", "status": "In use"}, {"title": "ואז בא הפסוק", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "הדרן", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "הבת האובדת", "author": "מ להמן", "category": "Hebrew Books", "status": "Available"}, {"title": "מהטירה לבית המדרש", "author": "מ להמן", "category": "Hebrew Books", "status": "Available"}, {"title": "מאומש", "author": "א. נחושתן", "category": "Hebrew Books", "status": "Available"}, {"title": "הרמב\"ם", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "קל לצייר", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "סיפורים מהמטבח של אברמל הטבח חֵלֶק א'", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "In use"}, {"title": "סיפורים מהמטבח של אברמל הטבח חֵלֶק ב'", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "In use"}, {"title": "סיפורים חביבים שקרו בחיים", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "סיפורים חמודים שקרו בחיים", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "סיפורים מצחיקים שקרו בחיים", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "סיפורים מצחיקים שקרו בחיים", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "שימי פיצקי", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "אביחיל בן חיל השעון הסגול", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "In use"}, {"title": "אביחיל בן חיל דאגה לניקיון", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "אביגיל בת חיל והחתול השחור", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "In use"}, {"title": "אביגיל בת חיל והגוזל", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "חיפי החיפושית", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "מי מפחד מטילים", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "In use"}, {"title": "אביגיל בת חיל והלב", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "In use"}, {"title": "רוני סיפורני המפלצת המפחידה ומיטת הקומותיים", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "פינת החי 5 – נימי הנמלה למינציה", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "In use"}, {"title": "הדינדונים 5 – מסדר את החדר", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "הם לא נוסעים אם  לא חגורים", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "היפופוטם ממש לא סתם", "author": "מנוחה בקרמן", "category": "Hebrew Books", "status": "Available"}, {"title": "פיל פילון כבר לא פוחד", "author": "מנוחה בקרמן", "category": "Hebrew Books", "status": "Available"}, {"title": "רוני סיפורני ופצצות המים", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "In use"}, {"title": "ילדים צועדים עם המועדים שבועות", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "ילדים צועדים עם המועדים פסח", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "יש לי חג", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "In use"}, {"title": "רוני סיפורני והטלפון מעצבן", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "In use"}, {"title": "לכל ילד יש סיפור 1", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "לכל ילד יש סיפור 2", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "לכל ילד יש סיפור 3", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "In use"}, {"title": "לכל ילד יש סיפור 4", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "בנצי ומשקה הפלאים", "author": "שפרה גליק", "category": "Hebrew Books", "status": "Available"}, {"title": "בנצי", "author": "שפרה גליק", "category": "Hebrew Books", "status": "Available"}, {"title": "בנצי 6 והתעלומה במוזיאון", "author": "שפרה גליק", "category": "Hebrew Books", "status": "In use"}, {"title": "בנצי 6 והתעלומה במוזיאון", "author": "שפרה גליק", "category": "Hebrew Books", "status": "Available"}, {"title": "עולם החיות", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "21 בבית אחד 1", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "In use"}, {"title": "21 בבית אחד 2", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "Available"}, {"title": "21 בבית אחד 3", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "In use"}, {"title": "21 בבית אחד 4", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "In use"}, {"title": "21 בבית אחד 5", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "Available"}, {"title": "21 בבית אחד 6", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "In use"}, {"title": "21 בבית אחד 7", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "In use"}, {"title": "21 בבית אחד 8", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "In use"}, {"title": "21 בבית אחד 9", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "In use"}, {"title": "21 בבית אחד 10", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "In use"}, {"title": "21 בבית אחד 11", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "In use"}, {"title": "21 בבית אחד 12", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "In use"}, {"title": "21 בבית אחד 13", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "In use"}, {"title": "21 בבית אחד 14", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "In use"}, {"title": "22 בבית אחד 15", "author": "ר. רפופורט", "category": "Hebrew Books", "status": "In use"}, {"title": "הבלשים", "author": "נ. צביאלי", "category": "Hebrew Books", "status": "In use"}, {"title": "הבלשים בגן החיות", "author": "נ. צביאלי", "category": "Hebrew Books", "status": "In use"}, {"title": "הבלשים במנהרות המסתוריות", "author": "נ. צביאלי", "category": "Hebrew Books", "status": "In use"}, {"title": "מכולת של כרמל 1", "author": "יוכבד לייבנשטיין", "category": "Hebrew Books", "status": "Available"}, {"title": "מכולת של כרמל 1", "author": "יוכבד לייבנשטיין", "category": "Hebrew Books", "status": "In use"}, {"title": "מכולת של כרמל 3", "author": "יוכבד לייבנשטיין", "category": "Hebrew Books", "status": "In use"}, {"title": "מזכירה לי", "author": "יוכבד לייבנשטיין", "category": "Hebrew Books", "status": "Available"}, {"title": "מזכירה לי חֵלֶק ב'", "author": "יוכבד לייבנשטיין", "category": "Hebrew Books", "status": "In use"}, {"title": "רחוב הברוש שישים ושלוש", "author": "יוכבד לייבנשטיין", "category": "Hebrew Books", "status": "In use"}, {"title": "מול העיניים שלי", "author": "קויבי לוי", "category": "Hebrew Books", "status": "Available"}, {"title": "מול העיניים שלי 2", "author": "קויבי לוי", "category": "Hebrew Books", "status": "In use"}, {"title": "מול העיניים שלי 3", "author": "קויבי לוי", "category": "Hebrew Books", "status": "In use"}, {"title": "מול העיניים שלי 4", "author": "קויבי לוי", "category": "Hebrew Books", "status": "Available"}, {"title": "מול העיניים שלי 5", "author": "קויבי לוי", "category": "Hebrew Books", "status": "In use"}, {"title": "סודות מחדר האחיות", "author": "א. בת מלך", "category": "Hebrew Books", "status": "In use"}, {"title": "רפתקאה שכזאת", "author": "יעל רוטנברג", "category": "Hebrew Books", "status": "Available"}, {"title": "כל הילדים טובים 1", "author": "משה גוטמן", "category": "Hebrew Books", "status": "Available"}, {"title": "כל הילדים טובים 2", "author": "משה גוטמן", "category": "Hebrew Books", "status": "Available"}, {"title": "חדר\"ג", "author": "הדס אירנשטיין", "category": "Hebrew Books", "status": "In use"}, {"title": "לא חזר הביתה", "author": "נחמה ברג", "category": "Hebrew Books", "status": "Available"}, {"title": "נו, נתי, לאט אבל בטוח", "author": "א לפידות", "category": "Hebrew Books", "status": "Available"}, {"title": "הנחיתה  במגרש שלנו", "author": "א לפידות", "category": "Hebrew Books", "status": "Available"}, {"title": "על קצה המזלג", "author": "א. שמע", "category": "Hebrew Books", "status": "Available"}, {"title": "סבתא שמחה ושבע המתנות המפלאות", "author": "יפה גנז", "category": "Hebrew Books", "status": "Available"}, {"title": "סבתא שמחה במסע מסביב לעולם", "author": "יפה גנז", "category": "Hebrew Books", "status": "Available"}, {"title": "סבתא שמחה, דוד נחמיה והאבן המוזרה בגינה", "author": "יפה גנז", "category": "Hebrew Books", "status": "Available"}, {"title": "מנהרה בסורא", "author": "ר. פוריס", "category": "Hebrew Books", "status": "Available"}, {"title": "מועדים לשמחה", "author": "ג. מה טוב", "category": "Hebrew Books", "status": "Available"}, {"title": "חבורת הבלשים והתוכי א", "author": "יוסף כהן", "category": "Hebrew Books", "status": "Available"}, {"title": "חבורת הבלשים והתוכי ב", "author": "יוסף כהן", "category": "Hebrew Books", "status": "In use"}, {"title": "חלונות אור 1", "author": "שרה ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "חלונות אור 2", "author": "שרה ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "חלונות אור 3", "author": "שרה ליאון", "category": "Hebrew Books", "status": "Available"}, {"title": "חלונות אור 4", "author": "שרה ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "חלונות אור 5", "author": "שרה ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "חלונות אור 6", "author": "שרה ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "חלונות אור 7 – אמבולנס לעזה", "author": "שרה ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "ילדי שי במזרח הרחוק", "author": "מנוחה בקרמן", "category": "Hebrew Books", "status": "Available"}, {"title": "מנוחה בקרמן", "author": "ילדי שי 6 בעקבות הבוגד", "category": "Hebrew Books", "status": "Available"}, {"title": "מנוחה בקרמן", "author": "ילדי שי 7 בעקבות הבוגד", "category": "Hebrew Books", "status": "Available"}, {"title": "מנוחה בקרמן", "author": "ילדי שי 10 במזרח הרחוק", "category": "Hebrew Books", "status": "Available"}, {"title": "מנוחה בקרמן", "author": "ילדי שי 4 נוסעים לשוויץ", "category": "Hebrew Books", "status": "Available"}, {"title": "מִבְחָר סיפורים חלק א", "author": "מ. חבר", "category": "Hebrew Books", "status": "Available"}, {"title": "מִבְחָר סיפורים חלק ג", "author": "מ. חבר", "category": "Hebrew Books", "status": "Available"}, {"title": "בנחיתה עַל קרח", "author": "שמואל ארגמון", "category": "Hebrew Books", "status": "In use"}, {"title": "בודדים בלב ים", "author": "שמואל ארגמון", "category": "Hebrew Books", "status": "In use"}, {"title": "ילדים שגדלים בכפור", "author": "ב. נבון", "category": "Hebrew Books", "status": "Available"}, {"title": "החבר הכי טוב", "author": "יעל רוטנברג", "category": "Hebrew Books", "status": "Available"}, {"title": "חבר מביא חבר", "author": "ח. פרידמן", "category": "Hebrew Books", "status": "In use"}, {"title": "חבר מביא חבר 2", "author": "ח. פרידמן", "category": "Hebrew Books", "status": "In use"}, {"title": "כדי הדבש", "author": "אגדה מאגדות של חז\"ל", "category": "Hebrew Books", "status": "Available"}, {"title": "העני והיהלום", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "מעקב צמוד", "author": "ר. טוב", "category": "Hebrew Books", "status": "In use"}, {"title": "רבי מנדל שלוש חדשים", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "סיפורי יום יום", "author": "ה .שחר", "category": "Hebrew Books", "status": "In use"}, {"title": "מעולמם של ילדים 1", "author": "דן מלך", "category": "Hebrew Books", "status": "Available"}, {"title": "מעולמם של ילדים 2", "author": "דן מלך", "category": "Hebrew Books", "status": "In use"}, {"title": "מעולמם של ילדים 3", "author": "דן מלך", "category": "Hebrew Books", "status": "In use"}, {"title": "מעולמם של ילדים 4", "author": "דן מלך", "category": "Hebrew Books", "status": "In use"}, {"title": "מעולמם של ילדים 5", "author": "דן מלך", "category": "Hebrew Books", "status": "Available"}, {"title": "מעולמם של ילדים 6", "author": "דן מלך", "category": "Hebrew Books", "status": "In use"}, {"title": "מעולמם של ילדים 7", "author": "דן מלך", "category": "Hebrew Books", "status": "Available"}, {"title": "מעולמם של ילדים 8", "author": "דן מלך", "category": "Hebrew Books", "status": "In use"}, {"title": "מעולמם של ילדים 9", "author": "דן מלך", "category": "Hebrew Books", "status": "Available"}, {"title": "מעולמם של ילדים 10", "author": "דן מלך", "category": "Hebrew Books", "status": "In use"}, {"title": "מעולמם של ילדים 11", "author": "דן מלך", "category": "Hebrew Books", "status": "In use"}, {"title": "מעולמם של ילדים 12", "author": "דן מלך", "category": "Hebrew Books", "status": "In use"}, {"title": "מעולמם של ילדים 14", "author": "דן מלך", "category": "Hebrew Books", "status": "In use"}, {"title": "האמת תצא לאור", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "המושל מארץ דרדרולה", "author": "אסתר קווין", "category": "Hebrew Books", "status": "Available"}, {"title": "ביצת הזהב", "author": "אסתר קווין", "category": "Hebrew Books", "status": "Available"}, {"title": "ילדת חלומות", "author": "אסתר קווין", "category": "Hebrew Books", "status": "Available"}, {"title": "יער עקבות האבודים", "author": "א. קווין", "category": "Hebrew Books", "status": "Available"}, {"title": "מעשה בטחון", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "מַעֲשֶׂה מָטָר", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "שוקי התוכי ברוסיה", "author": "רחל שטייגליץ", "category": "Hebrew Books", "status": "Available"}, {"title": "שלוש שרהל'ות", "author": "ב. נבון", "category": "Hebrew Books", "status": "Available"}, {"title": "משלי שועלים", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "פפיטו וצמד חברים", "author": "עטרה חפץ", "category": "Hebrew Books", "status": "Available"}, {"title": "חבורת האמיצים 1", "author": "שרה קיסנר", "category": "Hebrew Books", "status": "Available"}, {"title": "חבורת האמיצים 2", "author": "שרה קיסנר", "category": "Hebrew Books", "status": "In use"}, {"title": "חבורת האמיצים 3", "author": "שרה קיסנר", "category": "Hebrew Books", "status": "Available"}, {"title": "לקפוץ לאש", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "סיסמת גל", "author": "רבקי שכטר", "category": "Hebrew Books", "status": "Available"}, {"title": "אחותי כלה", "author": "רחלי פאהן", "category": "Hebrew Books", "status": "Available"}, {"title": "גלגל חוזר בעולם", "author": "לאה פריד", "category": "Hebrew Books", "status": "In use"}, {"title": "חיצים ביד גבור", "author": "לאה פריד", "category": "Hebrew Books", "status": "In use"}, {"title": "סיפורי יום יום- אין כמו בית", "author": "ה .שחר", "category": "Hebrew Books", "status": "Available"}, {"title": "סיפורי יום יום- אין כמו בית", "author": "ה .שחר", "category": "Hebrew Books", "status": "In use"}, {"title": "החורף של שירי", "author": "לאה פריד", "category": "Hebrew Books", "status": "Available"}, {"title": "דודי ואודי ספר 1 – בנחל הירדן", "author": "שרה ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "דודי ואודי ספר 2", "author": "שרה ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "דודי ואודי ספר 3", "author": "שרה ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "אני רוצה חבר 2", "author": "דבורה בנדיקט", "category": "Hebrew Books", "status": "Available"}, {"title": "אני רוצה חבר 1", "author": "דבורה בנדיקט", "category": "Hebrew Books", "status": "In use"}, {"title": "מראה במתנה", "author": "יעל ברמן", "category": "Hebrew Books", "status": "Available"}, {"title": "מבט אל חיים", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "לא תנצחו אותי 1", "author": "א. נחושתן", "category": "Hebrew Books", "status": "In use"}, {"title": "לא תנצחו אותי 2", "author": "א. נחושתן", "category": "Hebrew Books", "status": "Available"}, {"title": "הפוך על הפוך", "author": "ר. פרידמן", "category": "Hebrew Books", "status": "Available"}, {"title": "הידיד מחדר הילדים", "author": "ורדה ריינר", "category": "Hebrew Books", "status": "In use"}, {"title": "הסוד של תמר", "author": "ורדה ריינר", "category": "Hebrew Books", "status": "Available"}, {"title": "הבית ברחוב קיבוץ גלויות", "author": "יהודית פריינד", "category": "Hebrew Books", "status": "Available"}, {"title": "עונג שבת ויקרא", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "חברות ילדים ופיליפון במבצע לונדון", "author": "צ. שלאנגר", "category": "Hebrew Books", "status": "Available"}, {"title": "עומקא דליבא", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "חנה מירי", "author": "שלושה במנוף אחד", "category": "Hebrew Books", "status": "In use"}, {"title": "חבורת-לא-אירא-במבצע-קופיקוף-5", "author": "יהודית גולן", "category": "Hebrew Books", "status": "In use"}, {"title": "חבר מביא חבר 3", "author": "ח. פרידמן", "category": "Hebrew Books", "status": "Available"}, {"title": "שלא יבוא המסמר", "author": "מ. מוזסון", "category": "Hebrew Books", "status": "Available"}, {"title": "לא עברנו את הגבול", "author": "ר. פוריס", "category": "Hebrew Books", "status": "Available"}, {"title": "אביגיל בת חיל והלמדן הקטן", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "בנצי ונוצות הטווס", "author": "שפרה גליק", "category": "Hebrew Books", "status": "Available"}, {"title": "חנה מירי", "author": "גן הפיל", "category": "Hebrew Books", "status": "Available"}, {"title": "לילדים קטנים", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "מה שבטוח בטוח", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "מה אהבתי תורתך", "author": "א גולדזנד", "category": "Hebrew Books", "status": "Available"}, {"title": "מה קרה לטיפי הטיפה?", "author": "מירי יגלניק", "category": "Hebrew Books", "status": "In use"}, {"title": "העץ", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "In use"}, {"title": "ספרי אלי וספרים דקים אחרים", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "רותי בגבה הידית", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "גן חיות מפלסטלינה", "author": "רוני אורן", "category": "Hebrew Books", "status": "Available"}, {"title": "חנן ודן תופסים סוכריות", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "ג ג ג.... ההצגה", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "זית מהבית", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "פה גדול", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "כלבים", "author": "ראשית המידע", "category": "Hebrew Books", "status": "In use"}, {"title": "חתולים", "author": "ראשית המידע", "category": "Hebrew Books", "status": "Available"}, {"title": "סופַּם המר של שלושת המרמרים", "author": "צביה גוטרמן", "category": "Hebrew Books", "status": "In use"}, {"title": "יש לי פיתרון", "author": "א. בת מלך", "category": "Hebrew Books", "status": "Available"}, {"title": "הבובה דוש", "author": "לאה סוכת", "category": "Hebrew Books", "status": "Available"}, {"title": "השיבולת הגאותנית", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "ישי, די", "author": "ש. קליינמן", "category": "Hebrew Books", "status": "Available"}, {"title": "הטבחים הצעירים", "author": "מנוחה פוקס", "category": "Hebrew Books", "status": "Available"}, {"title": "סיפורי הקלטות שאהבנו (הכל בגלל כדור אחד)\nועוד.....", "author": "לאה פריד ושרה קיסנר", "category": "Hebrew Books", "status": "Available"}, {"title": "עיר של חלומות + תמיד ולפעמים", "author": "רות בייפוס", "category": "Hebrew Books", "status": "In use"}, {"title": "בלאגן לא כאן ועכשיו הוא אוהב את כולם", "author": "רות בייפוס", "category": "Hebrew Books", "status": "Available"}, {"title": "מה במעטפה", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "רב שך", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "מי יודע מה", "author": "אברהם אוחיון", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקס", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "געציל או ג'וחא", "author": "גולד", "category": "Hebrew Books", "status": "In use"}, {"title": "רְחוֹב שיקופיצקי 1", "author": "שפרה גליק", "category": "Hebrew Books", "status": "Available"}, {"title": "רְחוֹב שיקופיצקי 2", "author": "שפרה גליק", "category": "Hebrew Books", "status": "In use"}, {"title": "רְחוֹב שיקופיצקי 3", "author": "שפרה גליק", "category": "Hebrew Books", "status": "In use"}, {"title": "רְחוֹב שיקופיצקי 4", "author": "שפרה גליק", "category": "Hebrew Books", "status": "Available"}, {"title": "רְחוֹב שיקופיצקי 5", "author": "שפרה גליק", "category": "Hebrew Books", "status": "In use"}, {"title": "משפחה  שיקופיצקי 1", "author": "שפרה גליק", "category": "Hebrew Books", "status": "In use"}, {"title": "משפחת שיקופיצקי - חלק 2", "author": "שפרה גליק", "category": "Hebrew Books", "status": "In use"}, {"title": "משפחה  שיקופיצקי 3", "author": "שפרה גליק", "category": "Hebrew Books", "status": "In use"}, {"title": "צונאמי", "author": "צבי אריה אדלר", "category": "Hebrew Books", "status": "In use"}, {"title": "היהלום האמיתי", "author": "בת שבע הבלין", "category": "Hebrew Books", "status": "Available"}, {"title": "חיליק ושמיליק", "author": "דנה שוורצמן", "category": "Hebrew Books", "status": "Available"}, {"title": "ניצוץ אפלה", "author": "א. שמע", "category": "Hebrew Books", "status": "Available"}, {"title": "ביני ודני", "author": "דנה שוורצמן", "category": "Hebrew Books", "status": "In use"}, {"title": "יודים", "author": "לאה", "category": "Hebrew Books", "status": "Available"}, {"title": "על אִי בודד", "author": "ד. אֶבֶן חן", "category": "Hebrew Books", "status": "In use"}, {"title": "רבי שמעון בן חלפתא בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "רבי יהודה ברבי אילעאי בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "רבי ישמעאל בן אלישע בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "רבי יהושע בן חנניה בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "אונקלוס הגר בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "רבי עקיבא ב בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "רבי עקיבא א בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "ר 'חנינה בן דוסה", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "ר 'יוחנן בן זכאי", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "ר 'אליעזר בן הורקנוס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "רבי פנחס בן יאיר בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "רבי שמעון בר יוחאי בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "רבי מאיר בעל הנס בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "רבי נחום איש גמזו בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "הלל הזקן בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "דודי ואודי מצילים את הכפר", "author": "ש. ליאון", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקסבא - השגחה פרטית (חלק 6)", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא על התורה - שמות", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקס סבא שבועות", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקס סבא ה'", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקס סבא ג'", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקס סבא ו'", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקס סבא ז'", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקס סבא ח'", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקס סבא 31", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקס סבא א'", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקס סבא ב'", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקס סבא ד'", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקס סבא ימים נוראים", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקסבא ספרית העומר", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא הגדה פסח", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא על פסח", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקס סבא נשמה טהורה", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא על שמיטה", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא יום כיפור", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא חנוכה", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "סימני הדרך", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "עוֹד אשוב, אמא", "author": "א. בת מלך", "category": "Hebrew Books", "status": "In use"}, {"title": "חוֹמָות של זהב", "author": "ד. אֶבֶן חן", "category": "Hebrew Books", "status": "In use"}, {"title": "חוֹמָות של זהב", "author": "ד. אֶבֶן חן", "category": "Hebrew Books", "status": "Available"}, {"title": "תעלומה בוערת", "author": "רבקה זונשיין", "category": "Hebrew Books", "status": "Available"}, {"title": "משלי שועלים את החוט המשולש", "author": "משלים חדשים", "category": "Hebrew Books", "status": "Available"}, {"title": "קרוב על הבית", "author": "ה' פאר", "category": "Hebrew Books", "status": "Available"}, {"title": "כי אשמרה שבת", "author": "ה' פאר", "category": "Hebrew Books", "status": "In use"}, {"title": "קונצ'יקים  -חלק שני", "author": "אתי רוזנר", "category": "Hebrew Books", "status": "Available"}, {"title": "אימה בעירה", "author": "מ הרשקוביץ", "category": "Hebrew Books", "status": "In use"}, {"title": "שמחה'לה -הילד עושה שמחה", "author": "גוֹלד", "category": "Hebrew Books", "status": "In use"}, {"title": "אורות בצפון", "author": "ד. אֶבֶן חן", "category": "Hebrew Books", "status": "In use"}, {"title": "אורות בצפון", "author": "ד. אֶבֶן חן", "category": "Hebrew Books", "status": "Available"}, {"title": "אורות בצפון", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "גבורה בארץ הזהב", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "דלת סתרים", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "עטי מִסתרוֹן", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "2 ילדים וצביקה אחד 1", "author": "ר. שאץ", "category": "Hebrew Books", "status": "Available"}, {"title": "2 ילדים וצביקה אחד 2", "author": "ר. שאץ", "category": "Hebrew Books", "status": "In use"}, {"title": "מִסתרוֹן בערפל", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "המסע", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "המסע", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "מלכודת בחלל", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "אודות בעולם החדש", "author": "צבי אריה אדלר", "category": "Hebrew Books", "status": "Available"}, {"title": "אטלס עולמי", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "סימן הדרך", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "במחשבה השנייה", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "הבית המערבי", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "דודי ואודי 2 – במבצר האדום", "author": "ש. ליאון", "category": "Hebrew Books", "status": "Available"}, {"title": "דודי ואודי 3 - בהפלגה אל הבלתי נודע", "author": "ש. ליאון", "category": "Hebrew Books", "status": "Available"}, {"title": "דודי ואודי 4 - בשליחות סודית לפולין", "author": "ש. ליאון", "category": "Hebrew Books", "status": "Available"}, {"title": "דודי ואודי 5 - בצריף מאחורי הגדר", "author": "ש. ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "דודי ואודי 6 – ביערות אפריקה", "author": "ש. ליאון", "category": "Hebrew Books", "status": "Available"}, {"title": "דודי ואודי 7 – בעקבות סרגייב", "author": "ש. ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "דודי ואודי 8 - מעבר לגבול הסורי", "author": "ש. ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "דודי ואודי 9 – ואוצרות המלך מונבז", "author": "ש. ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "דודי ואודי 11 – בעקבות האבודים", "author": "ש. ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "דודי ואודי 10 – בעמק המוקשים", "author": "ש. ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "דודי ואודי 12 – וחותם האש", "author": "ש. ליאון", "category": "Hebrew Books", "status": "Available"}, {"title": "דודי ואודי 12 – וחותם האש", "author": "ש. ליאון", "category": "Hebrew Books", "status": "Available"}, {"title": "דודי ואודי מעבר לקו 13", "author": "ש. ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "דודי ואודי 14 - והילד מאוזבקיסטאן", "author": "ש. ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "ילדודוסַ", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "המסע המרתק של שלומי ושלזי בדרכים ישרות", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "מיסטר פיטר 5", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "מיסטר פיטר 6", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "א אידישע קאפ 3", "author": "גדי פולק", "category": "Hebrew Books", "status": "Available"}, {"title": "פצצה מתקתקת 8", "author": "ה. פאר", "category": "Hebrew Books", "status": "In use"}, {"title": "פצצה מתקתקת 9", "author": "ה. פאר", "category": "Hebrew Books", "status": "Available"}, {"title": "פצצה מתקתקת 20", "author": "ה. פאר", "category": "Hebrew Books", "status": "Available"}, {"title": "שלומי ושלזי", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "שלושה ועוד אחד", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "מִסתרין במצר 2", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "משלי מגידים", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "סדאם", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "מגדל פְרוֹחַ", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "בַּתעלומת המכתבים", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "המבַּוֹך", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "מישלון לישון", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "השר מקצועי", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "זמן גורלי", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "קולינגריה", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "כבוד הנשיא", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "ירח מלא", "author": "הדס אירנשטיין", "category": "Hebrew Books", "status": "In use"}, {"title": "במבחן של בִּטָחוֹן", "author": "א. בת מלך", "category": "Hebrew Books", "status": "Available"}, {"title": "ובאו האובדים", "author": "א. בת מלך", "category": "Hebrew Books", "status": "In use"}, {"title": "נפלאותיו לבני אדם 1", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "סודו של הכינור", "author": "מירי", "category": "Hebrew Books", "status": "In use"}, {"title": "תעלומת הגנרל האבוד", "author": "א. ליבוביץ", "category": "Hebrew Books", "status": "In use"}, {"title": "הבריחה מאיראן 2", "author": "אברהם אוחיון", "category": "Hebrew Books", "status": "Available"}, {"title": "נצא השדה", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקסבא בן איש חי ח - שכר העולם הבא", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא בן איש חי ז - ערכו של חבר טוב", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא בן איש חי ו - העולם הזה", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקסבא בן איש חי ה - מצוות יקרות", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא בן איש חי ד - שבת קודש", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא בן איש חי ג - בני הנעורים", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא בן איש חי ב - תפילה", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא בן איש חי א על התורה", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקסבא - חובת האדם בעולמו (חלק 11)", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "חבורת נת\"ן חלק א (קומיקס)", "author": "נאווה", "category": "Hebrew Books", "status": "Available"}, {"title": "חבורת נת\"ן חלק ב", "author": "נאווה", "category": "Hebrew Books", "status": "In use"}, {"title": "ילדי רב החובל 6", "author": "שרה ליאון", "category": "Hebrew Books", "status": "In use"}, {"title": "רבי אלעזר ברבי שמעון בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא – אלול", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "רבי שמעון בן שטח בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא פרקי אבות - פרק א", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "רבי חייא הגדול בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקסבא פרקי אבות - פרק ב", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא פרקי אבות - פרק ג", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא פרקי אבות - פרק ד", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא בן איש חי ג – בני הנעורים", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקסבא מאורי החסידות 6 – משלי רבי ברוך מקוסוב", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא מאורי החסידות 8 - משלי רבי יעקב יוסף מפולנאה (קומיקס)", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא בן איש חי ד – שבת", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקסבא בן איש חי א – תורה", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "תעלומת הגנרל האבוד 2", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "רבי יהודה הנשיא בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא מאורי החסידות 7 – משלי רבי שניאור זלמן מליאדי", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקס בראשית", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקס ויקרא", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא מאורי החסידות 3 – משלי ר’אלימלך מליז’ענסק", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "אליהו הנביא א", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "אליהו הנביא ב", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "אליהו הנביא ג", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "אליהו הנביא ד", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "מפי הטף - חלק-1", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "מפי הטף - חלק-2", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "מפי הטף - חלק-8", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "מפי הטף - חלק-9", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "מלכיאל דש 1 – הקוד הסודי", "author": "ה. פאר", "category": "Hebrew Books", "status": "In use"}, {"title": "מלכיאל דש 2 – בשש תעלומות נוספות", "author": "ה. פאר", "category": "Hebrew Books", "status": "Available"}, {"title": "מלכיאל דש 3 – במבצע חסוי", "author": "ה. פאר", "category": "Hebrew Books", "status": "In use"}, {"title": "מלכיאל דש 4 – הפלישה למשא”ל", "author": "ה. פאר", "category": "Hebrew Books", "status": "In use"}, {"title": "תגלית בעתלית", "author": "מ. הרשקוביץ", "category": "Hebrew Books", "status": "In use"}, {"title": "רבן גמליאל דיבנה בקומיקס", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "רש\"י", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "שודדי הנגיפים  (קומיקס)", "author": "שושי ברג", "category": "Hebrew Books", "status": "Available"}, {"title": "23 שעות 1  (קומיקס)", "author": "אברהם אוחיון", "category": "Hebrew Books", "status": "In use"}, {"title": "24 שעות 3  (קומיקס)", "author": "אברהם אוחיון", "category": "Hebrew Books", "status": "Available"}, {"title": "שיראז 1 (קומיקס)", "author": "אברהם אוחיון", "category": "Hebrew Books", "status": "In use"}, {"title": "שיראז 2 (קומיקס)", "author": "אברהם אוחיון", "category": "Hebrew Books", "status": "In use"}, {"title": "זה מול זה(קומיקס)", "author": "א. בת מלך", "category": "Hebrew Books", "status": "In use"}, {"title": "אל עולם חדש", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "מלכודת בשנגחאי 1", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "מלכודת בשנגחאי 2", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "הירשלה", "author": "", "category": "Hebrew Books", "status": "Available"}, {"title": "נתי ומתי", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "מושיקו וכדורי הפלא", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "בין שמים וארץ", "author": "", "category": "Hebrew Books", "status": "In use"}, {"title": "אימה בלב ים", "author": "א. נשר", "category": "Hebrew Books", "status": "Available"}, {"title": "פצצה מתקתקת 25", "author": "ה. פאר", "category": "Hebrew Books", "status": "In use"}, {"title": "קומיקסבא על התורה - במדבר", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקסבא על התורה - ויקרא", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "אילו וכאילו חנוכה", "author": "מ. ספרא", "category": "Hebrew Books", "status": "In use"}, {"title": "הבריחה מאיראן 1", "author": "אברהם אוחיון", "category": "Hebrew Books", "status": "Available"}, {"title": "הבריחה מאיראן 3", "author": "אברהם אוחיון", "category": "Hebrew Books", "status": "Available"}, {"title": "הבריחה מאיראן 4", "author": "אברהם אוחיון", "category": "Hebrew Books", "status": "Available"}, {"title": "הבריחה מאיראן 5 NEW!", "author": "אברהם אוחיון", "category": "Hebrew Books", "status": "Available"}, {"title": "קומיקסבא בן איש חי ט - פורים  (קומיקס)", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "מסעות שלומיאלי  (קומיקס)", "author": "דן בר לב", "category": "Hebrew Books", "status": "In use"}, {"title": "אילו וכאילו יציאת מצרים  (קומיקס)", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "אילו וכאילו קריעת ים סוף  (קומיקס)", "author": "מ. ספרא", "category": "Hebrew Books", "status": "Available"}, {"title": "ילדי רב החובל 1 (קומיקס)", "author": "שרה ליאון", "category": "Hebrew Books", "status": "Available"}, {"title": "ילדי רב החובל 2  (קומיקס)", "author": "שרה ליאון", "category": "Hebrew Books", "status": "Available"}, {"title": "ילדי רב החובל 3  (קומיקס)", "author": "שרה ליאון", "category": "Hebrew Books", "status": "Available"}, {"title": "ילדי רב החובל 4  (קומיקס)", "author": "שרה ליאון", "category": "Hebrew Books", "status": "Available"}, {"title": "ה. פאר", "author": "מיסטר פיטר 1", "category": "Hebrew Books", "status": "Available"}, {"title": "ה. פאר", "author": "מיסטר פיטר 2", "category": "Hebrew Books", "status": "Available"}, {"title": "ה. פאר", "author": "מיסטר פיטר 3", "category": "Hebrew Books", "status": "Available"}, {"title": "ה. פאר", "author": "מיסטר פיטר 4", "category": "Hebrew Books", "status": "Available"}, {"title": "ה. פאר", "author": "מיסטר פיטר 6", "category": "Hebrew Books", "status": "Available"}, {"title": "ה. פאר", "author": "מיסטר פיטר 7", "category": "Hebrew Books", "status": "Available"}, {"title": "ה. פאר", "author": "מיסטר פיטר 8", "category": "Hebrew Books", "status": "Available"}, {"title": "שרה ליאון", "author": "ילדי רב החובל 5  (קומיקס)", "category": "Hebrew Books", "status": "In use"}, {"title": "מ. ספרא", "author": "בעקבות רבותינו 3", "category": "Hebrew Books", "status": "Available"}, {"title": "יהודית גולן", "author": "חבורת-לא-אירא  בעקבות מפתח הנחושת", "category": "Hebrew Books", "status": "In use"}, {"title": "רוחמה רן", "author": "חלון הזדמנויות", "category": "Hebrew Books", "status": "Available"}, {"title": "דבורה ראנד", "author": "בחצר האחורית", "category": "Hebrew Books", "status": "In use"}, {"title": "אברהם אוחיון", "author": "שיראז 3", "category": "Hebrew Books", "status": "In use"}, {"title": "חנה מירי", "author": "פורמים את הגבול", "category": "Hebrew Books", "status": "In use"}, {"title": "רבקי שכטר", "author": "כוכבים בבוקר", "category": "Hebrew Books", "status": "Available"}, {"title": "מימי וסימי ויום ההולדת", "author": "יפה גנץ", "category": "Hebrew Books", "status": "Available"}, {"title": "מימי וסימי מתחת למטריה", "author": "יפה גנץ", "category": "Hebrew Books", "status": "Available"}, {"title": "אילו וכאילו ימים נוראים", "author": "קומיקס", "category": "Hebrew Books", "status": "Available"}, {"title": "החוקרים (7) חדש!!!", "author": "שרה וולף", "category": "Hebrew Books", "status": "In use"}, {"title": "רות רוזנשטיין", "author": "אל תגידו לי", "category": "Hebrew Books", "status": "Available"}, {"title": "שושי ברוידא", "author": "רוזי", "category": "Hebrew Books", "status": "In use"}, {"title": "שרה קיסנר", "author": "ליקר שוקולד", "category": "Hebrew Books", "status": "Available"}, {"title": "אסתר קווין", "author": "בעקבות השמש העולה", "category": "Hebrew Books", "status": "Available"}, {"title": "חוי שפיגל", "author": "עולם הצבוני", "category": "Hebrew Books", "status": "Available"}];
+var FORMSPREE = "https://formspree.io/f/YOUR_FORM_ID";
+var CATS = ["All","Just Arrived","Fiction","Biographies","Non-Fiction","Holocaust","True Short Stories","Children & Teens","Hebrew Books"];
+var CAT = "All", FILT = "all";
+var CC = {};
+var filteredBooks = [];
+
+function getCust(){try{return JSON.parse(localStorage.getItem('lb2')||'[]')}catch(e){return[]}}
+function saveCust(a){localStorage.setItem('lb2',JSON.stringify(a))}
+function getDeleted(){try{return JSON.parse(localStorage.getItem('bf_deleted')||'[]')}catch(e){return[]}}
+function saveDeleted(a){localStorage.setItem('bf_deleted',JSON.stringify(a))}
+function deleteBook(b){
+  var key=bookKey(b);
+  var cust=getCust();
+  var isCustom=cust.some(function(x){return bookKey(x)===key});
+  if(isCustom){saveCust(cust.filter(function(x){return bookKey(x)!==key}));}
+  else{var del=getDeleted();if(del.indexOf(key)===-1){del.push(key);saveDeleted(del);}}
+  var loans=getLoans();delete loans[key];saveLoans(loans);
+  var stats=getStatuses();delete stats[key];saveStatuses(stats);
+  updStats();updTabs();render();
+  showToast('Book removed from library.');
+}
+function allBooks(){var del=getDeleted();return BASE.filter(function(b){return del.indexOf(bookKey(b))===-1}).concat(getCust())}
+
+function bookKey(b){return (b.title||'')+'|||'+(b.author||'')}
+function getStatuses(){try{return JSON.parse(localStorage.getItem('bf_statuses')||'{}')}catch(e){return{}}}
+function saveStatuses(o){localStorage.setItem('bf_statuses',JSON.stringify(o))}
+function statusOf(b){var o=getStatuses();return o[bookKey(b)]||b.status||'Available'}
+function setBookStatus(b,st){var o=getStatuses();o[bookKey(b)]=st;saveStatuses(o);b.status=st;updStats();updTabs();}
+function isAdmin(){return localStorage.getItem('bf_admin_unlocked')==='yes'}
+function todayISO(){return new Date().toISOString().slice(0,10)}
+function addDaysISO(d,n){var x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10)}
+function getMembers(){try{return JSON.parse(localStorage.getItem('bf_members')||'[]')}catch(e){return[]}}
+function saveMembers(a){localStorage.setItem('bf_members',JSON.stringify(a))}
+function memberKey(m){return (m.email||m.phone||m.name||'').toLowerCase()}
+function upsertMember(m){
+  var a=getMembers();
+  var k=memberKey(m);
+  var found=false;
+  for(var i=0;i<a.length;i++){
+    if(memberKey(a[i])===k){a[i]=m;found=true;break}
+  }
+  if(!found)a.push(m);
+  a.sort(function(x,y){return (x.name||'').localeCompare(y.name||'')});
+  saveMembers(a);
+}
+function getLoans(){try{return JSON.parse(localStorage.getItem('bf_loans')||'{}')}catch(e){return{}}}
+function saveLoans(o){localStorage.setItem('bf_loans',JSON.stringify(o))}
+function setLoan(b,loan){var o=getLoans();o[bookKey(b)]=loan;saveLoans(o)}
+function getLoan(b){return getLoans()[bookKey(b)]||null}
+function clearLoan(b){var o=getLoans();delete o[bookKey(b)];saveLoans(o)}
+function gformAdd(url,entry,value){if(entry&&String(entry).indexOf('entry.')===0){url+='&'+entry+'='+encodeURIComponent(value||'')}return url}
+
+function updStats(){
+  var a=allBooks();
+  var av=a.filter(function(b){return statusOf(b)==='Available'}).length;
+  ['tc','tc2'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=a.length;});
+  ['ac','ac2'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=av;});
+  var lel=document.getElementById('lc');if(lel)lel.textContent=a.length-av;
+}
+updStats();
+
+var ctEl=document.getElementById('ct');
+CATS.forEach(function(cat){
+  var b=document.createElement('button');
+  b.className='ctab'+(cat==='All'?' active':'');
+  b.dataset.c=cat;
+  b.onclick=function(){CAT=cat;render();document.querySelectorAll('.ctab').forEach(function(x){x.classList.toggle('active',x.dataset.c===cat)})};
+  ctEl.appendChild(b);
+});
+
+function updTabs(){
+  var a=allBooks();
+  document.querySelectorAll('.ctab').forEach(function(b){
+    var cat=b.dataset.c;
+    var n=cat==='All'?a.length:a.filter(function(x){return x.category===cat}).length;
+    b.innerHTML=cat+' <span class="cn">'+n+'</span>';
+  });
+}
+updTabs();
+
+function setF(f){
+  FILT=f;
+  var btns=document.querySelectorAll('.fbtn');
+  btns[0].classList.toggle('active',f==='all');
+  btns[1].classList.toggle('active',f==='available');
+  render();
+}
+
+function isHeb(s){return /[\u0590-\u05FF]/.test(s||'')}
+
+function htmlEsc(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function ph(t,a){
+  return '<div class="cph"><div class="pi">&#128218;</div><div class="pt">'+htmlEsc(t)+'</div>'+(a?'<div class="pa">'+htmlEsc(a)+'</div>':'')+'</div>';
+}
+
+async function fetchCover(title,author,key){
+  if(CC[key]!==undefined) return;
+  CC[key]=null;
+  try{
+    var q=encodeURIComponent(title+(author?' '+author:''));
+    var r=await fetch('https://www.googleapis.com/books/v1/volumes?q='+q+'&maxResults=1&fields=items(volumeInfo/imageLinks)');
+    var d=await r.json();
+    var l=d&&d.items&&d.items[0]&&d.items[0].volumeInfo&&d.items[0].volumeInfo.imageLinks;
+    if(l){
+      var u=(l.thumbnail||l.smallThumbnail||'').replace('http:','https:');
+      if(u){CC[key]=u;setImg(key,u);return;}
+    }
+  }catch(e){}
+  try{
+    var r2=await fetch('https://openlibrary.org/search.json?q='+encodeURIComponent(title)+'&limit=1&fields=cover_i');
+    var d2=await r2.json();
+    var ci=d2&&d2.docs&&d2.docs[0]&&d2.docs[0].cover_i;
+    if(ci){var u2='https://covers.openlibrary.org/b/id/'+ci+'-M.jpg';CC[key]=u2;setImg(key,u2);}
+  }catch(e){}
+}
+
+function setImg(key,url){
+  var els=document.querySelectorAll('.cw[data-key]');
+  for(var i=0;i<els.length;i++){
+    if(els[i].dataset.key===key){
+      var img=document.createElement('img');
+      img.src=url;img.alt='cover';
+      img.onerror=function(){this.remove()};
+      els[i].insertBefore(img,els[i].firstChild);
+    }
+  }
+}
+
+var obs=null;
+function render(){
+  var q=document.getElementById('sb').value.toLowerCase().trim();
+  var all=allBooks();
+  filteredBooks=all.filter(function(b){
+    var st=statusOf(b);
+    if(CAT!=='All'&&b.category!==CAT) return false;
+    if(FILT==='available'&&st!=='Available') return false;
+    if(q) return b.title.toLowerCase().indexOf(q)>=0||(b.author||'').toLowerCase().indexOf(q)>=0;
+    return true;
+  });
+  updStats();
+  updTabs();
+  refreshAdminState();
+  var ri=document.getElementById('ri');
+  ri.textContent=filteredBooks.length<all.length?'Showing '+filteredBooks.length+' of '+all.length+' books':'';
+  var grid=document.getElementById('grid');
+  if(!filteredBooks.length){grid.innerHTML='<div class="nores">&#128219; No books found.</div>';return}
+  var custSet={};
+  getCust().forEach(function(b){custSet[b.title]=true});
+  var html='';
+  var catColor={'Just Arrived':'#7b1c3b','Fiction':'#1e40af','Biographies':'#065f46','Non-Fiction':'#92400e','Holocaust':'#374151','True Short Stories':'#6d28d9','Children & Teens':'#0891b2','Hebrew Books':'#b45309'};
+  filteredBooks.forEach(function(b,idx){
+    var st=statusOf(b);
+    var avail=st==='Available';
+    html+='<div class="card'+(custSet[b.title]?' custom':'')+'">'+'<div style="height:5px;background:'+(catColor[b.category]||'#7b1c3b')+'"></div>'+
+      '<div class="cb'+(isHeb(b.title)?' rtl':'')+'">'+
+        '<div class="ct">'+htmlEsc(b.title)+'</div>'+
+        (b.author?'<div class="ca">'+htmlEsc(b.author)+'</div>':'')+
+        '<div class="cf">'+
+          '<span class="badge '+(avail?'av':'iu')+'">'+(avail?'&#10003; Available':'&#128213; On loan')+'</span>'+
+        '</div>'+
+        '<div class="book-actions">'+
+          (avail?'<button class="bbtn borrowBtn" data-idx="'+idx+'">Borrow</button>':'<button class="bbtn reserveBtn" data-idx="'+idx+'">Reserve</button>')+
+          (isAdmin()?'<button class="bbtn returnBtn" data-idx="'+idx+'" '+(avail?'disabled':'')+'>Return</button>':'')+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  });
+  grid.innerHTML=html;
+  grid.querySelectorAll('.borrowBtn').forEach(function(btn){btn.addEventListener('click',function(){openBorrow(parseInt(this.dataset.idx));});});
+  grid.querySelectorAll('.reserveBtn').forEach(function(btn){btn.addEventListener('click',function(){openReserve(parseInt(this.dataset.idx));});});
+  grid.querySelectorAll('.returnBtn:not([disabled])').forEach(function(btn){btn.addEventListener('click',function(){returnBook(parseInt(this.dataset.idx));});});
+}
+
+var bBook=null;
+function openBorrow(idx){
+  bBook=filteredBooks[idx];
+  if(!bBook) return;
+  var members=getMembers();
+  var opts='<option value="">Select saved member, or type below</option>';
+  members.forEach(function(m,i){opts+='<option value="'+i+'">'+htmlEsc(m.name||m.email||m.phone)+'</option>'});
+  var today=todayISO();
+  var bc=document.getElementById('bc');
+  bc.innerHTML='<h2>&#128218; Borrow a Book</h2>'+ 
+    '<div class="bsub">'+htmlEsc(bBook.title)+(bBook.author?' &mdash; <i>'+htmlEsc(bBook.author)+'</i>':'')+'</div>'+ 
+    '<p style="font-size:.85rem;color:#555;margin-bottom:14px;line-height:1.5">Fill this in when you lend out the book. Saved members can be selected so you do not need to type their details each time.</p>'+ 
+    '<form id="bform" onsubmit="submitBorrow(event)">'+ 
+    '<label>Saved member</label><select id="borrowMember" onchange="fillBorrowMember()">'+opts+'</select>'+ 
+    '<label>Borrower name *</label><input type="text" id="borrowName" placeholder="Borrower name">'+ 
+    '<label>Borrower email *</label><input type="email" id="borrowEmail" placeholder="borrower@example.com">'+ 
+    '<label>Borrower phone</label><input type="text" id="borrowPhone" placeholder="Phone number">'+ 
+    '<label>Date borrowed *</label><input type="date" id="borrowDate" value="'+today+'">'+ 
+    '<label style="font-weight:normal;margin-top:12px"><input type="checkbox" id="saveBorrowMember" checked style="width:auto;margin-right:7px"> Save/update this member for next time</label>'+ 
+    '<button type="submit" class="mbtn">Mark as Borrowed</button></form>'+ 
+    '<p class="smallnote" style="margin-top:12px">This updates the website in this browser. When Apps Script is connected, it will save to Google Sheets automatically.</p>';
+  openModal('bo');
+}
+
+function fillBorrowMember(){
+  var sel=document.getElementById('borrowMember');
+  if(!sel||sel.value==='')return;
+  var m=getMembers()[parseInt(sel.value)];
+  if(!m)return;
+  document.getElementById('borrowName').value=m.name||'';
+  document.getElementById('borrowEmail').value=m.email||'';
+  document.getElementById('borrowPhone').value=m.phone||'';
+}
+
+function submitBorrow(e){
+  e.preventDefault();
+  var name=document.getElementById('borrowName').value.trim();
+  var email=document.getElementById('borrowEmail').value.trim();
+  var phone=document.getElementById('borrowPhone').value.trim();
+  var date=document.getElementById('borrowDate').value||todayISO();
+  if(!name||!email){alert('Please add borrower name and email address.');return}
+  if(document.getElementById('saveBorrowMember').checked){upsertMember({name:name,email:email,phone:phone});}
+  var due=addDaysISO(date,14);
+  var reminder=addDaysISO(date,13);
+  setBookStatus(bBook,'In use');
+  setLoan(bBook,{name:name,email:email,phone:phone,dateBorrowed:date,dueDate:due,reminderDate:reminder,title:bBook.title,author:bBook.author||''});
+
+  var sent = sendToBackend({
+    action:'borrow',
+    title:bBook.title,
+    author:bBook.author||'',
+    category:bBook.category||'',
+    borrowerName:name,
+    borrowerEmail:email,
+    borrowerPhone:phone,
+    dateBorrowed:date,
+    dueDate:due,
+    reminderDate:reminder
+  });
+
+  document.getElementById('bc').innerHTML =
+    '<div class="sbox"><div class="ck">&#9989;</div>' +
+    '<h3>Book Marked as Borrowed</h3>' +
+    '<p><strong>' + htmlEsc(bBook.title) + '</strong><br>Borrower: '+htmlEsc(name)+'<br>Due back: '+htmlEsc(due)+'</p>' +
+    '<p style="margin-top:9px;font-size:.78rem;color:#aaa">'+(sent?'This loan was also sent to your Google Sheet.':'Backend not connected yet. Paste your Apps Script Web App URL into WEB_APP_URL to save this to Google Sheets automatically.')+'</p>' +
+    '<button class="mbtn" style="margin-top:15px" id="closeOkBtn">Close</button></div>';
+  document.getElementById('closeOkBtn').onclick = function(){ closeModal('bo');render(); };
+}
+
+
+
+function backendReady(){return WEB_APP_URL&&WEB_APP_URL.indexOf('https://')===0;}
+function sendToBackend(payload){
+  if(!backendReady()){console.log('Backend not connected.',payload);return false;}
+  payload.libraryEmail=LIBRARY_EMAIL;
+  var fd=new FormData();fd.append('payload',JSON.stringify(payload));
+  fetch(WEB_APP_URL,{method:'POST',mode:'no-cors',body:fd}).catch(function(e){console.log(e)});
+  return true;
+}
+
+function mailto(to,subject,body){
+  window.location.href='mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+}
+function openRequest(type){
+  document.getElementById('rtype').value=type;
+  if(type!=='Reserve Book'){document.getElementById('rtitle').value='';document.getElementById('rauthor').value='';document.getElementById('rnotes').value='';}
+  showPage('reserve');
+}
+function openReserve(idx){
+  var b=filteredBooks[idx];if(!b)return;
+  document.getElementById('rtype').value='Reserve Book';
+  document.getElementById('rtitle').value=b.title;
+  document.getElementById('rauthor').value=b.author||'';
+  document.getElementById('rnotes').value='This book is on loan. Please reserve it for me when available.';
+  showPage('reserve');
+}
+function sendRequestEmail(){
+  var name=document.getElementById('rname').value.trim();
+  var email=document.getElementById('remail').value.trim();
+  var phone=document.getElementById('rphone').value.trim();
+  var title=document.getElementById('rtitle').value.trim();
+  var author=document.getElementById('rauthor').value.trim();
+  var notes=document.getElementById('rnotes').value.trim();
+  var type=document.getElementById('rtype').value;
+  if(!name||!email||!title){alert('Please fill in your name, email and book title.');return}
+  sendToBackend({action:'request',requestType:type,name:name,email:email,phone:phone,title:title,author:author,notes:notes});
+  var card=document.getElementById('reserveFormCard');
+  if(card)card.innerHTML='<div class="sbox"><div class="ck">✅</div><h3>Request Sent!</h3><p>Thank you, '+htmlEsc(name)+'.<br>The library has been notified about <strong>'+htmlEsc(title)+'</strong>.</p></div>';
+}
+
+function addBook(){
+  var t=document.getElementById('nt').value.trim();
+  var a=document.getElementById('na').value.trim();
+  var cat=document.getElementById('nc').value;
+  var st=document.getElementById('ns').value;
+  if(!t){alert('Please enter a title.');return}
+  var c=getCust();c.push({title:t,author:a,category:cat,status:st});saveCust(c);
+  document.getElementById('nt').value='';document.getElementById('na').value='';
+  updStats();updTabs();render();showToast('✅ "'+t+'" added to the library!');
+}
+
+
+function saveMemberFromAdmin(){
+  var name=document.getElementById('memName').value.trim();
+  var email=document.getElementById('memEmail').value.trim();
+  var phone=document.getElementById('memPhone').value.trim();
+  if(!name||!email){alert('Please add member name and email address.');return}
+  upsertMember({name:name,email:email,phone:phone});
+  sendToBackend({action:'member', name:name, email:email, phone:phone});
+  document.getElementById('memName').value='';
+  document.getElementById('memEmail').value='';
+  document.getElementById('memPhone').value='';
+  buildMemberList();
+}
+function buildMemberList(){
+  var members=getMembers();
+  var html = members.length ? members.map(function(m,i){return '<div class="li"><span><strong>'+htmlEsc(m.name||'')+'</strong><br><em style="color:#888;font-size:.8rem">'+htmlEsc(m.email||'')+(m.phone?' · '+htmlEsc(m.phone):'')+'</em></span><div class="li-act"><button class="ib r" data-i="'+i+'">Remove</button></div></div>'}).join('') : '<p class="smallnote">No saved members yet.</p>';
+  var el=document.getElementById('memberList');
+  if(el) el.innerHTML=html;
+  var q=document.getElementById('memberListQuick');
+  if(q) q.innerHTML=html;
+  document.querySelectorAll('#memberList button,#memberListQuick button').forEach(function(btn){btn.onclick=function(){var a=getMembers();a.splice(parseInt(this.dataset.i),1);saveMembers(a);buildMemberList();}});
+  var aq=document.getElementById('adminQuick');
+  if(aq) aq.classList.toggle('open',isAdmin());
+}
+
+function refreshAdminState(){
+  var nb=document.getElementById('adminNavBtn');
+  if(nb){nb.classList.toggle('unlocked',isAdmin());nb.textContent=isAdmin()?'✅ Admin':'🔐 Admin';}
+  var ls=document.getElementById('adminLoginSection');if(ls)ls.style.display=isAdmin()?'none':'block';
+  var ps=document.getElementById('adminPanelSection');if(ps)ps.style.display=isAdmin()?'block':'none';
+  buildMemberList();
+}
+function openAdmin(){showPage('admin');buildReturnList();buildMemberList();}
+
+function adminLogin(){
+  var p=document.getElementById('adminPass').value;
+  if(p!==ADMIN_PASSWORD){alert('Incorrect password.');return}
+  localStorage.setItem('bf_admin_unlocked','yes');
+  document.getElementById('adminPass').value='';
+  refreshAdminState();buildReturnList();render();
+}
+function adminLogout(){
+  localStorage.removeItem('bf_admin_unlocked');
+  refreshAdminState();render();
+}
+function markReturned(b){
+  var loan=getLoan(b)||{};
+  setBookStatus(b,'Available');
+  clearLoan(b);
+  sendToBackend({
+    action:'return',
+    title:b.title,
+    author:b.author||'',
+    borrowerName:loan.name||'',
+    borrowerEmail:loan.email||'',
+    dateBorrowed:loan.dateBorrowed||'',
+    returnedDate:todayISO()
+  });
+  render();
+  buildReturnList();
+  showToast('✅ "'+b.title+'" marked as returned.');
+}
+function returnBook(idx){
+  if(!isAdmin()){openAdmin();return}
+  var b=filteredBooks[idx];
+  if(!b) return;
+  if(confirm('Mark "'+b.title+'" as returned and available?')){markReturned(b);}
+}
+function buildReturnList(){
+  var el=document.getElementById('returnList');
+  if(!el) return;
+  var onLoan=allBooks().filter(function(b){return statusOf(b)!=='Available'});
+  if(!onLoan.length){el.innerHTML='<p class="smallnote">No books are currently marked as on loan.</p>';return}
+  el.innerHTML=onLoan.map(function(b){
+    var loan=getLoan(b);
+    var extra=loan?'<br><em>Borrower: '+htmlEsc(loan.name||'')+(loan.email?' | '+htmlEsc(loan.email):'')+'<br>Due: '+htmlEsc(loan.dueDate||'')+'</em>':(b.author?'<br><em>'+htmlEsc(b.author)+'</em>':'');
+    return '<div class="li"><span><strong>'+htmlEsc(b.title)+'</strong>'+extra+'</span><div class="li-act"><button class="ib g" data-key="'+htmlEsc(bookKey(b))+'">Return</button></div></div>'
+  }).join('');
+  el.querySelectorAll('button').forEach(function(btn){btn.onclick=function(){var key=this.dataset.key;var b=allBooks().filter(function(x){return bookKey(x)===key})[0];if(b){markReturned(b);}}});
+}
+function sendReminderEmail(){
+  var name=document.getElementById('remName').value.trim();
+  var email=document.getElementById('remEmail').value.trim();
+  var title=document.getElementById('remTitle').value.trim();
+  var d=document.getElementById('remDate').value;
+  if(!email||!title||!d){alert('Please add borrower email, book title, and date borrowed.');return}
+  var borrowed=new Date(d+'T12:00:00');
+  var due=new Date(borrowed); due.setDate(due.getDate()+14);
+  var reminder=new Date(borrowed); reminder.setDate(reminder.getDate()+13);
+  var dueText=due.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+  var reminderText=reminder.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'});
+  var subject='Reminder: '+title+' is due back tomorrow';
+  var body='Hello '+(name||'')+',\n\nThis is a friendly reminder from Bernard Finlay Memorial Library that the book "'+title+'" is due back tomorrow, '+dueText+'.\n\nReminder date: '+reminderText+'\nLoan period: 2 weeks\n\nThank you.';
+  mailto(email,subject,body);
+}
+
+function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden'}
+function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow=''}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal('bo');closeModal('ao');closeModal('ro');closeModal('admo')}});
+
+// ── PAGE NAV ──
+function showPage(name){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+  var pg=document.getElementById('page-'+name);if(pg)pg.classList.add('active');
+  var nb=document.querySelector('[data-page="'+name+'"]');if(nb)nb.classList.add('active');
+  window.scrollTo(0,0);
+  if(name==='admin'){buildReturnList();buildMemberList();}
+  if(name==='forsale'){renderSaleBooks();}
+}
+
+// ── TOAST ──
+function showToast(msg){
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1a1208;color:#fff;padding:12px 24px;border-radius:30px;font-size:.87rem;font-family:inherit;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,.3);z-index:9999;white-space:nowrap;opacity:1;transition:opacity .3s';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';setTimeout(function(){t.remove();},300);},3000);
+}
+
+// ── FOR SALE ──
+var DEFAULT_SALE_BOOKS=[{"title": "Catching the Sunrise", "author": "Tamar Shy", "price": "₪30", "notes": "Samphire School series"}, {"title": "String of Secrets", "author": "Tamar Shy", "price": "₪30", "notes": "Samphire School series"}, {"title": "Flying High", "author": "Tamar Shy", "price": "₪30", "notes": "Samphire School series"}, {"title": "Sisters of the Snow", "author": "R. Tanenwald", "price": "₪30", "notes": ""}, {"title": "Thanks to Her", "author": "R. Tanenwald", "price": "₪25", "notes": ""}, {"title": "Mind Games", "author": "P. Scharff", "price": "₪20", "notes": ""}, {"title": "The Four", "author": "Chaim Eliav", "price": "₪15", "notes": ""}, {"title": "The Birdsong", "author": "Meir Uri Gottesman", "price": "₪5", "notes": ""}, {"title": "School of Secrets", "author": "Ruthie Peralman", "price": "₪5", "notes": ""}, {"title": "Scattered Worlds", "author": "Yair Weinstock", "price": "₪15", "notes": ""}, {"title": "Storm Clouds", "author": "S. Feldbrand", "price": "₪30", "notes": ""}, {"title": "Trailblazer", "author": "Sukey Gross", "price": "₪20", "notes": ""}, {"title": "Full Circle", "author": "Gita Gordon", "price": "₪25", "notes": ""}, {"title": "Courtyard of Dreams", "author": "S. Feldbrand", "price": "₪20", "notes": ""}, {"title": "The Lion", "author": "Meir E. Gottesman", "price": "₪20", "notes": ""}, {"title": "Wall of Fire", "author": "Meir E. Gottesman", "price": "₪20", "notes": ""}, {"title": "The Lonely Shul", "author": "Meir E. Gottesman", "price": "₪10", "notes": ""}, {"title": "Light Years Away", "author": "R. Kepler", "price": "₪10", "notes": "Missing cover"}];
+function getSaleBooks(){try{var stored=localStorage.getItem('bf_sale');if(stored===null){return DEFAULT_SALE_BOOKS.slice();}return JSON.parse(stored)||[];}catch(e){return DEFAULT_SALE_BOOKS.slice();}}
+function saveSaleBooks(a){localStorage.setItem('bf_sale',JSON.stringify(a))}
+function addSaleBook(){
+  var title=document.getElementById('sale-title').value.trim();
+  var author=document.getElementById('sale-author').value.trim();
+  var price=document.getElementById('sale-price').value.trim();
+  var notes=document.getElementById('sale-notes').value.trim();
+  if(!title){alert('Please enter a title.');return}
+  var books=getSaleBooks();books.push({title:title,author:author,price:price,notes:notes});saveSaleBooks(books);
+  document.getElementById('sale-title').value='';document.getElementById('sale-author').value='';
+  document.getElementById('sale-price').value='';document.getElementById('sale-notes').value='';
+  renderSaleBooks();showToast('✅ "'+title+'" added for sale.');
+}
+function renderSaleBooks(){
+  var books=getSaleBooks();
+  var grid=document.getElementById('sale-grid');
+  var adminList=document.getElementById('saleAdminList');
+  if(grid){
+    if(!books.length){grid.innerHTML='<div class="nores">No books for sale at the moment.</div>';}
+    else{grid.innerHTML=books.map(function(b,i){
+      return '<div class="card"><div style="height:5px;background:'+catColorSale+'"></div><div class="cb">'+
+        '<div class="ct">'+htmlEsc(b.title)+'</div>'+
+        (b.author?'<div class="ca">'+htmlEsc(b.author)+'</div>':'')+
+        (b.notes?'<div style="font-size:.73rem;color:#888;margin-bottom:8px">'+htmlEsc(b.notes)+'</div>':'')+
+        '<div class="cf">'+(b.price?'<span class="badge" style="background:#fff8e7;color:#92400e;font-size:.8rem">'+htmlEsc(b.price)+'</span>':'<span class="badge" style="background:#f5f5f5;color:#888">Ask us</span>')+'</div>'+
+        '<div class="book-actions"><button class="bbtn" style="background:var(--burg)" onclick="enquireAboutBook('+i+')">Enquire →</button></div>'+
+      '</div></div>';
+    }).join('');}
+  }
+  if(adminList){
+    if(!books.length){adminList.innerHTML='<p class="smallnote">No books for sale yet.</p>';}
+    else{adminList.innerHTML=books.map(function(b,i){
+      return '<div class="li"><span><strong>'+htmlEsc(b.title)+'</strong>'+(b.price?' — <em>'+htmlEsc(b.price)+'</em>':'')+'</span><div class="li-act"><button class="ib r" onclick="removeSaleBook('+i+')">Remove</button></div></div>';
+    }).join('');}
+  }
+}
+var catColorSale='linear-gradient(90deg,#c9891a,#f4c542)';
+function removeSaleBook(i){
+  var books=getSaleBooks();
+  if(confirm('Remove "'+books[i].title+'" from sale?')){books.splice(i,1);saveSaleBooks(books);renderSaleBooks();showToast('Removed.');}
+}
+function enquireAboutBook(i){
+  var b=getSaleBooks()[i];if(!b)return;
+  document.getElementById('rtitle').value=b.title;
+  document.getElementById('rauthor').value=b.author||'';
+  document.getElementById('rtype').value='Purchase Enquiry';
+  document.getElementById('rnotes').value='I am interested in purchasing this book'+(b.price?' (listed at '+b.price+')':'')+'.';
+  showPage('reserve');
+}
+
+// ── REMOVE BOOKS (admin) ──
+function renderRemoveList(){
+  var q=(document.getElementById('removeSearch')||{value:''}).value.toLowerCase().trim();
+  var el=document.getElementById('removeList');if(!el)return;
+  if(!q){el.innerHTML='<p class="smallnote">Start typing to search for a book.</p>';return;}
+  var matches=allBooks().filter(function(b){return b.title.toLowerCase().indexOf(q)>=0||(b.author||'').toLowerCase().indexOf(q)>=0;}).slice(0,20);
+  if(!matches.length){el.innerHTML='<p class="smallnote">No books found.</p>';return;}
+  var items=matches.map(function(b){
+    return {key:bookKey(b),title:b.title,author:b.author||''};
+  });
+  var html=items.map(function(item){
+    return '<div class="li"><span><strong>'+htmlEsc(item.title)+'</strong>'+(item.author?'<br><em style="color:#888;font-size:.8rem">'+htmlEsc(item.author)+'</em>':'')+'</span><div class="li-act"><button class="ib r" data-bkey="'+encodeURIComponent(item.key)+'">Remove</button></div></div>';
+  }).join('');
+  el.innerHTML=html;
+  el.querySelectorAll('button[data-bkey]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var key=decodeURIComponent(this.dataset.bkey);
+      var b=allBooks().filter(function(x){return bookKey(x)===key})[0];
+      if(b&&confirm('Remove "'+b.title+'" from the library?')){deleteBook(b);renderRemoveList();}
+    });
+  });
+}
+function confirmRemove(encodedKey){
+  var key=decodeURIComponent(encodedKey);
+  var b=allBooks().filter(function(x){return bookKey(x)===key})[0];
+  if(!b)return;
+  if(confirm('Remove "'+b.title+'" from the library?')){deleteBook(b);renderRemoveList();}
+}
+
+// ── REQUEST NEW BOOK ──
+function sendNewBookRequest(){
+  var name=document.getElementById('req2name').value.trim();
+  var email=document.getElementById('req2email').value.trim();
+  var phone=document.getElementById('req2phone').value.trim();
+  var title=document.getElementById('req2title').value.trim();
+  var author=document.getElementById('req2author').value.trim();
+  var notes=document.getElementById('req2notes').value.trim();
+  if(!name||!email||!title){alert('Please fill in your name, email and book title.');return}
+  sendToBackend({action:'request',requestType:'Request New Book',name:name,email:email,phone:phone,title:title,author:author,notes:notes});
+  showToast('✅ Request sent! The library has been notified.');
+  ['req2name','req2email','req2phone','req2title','req2author','req2notes'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+}
+
+refreshAdminState();
+render();
+renderSaleBooks();
+</script>
+</body>
+</html>

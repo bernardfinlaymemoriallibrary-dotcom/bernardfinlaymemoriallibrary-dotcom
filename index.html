@@ -574,8 +574,7 @@ function render(){
         '</div>'+
         '<div class="book-actions">'+
           (isAdmin()&&avail?'<button class="bbtn borrowBtn" data-idx="'+idx+'">Borrow</button>':'')+
-          (!isAdmin()&&!avail?'<button class="bbtn reserveBtn" data-idx="'+idx+'">Reserve</button>':'')+
-          (isAdmin()&&!avail?'<button class="bbtn reserveBtn" data-idx="'+idx+'">Reserve</button>':'')+
+          (!avail?'<button class="bbtn reserveBtn" data-idx="'+idx+'">Reserve</button>':'')+
           (isAdmin()?'<button class="bbtn returnBtn" data-idx="'+idx+'" '+(avail?'disabled':'')+'>Return</button>':'')+
         '</div>'+
       '</div>'+
@@ -663,7 +662,7 @@ function sendToBackend(payload){
   if(!backendReady()){console.log('Backend not connected.',payload);return false;}
   payload.libraryEmail=LIBRARY_EMAIL;
   var fd=new FormData();fd.append('payload',JSON.stringify(payload));
-  fetch(WEB_APP_URL,{method:'POST',mode:'no-cors',body:fd}).catch(function(e){console.log(e)});
+  fetch(WEB_APP_URL,{method:'POST',mode:'no-cors',body:fd}).catch(function(e){console.log(e);});
   return true;
 }
 
@@ -694,7 +693,7 @@ function sendRequestEmail(){
   if(!name||!email||!title){alert('Please fill in your name, email and book title.');return}
   sendToBackend({action:'request',requestType:type,name:name,email:email,phone:phone,title:title,author:author,notes:notes});
   var card=document.getElementById('reserveFormCard');
-  if(card)card.innerHTML='<div class="sbox"><div class="ck">✅</div><h3>Request Sent!</h3><p>Thank you, '+htmlEsc(name)+'.<br>The library has been notified about <strong>'+htmlEsc(title)+'</strong>.</p></div>';
+  if(card)card.innerHTML='<div class="sbox"><div class="ck">\u2705</div><h3>Request Sent!</h3><p>Thank you, '+htmlEsc(name)+'.<br>The library has been notified about <strong>'+htmlEsc(title)+'</strong>.</p></div>';
 }
 
 function addBook(){
@@ -705,7 +704,7 @@ function addBook(){
   if(!t){alert('Please enter a title.');return}
   var c=getCust();c.push({title:t,author:a,category:cat,status:st});saveCust(c);
   document.getElementById('nt').value='';document.getElementById('na').value='';
-  updStats();updTabs();render();showToast('✅ "'+t+'" added to the library!');
+  updStats();updTabs();render();showToast('\u2705 "'+t+'" added to the library!');
 }
 
 
@@ -723,7 +722,7 @@ function saveMemberFromAdmin(){
 }
 function buildMemberList(){
   var members=getMembers();
-  var html = members.length ? members.map(function(m,i){return '<div class="li"><span><strong>'+htmlEsc(m.name||'')+'</strong><br><em style="color:#888;font-size:.8rem">'+htmlEsc(m.email||'')+(m.phone?' · '+htmlEsc(m.phone):'')+'</em></span><div class="li-act"><button class="ib r" data-i="'+i+'">Remove</button></div></div>'}).join('') : '<p class="smallnote">No saved members yet.</p>';
+  var html = members.length ? members.map(function(m,i){return '<div class="li"><span><strong>'+htmlEsc(m.name||'')+'</strong><br><em style="color:#888;font-size:.8rem">'+htmlEsc(m.email||'')+(m.phone?' \u00b7 '+htmlEsc(m.phone):'')+'</em></span><div class="li-act"><button class="ib r" data-i="'+i+'">Remove</button></div></div>'}).join('') : '<p class="smallnote">No saved members yet.</p>';
   var el=document.getElementById('memberList');
   if(el) el.innerHTML=html;
   var q=document.getElementById('memberListQuick');
@@ -735,7 +734,7 @@ function buildMemberList(){
 
 function refreshAdminState(){
   var nb=document.getElementById('adminNavBtn');
-  if(nb){nb.classList.toggle('unlocked',isAdmin());nb.textContent=isAdmin()?'✅ Admin':'🔐 Admin';}
+  if(nb){nb.classList.toggle('unlocked',isAdmin());nb.textContent=isAdmin()?'\u2705 Admin':'\uD83D\uDD10 Admin';}
   var ls=document.getElementById('adminLoginSection');if(ls)ls.style.display=isAdmin()?'none':'block';
   var ps=document.getElementById('adminPanelSection');if(ps)ps.style.display=isAdmin()?'block':'none';
   buildMemberList();
@@ -768,7 +767,7 @@ function markReturned(b){
   });
   render();
   buildReturnList();
-  showToast('✅ "'+b.title+'" marked as returned.');
+  showToast('\u2705 "'+b.title+'" marked as returned.');
 }
 function returnBook(idx){
   if(!isAdmin()){openAdmin();return}
@@ -828,8 +827,14 @@ function showToast(msg){
 }
 
 // ── FOR SALE ──
-var DEFAULT_SALE_BOOKS=[{"title": "Catching the Sunrise", "author": "Tamar Shy", "price": "₪30", "notes": "Samphire School series"}, {"title": "String of Secrets", "author": "Tamar Shy", "price": "₪30", "notes": "Samphire School series"}, {"title": "Flying High", "author": "Tamar Shy", "price": "₪30", "notes": "Samphire School series"}, {"title": "Sisters of the Snow", "author": "R. Tanenwald", "price": "₪30", "notes": ""}, {"title": "Thanks to Her", "author": "R. Tanenwald", "price": "₪25", "notes": ""}, {"title": "Mind Games", "author": "P. Scharff", "price": "₪20", "notes": ""}, {"title": "The Four", "author": "Chaim Eliav", "price": "₪15", "notes": ""}, {"title": "The Birdsong", "author": "Meir Uri Gottesman", "price": "₪5", "notes": ""}, {"title": "School of Secrets", "author": "Ruthie Peralman", "price": "₪5", "notes": ""}, {"title": "Scattered Worlds", "author": "Yair Weinstock", "price": "₪15", "notes": ""}, {"title": "Storm Clouds", "author": "S. Feldbrand", "price": "₪30", "notes": ""}, {"title": "Trailblazer", "author": "Sukey Gross", "price": "₪20", "notes": ""}, {"title": "Full Circle", "author": "Gita Gordon", "price": "₪25", "notes": ""}, {"title": "Courtyard of Dreams", "author": "S. Feldbrand", "price": "₪20", "notes": ""}, {"title": "The Lion", "author": "Meir E. Gottesman", "price": "₪20", "notes": ""}, {"title": "Wall of Fire", "author": "Meir E. Gottesman", "price": "₪20", "notes": ""}, {"title": "The Lonely Shul", "author": "Meir E. Gottesman", "price": "₪10", "notes": ""}, {"title": "Light Years Away", "author": "R. Kepler", "price": "₪10", "notes": "Missing cover"}];
-function getSaleBooks(){try{var stored=localStorage.getItem('bf_sale');if(stored===null){return DEFAULT_SALE_BOOKS.slice();}return JSON.parse(stored)||[];}catch(e){return DEFAULT_SALE_BOOKS.slice();}}
+var DEFAULT_SALE_BOOKS=[{"title": "Catching the Sunrise", "author": "Tamar Shy", "price": "\\u20aa30", "notes": "Samphire School series"}, {"title": "String of Secrets", "author": "Tamar Shy", "price": "\\u20aa30", "notes": "Samphire School series"}, {"title": "Flying High", "author": "Tamar Shy", "price": "\\u20aa30", "notes": "Samphire School series"}, {"title": "Sisters of the Snow", "author": "R. Tanenwald", "price": "\\u20aa30", "notes": ""}, {"title": "Thanks to Her", "author": "R. Tanenwald", "price": "\\u20aa25", "notes": ""}, {"title": "Mind Games", "author": "P. Scharff", "price": "\\u20aa20", "notes": ""}, {"title": "The Four", "author": "Chaim Eliav", "price": "\\u20aa15", "notes": ""}, {"title": "The Birdsong", "author": "Meir Uri Gottesman", "price": "\\u20aa5", "notes": ""}, {"title": "School of Secrets", "author": "Ruthie Peralman", "price": "\\u20aa5", "notes": ""}, {"title": "Scattered Worlds", "author": "Yair Weinstock", "price": "\\u20aa15", "notes": ""}, {"title": "Storm Clouds", "author": "S. Feldbrand", "price": "\\u20aa30", "notes": ""}, {"title": "Trailblazer", "author": "Sukey Gross", "price": "\\u20aa20", "notes": ""}, {"title": "Full Circle", "author": "Gita Gordon", "price": "\\u20aa25", "notes": ""}, {"title": "Courtyard of Dreams", "author": "S. Feldbrand", "price": "\\u20aa20", "notes": ""}, {"title": "The Lion", "author": "Meir E. Gottesman", "price": "\\u20aa20", "notes": ""}, {"title": "Wall of Fire", "author": "Meir E. Gottesman", "price": "\\u20aa20", "notes": ""}, {"title": "The Lonely Shul", "author": "Meir E. Gottesman", "price": "\\u20aa10", "notes": ""}, {"title": "Light Years Away", "author": "R. Kepler", "price": "\\u20aa10", "notes": "Missing cover"}];
+function getSaleBooks(){
+  try{
+    var stored=localStorage.getItem('bf_sale');
+    if(stored===null){return DEFAULT_SALE_BOOKS.slice();}
+    return JSON.parse(stored)||[];
+  }catch(e){return DEFAULT_SALE_BOOKS.slice();}
+}
 function saveSaleBooks(a){localStorage.setItem('bf_sale',JSON.stringify(a))}
 function addSaleBook(){
   var title=document.getElementById('sale-title').value.trim();
@@ -840,7 +845,7 @@ function addSaleBook(){
   var books=getSaleBooks();books.push({title:title,author:author,price:price,notes:notes});saveSaleBooks(books);
   document.getElementById('sale-title').value='';document.getElementById('sale-author').value='';
   document.getElementById('sale-price').value='';document.getElementById('sale-notes').value='';
-  renderSaleBooks();showToast('✅ "'+title+'" added for sale.');
+  renderSaleBooks();showToast('\u2705 "'+title+'" added for sale.');
 }
 function renderSaleBooks(){
   var books=getSaleBooks();
@@ -849,23 +854,22 @@ function renderSaleBooks(){
   if(grid){
     if(!books.length){grid.innerHTML='<div class="nores">No books for sale at the moment.</div>';}
     else{grid.innerHTML=books.map(function(b,i){
-      return '<div class="card"><div style="height:5px;background:'+catColorSale+'"></div><div class="cb">'+
+      return '<div class="card"><div style="height:5px;background:linear-gradient(90deg,#c9891a,#e8a020)"></div><div class="cb">'+
         '<div class="ct">'+htmlEsc(b.title)+'</div>'+
         (b.author?'<div class="ca">'+htmlEsc(b.author)+'</div>':'')+
         (b.notes?'<div style="font-size:.73rem;color:#888;margin-bottom:8px">'+htmlEsc(b.notes)+'</div>':'')+
         '<div class="cf">'+(b.price?'<span class="badge" style="background:#fff8e7;color:#92400e;font-size:.8rem">'+htmlEsc(b.price)+'</span>':'<span class="badge" style="background:#f5f5f5;color:#888">Ask us</span>')+'</div>'+
-        '<div class="book-actions"><button class="bbtn" style="background:var(--burg)" onclick="enquireAboutBook('+i+')">Enquire →</button></div>'+
+        '<div class="book-actions"><button class="bbtn" style="background:var(--burg)" onclick="enquireAboutBook('+i+')">Enquire \u2192</button></div>'+
       '</div></div>';
     }).join('');}
   }
   if(adminList){
     if(!books.length){adminList.innerHTML='<p class="smallnote">No books for sale yet.</p>';}
     else{adminList.innerHTML=books.map(function(b,i){
-      return '<div class="li"><span><strong>'+htmlEsc(b.title)+'</strong>'+(b.price?' — <em>'+htmlEsc(b.price)+'</em>':'')+'</span><div class="li-act"><button class="ib r" onclick="removeSaleBook('+i+')">Remove</button></div></div>';
+      return '<div class="li"><span><strong>'+htmlEsc(b.title)+'</strong>'+(b.price?' \u2014 <em>'+htmlEsc(b.price)+'</em>':'')+'</span><div class="li-act"><button class="ib r" onclick="removeSaleBook('+i+')">Remove</button></div></div>';
     }).join('');}
   }
 }
-var catColorSale='linear-gradient(90deg,#c9891a,#f4c542)';
 function removeSaleBook(i){
   var books=getSaleBooks();
   if(confirm('Remove "'+books[i].title+'" from sale?')){books.splice(i,1);saveSaleBooks(books);renderSaleBooks();showToast('Removed.');}
@@ -886,11 +890,8 @@ function renderRemoveList(){
   if(!q){el.innerHTML='<p class="smallnote">Start typing to search for a book.</p>';return;}
   var matches=allBooks().filter(function(b){return b.title.toLowerCase().indexOf(q)>=0||(b.author||'').toLowerCase().indexOf(q)>=0;}).slice(0,20);
   if(!matches.length){el.innerHTML='<p class="smallnote">No books found.</p>';return;}
-  var items=matches.map(function(b){
-    return {key:bookKey(b),title:b.title,author:b.author||''};
-  });
-  var html=items.map(function(item){
-    return '<div class="li"><span><strong>'+htmlEsc(item.title)+'</strong>'+(item.author?'<br><em style="color:#888;font-size:.8rem">'+htmlEsc(item.author)+'</em>':'')+'</span><div class="li-act"><button class="ib r" data-bkey="'+encodeURIComponent(item.key)+'">Remove</button></div></div>';
+  var html=matches.map(function(b){
+    return '<div class="li"><span><strong>'+htmlEsc(b.title)+'</strong>'+(b.author?'<br><em style="color:#888;font-size:.8rem">'+htmlEsc(b.author)+'</em>':'')+'</span><div class="li-act"><button class="ib r" data-bkey="'+encodeURIComponent(bookKey(b))+'">Remove</button></div></div>';
   }).join('');
   el.innerHTML=html;
   el.querySelectorAll('button[data-bkey]').forEach(function(btn){
@@ -900,12 +901,6 @@ function renderRemoveList(){
       if(b&&confirm('Remove "'+b.title+'" from the library?')){deleteBook(b);renderRemoveList();}
     });
   });
-}
-function confirmRemove(encodedKey){
-  var key=decodeURIComponent(encodedKey);
-  var b=allBooks().filter(function(x){return bookKey(x)===key})[0];
-  if(!b)return;
-  if(confirm('Remove "'+b.title+'" from the library?')){deleteBook(b);renderRemoveList();}
 }
 
 // ── REQUEST NEW BOOK ──
@@ -918,10 +913,13 @@ function sendNewBookRequest(){
   var notes=document.getElementById('req2notes').value.trim();
   if(!name||!email||!title){alert('Please fill in your name, email and book title.');return}
   sendToBackend({action:'request',requestType:'Request New Book',name:name,email:email,phone:phone,title:title,author:author,notes:notes});
-  showToast('✅ Request sent! The library has been notified.');
+  showToast('\u2705 Request sent! The library has been notified.');
   ['req2name','req2email','req2phone','req2title','req2author','req2notes'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
 }
 
 refreshAdminState();
 render();
-renderS
+renderSaleBooks();
+</script>
+</body>
+</html>

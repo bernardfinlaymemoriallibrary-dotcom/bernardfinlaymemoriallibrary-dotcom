@@ -878,7 +878,7 @@ function showToast(msg){
 }
 
 // ── FOR SALE ──
-var DEFAULT_SALE_BOOKS=[{"title": "Catching the Sunrise", "author": "Tamar Shy", "price": "\\u20aa30", "notes": "Samphire School series"}, {"title": "String of Secrets", "author": "Tamar Shy", "price": "\\u20aa30", "notes": "Samphire School series"}, {"title": "Flying High", "author": "Tamar Shy", "price": "\\u20aa30", "notes": "Samphire School series"}, {"title": "Sisters of the Snow", "author": "R. Tanenwald", "price": "\\u20aa30", "notes": ""}, {"title": "Thanks to Her", "author": "R. Tanenwald", "price": "\\u20aa25", "notes": ""}, {"title": "Mind Games", "author": "P. Scharff", "price": "\\u20aa20", "notes": ""}, {"title": "The Four", "author": "Chaim Eliav", "price": "\\u20aa15", "notes": ""}, {"title": "The Birdsong", "author": "Meir Uri Gottesman", "price": "\\u20aa5", "notes": ""}, {"title": "School of Secrets", "author": "Ruthie Peralman", "price": "\\u20aa5", "notes": ""}, {"title": "Scattered Worlds", "author": "Yair Weinstock", "price": "\\u20aa15", "notes": ""}, {"title": "Storm Clouds", "author": "S. Feldbrand", "price": "\\u20aa30", "notes": ""}, {"title": "Trailblazer", "author": "Sukey Gross", "price": "\\u20aa20", "notes": ""}, {"title": "Full Circle", "author": "Gita Gordon", "price": "\\u20aa25", "notes": ""}, {"title": "Courtyard of Dreams", "author": "S. Feldbrand", "price": "\\u20aa20", "notes": ""}, {"title": "The Lion", "author": "Meir E. Gottesman", "price": "\\u20aa20", "notes": ""}, {"title": "Wall of Fire", "author": "Meir E. Gottesman", "price": "\\u20aa20", "notes": ""}, {"title": "The Lonely Shul", "author": "Meir E. Gottesman", "price": "\\u20aa10", "notes": ""}, {"title": "Light Years Away", "author": "R. Kepler", "price": "\\u20aa10", "notes": "Missing cover"}];
+var DEFAULT_SALE_BOOKS=[{"title": "Catching the Sunrise", "author": "Tamar Shy", "price": "\₪30", "notes": "Samphire School series"}, {"title": "String of Secrets", "author": "Tamar Shy", "price": "\₪30", "notes": "Samphire School series"}, {"title": "Flying High", "author": "Tamar Shy", "price": "\₪30", "notes": "Samphire School series"}, {"title": "Sisters of the Snow", "author": "R. Tanenwald", "price": "\₪30", "notes": ""}, {"title": "Thanks to Her", "author": "R. Tanenwald", "price": "\₪25", "notes": ""}, {"title": "Mind Games", "author": "P. Scharff", "price": "\₪20", "notes": ""}, {"title": "The Four", "author": "Chaim Eliav", "price": "\₪15", "notes": ""}, {"title": "The Birdsong", "author": "Meir Uri Gottesman", "price": "\₪5", "notes": ""}, {"title": "School of Secrets", "author": "Ruthie Peralman", "price": "\₪5", "notes": ""}, {"title": "Scattered Worlds", "author": "Yair Weinstock", "price": "\₪15", "notes": ""}, {"title": "Storm Clouds", "author": "S. Feldbrand", "price": "\₪30", "notes": ""}, {"title": "Trailblazer", "author": "Sukey Gross", "price": "\₪20", "notes": ""}, {"title": "Full Circle", "author": "Gita Gordon", "price": "\₪25", "notes": ""}, {"title": "Courtyard of Dreams", "author": "S. Feldbrand", "price": "\₪20", "notes": ""}, {"title": "The Lion", "author": "Meir E. Gottesman", "price": "\₪20", "notes": ""}, {"title": "Wall of Fire", "author": "Meir E. Gottesman", "price": "\₪20", "notes": ""}, {"title": "The Lonely Shul", "author": "Meir E. Gottesman", "price": "\₪10", "notes": ""}, {"title": "Light Years Away", "author": "R. Kepler", "price": "\₪10", "notes": "Missing cover"}];
 function getSaleBooks(){
   try{
     var stored=localStorage.getItem('bf_sale');
@@ -917,10 +917,27 @@ function renderSaleBooks(){
   if(adminList){
     if(!books.length){adminList.innerHTML='<p class="smallnote">No books for sale yet.</p>';}
     else{adminList.innerHTML=books.map(function(b,i){
-      return '<div class="li"><span><strong>'+htmlEsc(b.title)+'</strong>'+(b.price?' \u2014 <em>'+htmlEsc(b.price)+'</em>':'')+'</span><div class="li-act"><button class="ib r" onclick="removeSaleBook('+i+')">Remove</button></div></div>';
+      return '<div class="li"><span><strong>'+htmlEsc(b.title)+'</strong>'+(b.price?' — <em>'+htmlEsc(b.price)+'</em>':'')+'</span><div class="li-act"><button class="ib g" onclick="editSaleBook('+i+')">Edit</button><button class="ib r" onclick="removeSaleBook('+i+')">Remove</button></div></div>';
     }).join('');}
   }
 }
+function editSaleBook(i){
+  var books=getSaleBooks();
+  var b=books[i];if(!b)return;
+  var newTitle=prompt('Title:',b.title);
+  if(newTitle===null)return;
+  var newAuthor=prompt('Author:',b.author||'');
+  if(newAuthor===null)return;
+  var newPrice=prompt('Price (e.g. ₪20):',b.price||'');
+  if(newPrice===null)return;
+  var newNotes=prompt('Notes (condition etc.):',b.notes||'');
+  if(newNotes===null)return;
+  books[i]={title:newTitle.trim(),author:newAuthor.trim(),price:newPrice.trim(),notes:newNotes.trim()};
+  saveSaleBooks(books);
+  renderSaleBooks();
+  showToast('✅ Sale book updated.');
+}
+
 function removeSaleBook(i){
   var books=getSaleBooks();
   if(confirm('Remove "'+books[i].title+'" from sale?')){books.splice(i,1);saveSaleBooks(books);renderSaleBooks();showToast('Removed.');}

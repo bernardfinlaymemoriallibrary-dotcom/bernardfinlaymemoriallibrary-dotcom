@@ -19,7 +19,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 
 /* HERO */
 .hero{background:var(--burg);position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(201,137,26,.18),transparent 65%),radial-gradient(ellipse at 10% 80%,rgba(0,0,0,.3),transparent 60%)}
+.hero-bg{position:absolute;inset:0;background-image:url("https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1600&auto=format&fit=crop&q=80");background-size:cover;background-position:center;filter:saturate(0.3) brightness(0.6)}
+.hero::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(90,17,41,.88) 0%,rgba(90,17,41,.70) 60%,rgba(90,17,41,.82) 100%);z-index:1}
+.hero-inner{z-index:2;position:relative}
 .hero-inner{position:relative;max-width:1400px;margin:0 auto;padding:44px 48px 0;display:grid;grid-template-columns:1fr auto;align-items:center;gap:40px}
 .hero-eyebrow{font-size:.68rem;letter-spacing:4px;text-transform:uppercase;color:rgba(201,137,26,.9);font-weight:500;margin-bottom:12px}
 .hero-title{font-family:'DM Serif Display',Georgia,serif;font-size:clamp(2rem,5vw,3.4rem);color:#fff;line-height:1.08;font-weight:400}
@@ -75,11 +77,16 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(-
 .rinfo{font-size:.76rem;color:var(--soft);margin-left:auto}
 
 /* GRID */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:18px;padding:20px 48px 48px;max-width:1500px;margin:0 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:18px;padding:20px 48px 48px;max-width:1500px;margin:0 auto}
 .card{background:#fff;border-radius:10px;border:1px solid var(--line);box-shadow:var(--sh);display:flex;flex-direction:column;overflow:hidden;transition:transform .22s,box-shadow .22s,border-color .22s}
 .card:hover{transform:translateY(-5px);box-shadow:var(--sh2);border-color:var(--soft)}
 .card.custom{border-color:var(--gold)}
-.cw{display:none}
+.cw{width:100%;padding-top:140%;position:relative;background:linear-gradient(160deg,#3b1a10,#5c2a1a);overflow:hidden}
+.cw img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
+.cph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;text-align:center}
+.cph .pi{font-size:1.8rem;opacity:.35;margin-bottom:6px}
+.cph .pt{font-size:.68rem;color:rgba(255,255,255,.75);font-family:"DM Serif Display",serif;line-height:1.3;padding:0 4px}
+.cph .pa{font-size:.6rem;color:rgba(255,255,255,.4);margin-top:4px;font-style:italic}
 .cb{padding:16px 16px 14px;flex:1;display:flex;flex-direction:column}
 .ct{font-family:'DM Serif Display',serif;font-size:.92rem;color:var(--ink);line-height:1.35;margin-bottom:5px;font-weight:400}
 .ca{font-size:.73rem;color:var(--mid);font-style:italic;margin-bottom:12px}
@@ -192,6 +199,7 @@ hr.div{border:none;border-top:1px solid var(--line);margin:40px 0}
 <body>
 
 <div class="hero">
+  <div class="hero-bg"></div>
   <div class="hero-inner">
     <div class="hero-text">
       <div class="hero-eyebrow">Bet Shemesh &nbsp;·&nbsp; Community Library</div>
@@ -565,22 +573,26 @@ function render(){
   filteredBooks.forEach(function(b,idx){
     var st=statusOf(b);
     var avail=st==='Available';
-    html+='<div class="card'+(custSet[b.title]?' custom':'')+'">'+'<div style="height:5px;background:'+(catColor[b.category]||'#7b1c3b')+'"></div>'+(isAdmin()?'<button class="deleteBtn" data-idx="'+idx+'">× Remove</button>':'')+
-      '<div class="cb'+(isHeb(b.title)?' rtl':'')+'">'+
-        '<div class="ct">'+htmlEsc(b.title)+'</div>'+
-        (b.author?'<div class="ca">'+htmlEsc(b.author)+'</div>':'')+
-        '<div class="cf">'+
-          '<span class="badge '+(avail?'av':'iu')+'">'+(avail?'&#10003; Available':'&#128213; On loan')+'</span>'+
-        '</div>'+
-        '<div class="book-actions">'+
-          (isAdmin()&&avail?'<button class="bbtn borrowBtn" data-idx="'+idx+'">Borrow</button>':'')+
-          (!avail?'<button class="bbtn reserveBtn" data-idx="'+idx+'">Reserve</button>':'')+
-          (isAdmin()?'<button class="bbtn returnBtn" data-idx="'+idx+'" '+(avail?'disabled':'')+'>Return</button>':'')+
-        '</div>'+
-      '</div>'+
-    '</div>';
+    html+='<div class="card'+(custSet[b.title]?' custom':'')+'">';
+    if(isAdmin()) html+='<button class="deleteBtn" data-idx="'+idx+'">&#215; Remove</button>';
+    html+='<div class="cw" data-key="'+htmlEsc(bookKey(b))+'"><div class="cph"><div class="pi">&#128218;</div><div class="pt">'+htmlEsc(b.title)+'</div>'+(b.author?'<div class="pa">'+htmlEsc(b.author)+'</div>':'')+'</div></div>';
+    html+='<div style="height:4px;background:'+(catColor[b.category]||'#7b1c3b')+'"></div>';
+    html+='<div class="cb'+(isHeb(b.title)?' rtl':'')+'">';
+    html+='<div class="ct">'+htmlEsc(b.title)+'</div>';
+    html+=(b.author?'<div class="ca">'+htmlEsc(b.author)+'</div>':'');
+    html+='<div class="cf">';
+    html+='<span class="badge '+(avail?'av':'iu')+'">'+(avail?'&#10003; Available':'&#128213; On loan')+'</span>';
+    html+='</div>';
+    html+='<div class="book-actions">';
+    html+=(isAdmin()&&avail?'<button class="bbtn borrowBtn" data-idx="'+idx+'">Borrow</button>':'');
+    html+=(!avail?'<button class="bbtn reserveBtn" data-idx="'+idx+'">Reserve</button>':'');
+    html+=(isAdmin()?'<button class="bbtn returnBtn" data-idx="'+idx+'" '+(avail?'disabled':'')+'>Return</button>':'');
+    html+='</div>';
+    html+='</div>';
+    html+='</div>';
   });
   grid.innerHTML=html;
+  filteredBooks.forEach(function(b){fetchCover(b.title,b.author||'',bookKey(b));});
   grid.querySelectorAll('.borrowBtn').forEach(function(btn){btn.addEventListener('click',function(){openBorrow(parseInt(this.dataset.idx));});});
   grid.querySelectorAll('.reserveBtn').forEach(function(btn){btn.addEventListener('click',function(){openReserve(parseInt(this.dataset.idx));});});
   grid.querySelectorAll('.returnBtn:not([disabled])').forEach(function(btn){btn.addEventListener('click',function(){returnBook(parseInt(this.dataset.idx));});});

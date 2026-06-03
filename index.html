@@ -408,6 +408,22 @@ hr.div{border:none;border-top:1px solid var(--line);margin:40px 0}
   <div class="modal"><button class="mc" onclick="closeModal('bo')">✕</button><div id="bc"></div></div>
 </div>
 <div class="overlay" id="ao"></div>
+<div class="overlay" id="editModal" onclick="if(event.target===this)closeModal('editModal')">
+  <div class="modal">
+    <button class="mc" onclick="closeModal('editModal')">&#10005;</button>
+    <h2>&#9998; Edit Book</h2>
+    <p class="bsub" id="editSub"></p>
+    <label>Title</label><input type="text" id="editTitle" placeholder="Book title">
+    <label>Author</label><input type="text" id="editAuthor" placeholder="Author name">
+    <label>Category</label>
+    <select id="editCategory">
+      <option>Just Arrived</option><option>Fiction</option><option>Biographies</option>
+      <option>Non-Fiction</option><option>Holocaust</option><option>True Short Stories</option>
+      <option>Children &amp; Teens</option><option>Hebrew Books</option>
+    </select>
+    <button class="mbtn gold" onclick="saveEditBook()">Save Changes</button>
+  </div>
+</div>
 <div class="overlay" id="ro"></div>
 <div class="overlay" id="admo"></div>
 <script>
@@ -587,6 +603,7 @@ function render(){
     var st=statusOf(b);
     var avail=st==='Available';
     html+='<div class="card'+(custSet[b.title]?' custom':'')+'">';
+    if(isAdmin()) html+='<button class="editBtn" data-idx="'+idx+'">&#9998; Edit</button>';
     if(isAdmin()) html+='<button class="deleteBtn" data-idx="'+idx+'">&#215; Remove</button>';
     html+='<div class="cw" data-key="'+htmlEsc(bookKey(b))+'"><div class="cph"><div class="pi">&#128218;</div><div class="pt">'+htmlEsc(b.title)+'</div>'+(b.author?'<div class="pa">'+htmlEsc(b.author)+'</div>':'')+'</div></div>';
     html+='<div style="height:4px;background:'+(catColor[b.category]||'#7b1c3b')+'"></div>';
@@ -608,6 +625,10 @@ function render(){
   grid.querySelectorAll('.borrowBtn').forEach(function(btn){btn.addEventListener('click',function(){openBorrow(parseInt(this.dataset.idx));});});
   grid.querySelectorAll('.reserveBtn').forEach(function(btn){btn.addEventListener('click',function(){openReserve(parseInt(this.dataset.idx));});});
   grid.querySelectorAll('.returnBtn:not([disabled])').forEach(function(btn){btn.addEventListener('click',function(){returnBook(parseInt(this.dataset.idx));});});
+  grid.querySelectorAll('.editBtn').forEach(function(btn){btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    openEditBook(parseInt(this.dataset.idx));
+  });});
   grid.querySelectorAll('.deleteBtn').forEach(function(btn){btn.addEventListener('click',function(e){
     e.stopPropagation();
     var b=filteredBooks[parseInt(this.dataset.idx)];
@@ -945,6 +966,63 @@ function sendNewBookRequest(){
   sendToBackend({action:'request',requestType:'Request New Book',name:name,email:email,phone:phone,title:title,author:author,notes:notes});
   showToast('\u2705 Request sent! The library has been notified.');
   ['req2name','req2email','req2phone','req2title','req2author','req2notes'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+}
+
+var editingBook = null;
+function openEditBook(idx){
+  var b = filteredBooks[idx];
+  if(!b) return;
+  editingBook = b;
+  document.getElementById('editSub').textContent = b.title + (b.author ? ' — ' + b.author : '');
+  document.getElementById('editTitle').value = b.title;
+  document.getElementById('editAuthor').value = b.author || '';
+  var cat = document.getElementById('editCategory');
+  for(var i=0;i<cat.options.length;i++){
+    if(cat.options[i].value === b.category) cat.selectedIndex = i;
+  }
+  openModal('editModal');
+}
+function saveEditBook(){
+  if(!editingBook) return;
+  var newTitle  = document.getElementById('editTitle').value.trim();
+  var newAuthor = document.getElementById('editAuthor').value.trim();
+  var newCat    = document.getElementById('editCategory').value;
+  if(!newTitle){alert('Title cannot be empty.');return}
+  // Update status overrides
+  var oldKey = bookKey(editingBook);
+  var statuses = getStatuses();
+  var loans = getLoans();
+  var currentStatus = statuses[oldKey] || editingBook.status;
+  var currentLoan   = loans[oldKey] || null;
+  // Check if it's a custom book
+  var cust = getCust();
+  var isCustom = cust.some(function(x){return bookKey(x)===oldKey});
+  if(isCustom){
+    // Update in custom list
+    cust = cust.map(function(x){
+      if(bookKey(x)===oldKey){return {title:newTitle,author:newAuthor,category:newCat,status:x.status};}
+      return x;
+    });
+    saveCust(cust);
+  } else {
+    // For BASE books: add to custom overrides, mark original as deleted
+    var del = getDeleted();
+    if(del.indexOf(oldKey)===-1){del.push(oldKey);saveDeleted(del);}
+    cust.push({title:newTitle,author:newAuthor,category:newCat,status:editingBook.status});
+    saveCust(cust);
+  }
+  // Move status + loan to new key
+  var newKey = newTitle + '|||' + newAuthor;
+  if(currentStatus){ delete statuses[oldKey]; statuses[newKey]=currentStatus; saveStatuses(statuses); }
+  if(currentLoan){
+    delete loans[oldKey];
+    currentLoan.title=newTitle; currentLoan.author=newAuthor;
+    loans[newKey]=currentLoan; saveLoans(loans);
+  }
+  editingBook = null;
+  closeModal('editModal');
+  updStats();updTabs();render();
+  showToast('\u2705 Book updated.');
 }
 
 refreshAdminState();

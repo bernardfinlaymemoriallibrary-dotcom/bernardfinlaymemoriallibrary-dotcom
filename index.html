@@ -599,7 +599,7 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
         <p class="smallnote">Add regular borrowers — select them when lending to save time.</p>
         <div class="fr" style="margin-top:14px">
           <div><label class="fl">Name *</label><input class="fi" type="text" id="memName" placeholder="Member name"></div>
-          <div><label class="fl">Email *</label><input class="fi" type="email" id="memEmail" placeholder="member@example.com"></div>
+          <div><label class="fl">Email <span style="font-weight:400;color:#aaa">(optional)</span></label><input class="fi" type="text" id="memEmail" placeholder="member@example.com"></div>
         </div>
         <label class="fl">Phone</label><input class="fi" type="text" id="memPhone" placeholder="Phone number">
         <button class="sbtn" style="max-width:180px;margin-top:14px" onclick="saveMemberFromAdmin()">Save Member</button>
@@ -1240,7 +1240,7 @@ function saveMemberFromAdmin(){
   var name=document.getElementById('memName').value.trim();
   var email=document.getElementById('memEmail').value.trim();
   var phone=document.getElementById('memPhone').value.trim();
-  if(!name||!email){alert('Please add member name and email address.');return}
+  if(!name){alert('Please add the member\'s name.');return}
   upsertMember({name:name,email:email,phone:phone});
   sendToBackend({action:'member', name:name, email:email, phone:phone});
   document.getElementById('memName').value='';

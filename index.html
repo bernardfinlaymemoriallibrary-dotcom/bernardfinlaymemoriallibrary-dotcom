@@ -700,7 +700,8 @@ function cheshData(){ try{return JSON.parse(localStorage.getItem(CHESH_KEY)||'[]
 function cheshSave(a){ localStorage.setItem(CHESH_KEY, JSON.stringify(a)); }
 
 function cheshAutoAdd(bookTitle, category, borrowerName){
-  var isHebrew = (category||'').toLowerCase().indexOf('hebrew') !== -1;
+  var cat = (category||'').toLowerCase();
+  var isHebrew = cat.indexOf('hebrew') !== -1 || cat.indexOf('children') !== -1 || cat.indexOf('teens') !== -1;
   var fee = isHebrew ? 1 : 5;
   var arr = cheshData();
   arr.push({
@@ -708,7 +709,7 @@ function cheshAutoAdd(bookTitle, category, borrowerName){
     amount: fee,
     date: new Date().toISOString().split('T')[0],
     notes: bookTitle + (borrowerName ? ' — ' + borrowerName : ''),
-    label: isHebrew ? 'Hebrew Book (₪1)' : 'Book Borrowed (₪5)',
+    label: isHebrew ? 'Children/Hebrew Book (₪1)' : 'Book Borrowed (₪5)',
     ts: Date.now()
   });
   cheshSave(arr);

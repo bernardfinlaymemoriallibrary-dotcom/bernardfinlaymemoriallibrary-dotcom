@@ -573,7 +573,9 @@ function render(){
           '<span class="badge '+(avail?'av':'iu')+'">'+(avail?'&#10003; Available':'&#128213; On loan')+'</span>'+
         '</div>'+
         '<div class="book-actions">'+
-          (avail?'<button class="bbtn borrowBtn" data-idx="'+idx+'">Borrow</button>':'<button class="bbtn reserveBtn" data-idx="'+idx+'">Reserve</button>')+
+          (isAdmin()&&avail?'<button class="bbtn borrowBtn" data-idx="'+idx+'">Borrow</button>':'')+
+          (!isAdmin()&&!avail?'<button class="bbtn reserveBtn" data-idx="'+idx+'">Reserve</button>':'')+
+          (isAdmin()&&!avail?'<button class="bbtn reserveBtn" data-idx="'+idx+'">Reserve</button>':'')+
           (isAdmin()?'<button class="bbtn returnBtn" data-idx="'+idx+'" '+(avail?'disabled':'')+'>Return</button>':'')+
         '</div>'+
       '</div>'+
@@ -922,7 +924,4 @@ function sendNewBookRequest(){
 
 refreshAdminState();
 render();
-renderSaleBooks();
-</script>
-</body>
-</html>
+renderS

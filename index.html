@@ -320,6 +320,22 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
 .ptbl-r .lang{color:var(--text)}
 .ptbl-r .amt{color:var(--copper);font-weight:700;font-size:.95rem}
 
+/* ── ADMIN TABS ── */
+.atabs{display:flex;gap:6px;padding:0 0 20px;overflow-x:auto;scrollbar-width:none;flex-wrap:wrap}
+.atabs::-webkit-scrollbar{display:none}
+.atab{
+  white-space:nowrap;padding:9px 20px;
+  border-radius:24px;border:1.5px solid var(--warm);
+  background:#fff;cursor:pointer;
+  font-size:.8rem;font-weight:500;
+  font-family:'Lato','Inter',system-ui,sans-serif;
+  transition:all .18s;color:var(--mid);
+}
+.atab:hover{border-color:var(--copper);color:var(--espresso)}
+.atab.active{background:var(--espresso);color:#fff;border-color:var(--espresso)}
+.atab-pane{display:none}
+.atab-pane.active{display:block;animation:fadeUp .2s ease}
+
 /* ── ADMIN ── */
 .alock{
   background:var(--white);border:1px solid var(--warm);
@@ -542,116 +558,148 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
       </div>
     </div>
     <div id="adminPanelSection" style="display:none">
-      <div class="asec">
-        <h3>➕ Add a Book</h3>
-        <p class="smallnote">Saved in this browser and shown in the catalog immediately.</p>
-        <label class="fl">Title *</label><input class="fi" type="text" id="nt" placeholder="Book title">
-        <label class="fl">Author</label><input class="fi" type="text" id="na" placeholder="Author name">
-        <div class="fr" style="margin-top:14px">
-          <div><label class="fl">Category *</label>
-            <select class="fi" id="nc">
-              <option>Just Arrived</option><option>Fiction</option><option>Biographies</option>
-              <option>Non-Fiction</option><option>Holocaust</option><option>True Short Stories</option>
-              <option>Children &amp; Teens</option><option>Hebrew Books</option>
-            </select>
+
+      <!-- Admin tab bar -->
+      <div class="atabs" id="adminTabs">
+        <button class="atab active"  onclick="switchAdminTab('borrowed')">📋 Borrowed</button>
+        <button class="atab"         onclick="switchAdminTab('return')">📤 Return</button>
+        <button class="atab"         onclick="switchAdminTab('add')">➕ Add Book</button>
+        <button class="atab"         onclick="switchAdminTab('remove')">🗑️ Remove</button>
+        <button class="atab"         onclick="switchAdminTab('members')">👥 Members</button>
+        <button class="atab"         onclick="switchAdminTab('coming')">⭐ Coming Soon</button>
+        <button class="atab"         onclick="switchAdminTab('sale')">🏷️ For Sale</button>
+        <button class="atab"         onclick="switchAdminTab('cheshbon')">💰 Cheshbon</button>
+      </div>
+
+      <!-- ── TAB: BORROWED ── -->
+      <div class="atab-pane active" id="atab-borrowed">
+        <div class="asec">
+          <h3>📋 Currently Borrowed</h3>
+          <p class="smallnote">All books currently on loan, with borrower details.</p>
+          <input class="fi" type="text" id="borrowedSearch" placeholder="Filter by title or borrower…" oninput="buildBorrowedList()" style="margin-bottom:14px">
+          <div id="borrowedList"></div>
+        </div>
+      </div>
+
+      <!-- ── TAB: RETURN ── -->
+      <div class="atab-pane" id="atab-return">
+        <div class="asec">
+          <h3>📤 Return Books</h3>
+          <div id="returnList"></div>
+        </div>
+      </div>
+
+      <!-- ── TAB: ADD ── -->
+      <div class="atab-pane" id="atab-add">
+        <div class="asec">
+          <h3>➕ Add a Book</h3>
+          <p class="smallnote">Saved in this browser and shown in the catalog immediately.</p>
+          <label class="fl">Title *</label><input class="fi" type="text" id="nt" placeholder="Book title">
+          <label class="fl">Author</label><input class="fi" type="text" id="na" placeholder="Author name">
+          <div class="fr" style="margin-top:14px">
+            <div><label class="fl">Category *</label>
+              <select class="fi" id="nc">
+                <option>Just Arrived</option><option>Fiction</option><option>Biographies</option>
+                <option>Non-Fiction</option><option>Holocaust</option><option>True Short Stories</option>
+                <option>Children &amp; Teens</option><option>Hebrew Books</option>
+              </select>
+            </div>
+            <div><label class="fl">Status</label>
+              <select class="fi" id="ns"><option value="Available">Available</option><option value="In use">In use (On loan)</option></select>
+            </div>
           </div>
-          <div><label class="fl">Status</label>
-            <select class="fi" id="ns"><option value="Available">Available</option><option value="In use">In use (On loan)</option></select>
+          <button class="sbtn" style="max-width:200px;margin-top:16px" onclick="addBook()">Add to Library</button>
+        </div>
+      </div>
+
+      <!-- ── TAB: REMOVE ── -->
+      <div class="atab-pane" id="atab-remove">
+        <div class="asec">
+          <h3>🗑️ Remove a Book</h3>
+          <p class="smallnote">Search for a book to permanently remove it from the catalog.</p>
+          <label class="fl">Search</label>
+          <input class="fi" type="text" id="removeSearch" placeholder="Type title or author…" oninput="renderRemoveList()">
+          <div id="removeList" style="margin-top:14px"><p class="smallnote">Start typing to search for a book.</p></div>
+        </div>
+      </div>
+
+      <!-- ── TAB: MEMBERS ── -->
+      <div class="atab-pane" id="atab-members">
+        <div class="asec">
+          <h3>👥 Saved Members</h3>
+          <p class="smallnote">Add regular borrowers — select them when lending to save time.</p>
+          <div class="fr" style="margin-top:14px">
+            <div><label class="fl">Name * (only required field)</label><input class="fi" type="text" id="memName" placeholder="Member name"></div>
+            <div><label class="fl">Email <span style="font-weight:400;color:#aaa">(optional)</span></label><input class="fi" type="text" id="memEmail" placeholder="optional"></div>
           </div>
+          <label class="fl">Phone</label><input class="fi" type="text" id="memPhone" placeholder="Phone number">
+          <button class="sbtn" style="max-width:180px;margin-top:14px" onclick="saveMemberFromAdmin()">Save Member</button>
+          <div id="memberList" style="margin-top:16px"></div>
         </div>
-        <button class="sbtn" style="max-width:200px;margin-top:16px" onclick="addBook()">Add to Library</button>
-      </div>
-      <div class="asec">
-        <h3>🗑️ Remove a Book</h3>
-        <p class="smallnote">Search for a book to permanently remove it from the catalog.</p>
-        <label class="fl">Search</label>
-        <input class="fi" type="text" id="removeSearch" placeholder="Type title or author…" oninput="renderRemoveList()">
-        <div id="removeList" style="margin-top:14px"><p class="smallnote">Start typing to search for a book.</p></div>
       </div>
 
-      <div class="asec">
-        <h3>⭐ Coming Soon</h3>
-        <p class="smallnote">Books expected to arrive. They'll show on the Coming Soon page.</p>
-        <label class="fl">Title *</label><input class="fi" type="text" id="coming-title" placeholder="Book title">
-        <label class="fl">Author</label><input class="fi" type="text" id="coming-author" placeholder="Author name">
-        <label class="fl">Expected (e.g. "Next week", "August")</label>
-        <input class="fi" type="text" id="coming-when" placeholder="When is it arriving?">
-        <label class="fl">Notes</label>
-        <input class="fi" type="text" id="coming-notes" placeholder="Any extra info">
-        <button class="sbtn gold" style="max-width:220px;margin-top:16px" onclick="addComingBook()">Add Coming Soon</button>
-        <div id="comingAdminList" style="margin-top:16px"></div>
-      </div>
-
-      <div class="asec">
-        <h3>🏷️ Books for Sale</h3>
-        <p class="smallnote">These appear on the For Sale page.</p>
-        <label class="fl">Title *</label><input class="fi" type="text" id="sale-title" placeholder="Book title">
-        <label class="fl">Author</label><input class="fi" type="text" id="sale-author" placeholder="Author name">
-        <div class="fr" style="margin-top:0">
-          <div><label class="fl">Price</label><input class="fi" type="text" id="sale-price" placeholder="e.g. ₪20"></div>
-          <div><label class="fl">Notes</label><input class="fi" type="text" id="sale-notes" placeholder="e.g. Like new"></div>
+      <!-- ── TAB: COMING SOON ── -->
+      <div class="atab-pane" id="atab-coming">
+        <div class="asec">
+          <h3>⭐ Coming Soon</h3>
+          <p class="smallnote">Books expected to arrive. They'll show on the Coming Soon page.</p>
+          <label class="fl">Title *</label><input class="fi" type="text" id="coming-title" placeholder="Book title">
+          <label class="fl">Author</label><input class="fi" type="text" id="coming-author" placeholder="Author name">
+          <label class="fl">Expected (e.g. "Next week", "August")</label>
+          <input class="fi" type="text" id="coming-when" placeholder="When is it arriving?">
+          <label class="fl">Notes</label>
+          <input class="fi" type="text" id="coming-notes" placeholder="Any extra info">
+          <button class="sbtn gold" style="max-width:220px;margin-top:16px" onclick="addComingBook()">Add Coming Soon</button>
+          <div id="comingAdminList" style="margin-top:16px"></div>
         </div>
-        <button class="sbtn gold" style="max-width:200px;margin-top:16px" onclick="addSaleBook()">Add for Sale</button>
-        <div id="saleAdminList" style="margin-top:16px"></div>
-      </div>
-      <div class="asec">
-        <h3>👥 Saved Members</h3>
-        <p class="smallnote">Add regular borrowers — select them when lending to save time.</p>
-        <div class="fr" style="margin-top:14px">
-          <div><label class="fl">Name * (only required field)</label><input class="fi" type="text" id="memName" placeholder="Member name"></div>
-          <div><label class="fl">Email <span style="font-weight:400;color:#aaa">(optional)</span></label><input class="fi" type="text" id="memEmail" placeholder="optional"></div>
-        </div>
-        <label class="fl">Phone</label><input class="fi" type="text" id="memPhone" placeholder="Phone number">
-        <button class="sbtn" style="max-width:180px;margin-top:14px" onclick="saveMemberFromAdmin()">Save Member</button>
-        <div id="memberList" style="margin-top:16px"></div>
-      </div>
-      <div class="asec">
-        <h3>📋 Currently Borrowed</h3>
-        <p class="smallnote">All books currently on loan, with borrower details.</p>
-        <input class="fi" type="text" id="borrowedSearch" placeholder="Filter by title or borrower…" oninput="buildBorrowedList()" style="margin-bottom:14px">
-        <div id="borrowedList"></div>
       </div>
 
-      <div class="asec">
-        <h3>📤 Return Books</h3>
-        <div id="returnList"></div>
-      </div>
-      
-
-      <!-- ── CHESHBON ── -->
-      <div class="asec" id="cheshbonSec">
-        <h3>💰 Cheshbon — Fees Collected</h3>
-        <p class="smallnote">Books automatically add their fee when borrowed. Add late fees, sales, or refunds manually.</p>
-
-        <!-- Running total -->
-        <div id="cheshTotal" style="background:var(--linen2);border:1px solid var(--warm);border-radius:var(--rs);padding:16px 20px;margin:16px 0;display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:.82rem;color:var(--mid);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Total Collected</span>
-          <span id="cheshTotalAmt" style="font-size:1.6rem;font-weight:700;color:var(--espresso)">₪0.00</span>
-        </div>
-
-        <!-- Manual entry -->
-        <div class="fr" style="margin-top:4px">
-          <div>
-            <label class="fl">Type</label>
-            <select class="fi" id="cf-type">
-              <option value="late">Late Fee</option>
-              <option value="sale">Book Sale</option>
-              <option value="other">Other</option>
-              <option value="refund">Refund / Correction</option>
-            </select>
+      <!-- ── TAB: FOR SALE ── -->
+      <div class="atab-pane" id="atab-sale">
+        <div class="asec">
+          <h3>🏷️ Books for Sale</h3>
+          <p class="smallnote">These appear on the For Sale page.</p>
+          <label class="fl">Title *</label><input class="fi" type="text" id="sale-title" placeholder="Book title">
+          <label class="fl">Author</label><input class="fi" type="text" id="sale-author" placeholder="Author name">
+          <div class="fr" style="margin-top:0">
+            <div><label class="fl">Price</label><input class="fi" type="text" id="sale-price" placeholder="e.g. ₪20"></div>
+            <div><label class="fl">Notes</label><input class="fi" type="text" id="sale-notes" placeholder="e.g. Like new"></div>
           </div>
-          <div><label class="fl">Amount (₪)</label><input class="fi" type="number" id="cf-amount" placeholder="0" min="0" step="0.5"></div>
+          <button class="sbtn gold" style="max-width:200px;margin-top:16px" onclick="addSaleBook()">Add for Sale</button>
+          <div id="saleAdminList" style="margin-top:16px"></div>
         </div>
-        <label class="fl">Name / Notes</label>
-        <input class="fi" type="text" id="cf-notes" placeholder="e.g. Chana Cohen – returned 3 days late">
-        <button class="sbtn gold" style="max-width:200px;margin-top:14px" onclick="cheshAddManual()">Add Entry</button>
-
-        <!-- History -->
-        <div id="cheshHistory" style="margin-top:20px"></div>
-        <button class="fbtn" style="margin-top:10px;color:#9b2020;border-color:#ffd0d0;font-size:.75rem" onclick="cheshClearAll()">🗑 Clear all entries</button>
       </div>
 
-      <button class="sbtn danger" style="max-width:160px" onclick="adminLogout()">🔒 Lock Admin</button>
+      <!-- ── TAB: CHESHBON ── -->
+      <div class="atab-pane" id="atab-cheshbon">
+        <div class="asec" id="cheshbonSec">
+          <h3>💰 Cheshbon — Fees Collected</h3>
+          <p class="smallnote">Books automatically add their fee when borrowed. Add late fees, sales, or refunds manually.</p>
+          <div id="cheshTotal" style="background:var(--linen2);border:1px solid var(--warm);border-radius:var(--rs);padding:16px 20px;margin:16px 0;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:.82rem;color:var(--mid);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Total Collected</span>
+            <span id="cheshTotalAmt" style="font-size:1.6rem;font-weight:700;color:var(--espresso)">₪0.00</span>
+          </div>
+          <div class="fr" style="margin-top:4px">
+            <div>
+              <label class="fl">Type</label>
+              <select class="fi" id="cf-type">
+                <option value="late">Late Fee</option>
+                <option value="sale">Book Sale</option>
+                <option value="other">Other</option>
+                <option value="refund">Refund / Correction</option>
+              </select>
+            </div>
+            <div><label class="fl">Amount (₪)</label><input class="fi" type="number" id="cf-amount" placeholder="0" min="0" step="0.5"></div>
+          </div>
+          <label class="fl">Name / Notes</label>
+          <input class="fi" type="text" id="cf-notes" placeholder="e.g. Chana Cohen – returned 3 days late">
+          <button class="sbtn gold" style="max-width:200px;margin-top:14px" onclick="cheshAddManual()">Add Entry</button>
+          <div id="cheshHistory" style="margin-top:20px"></div>
+          <button class="fbtn" style="margin-top:10px;color:#9b2020;border-color:#ffd0d0;font-size:.75rem" onclick="cheshClearAll()">🗑 Clear all entries</button>
+        </div>
+      </div>
+
+      <button class="sbtn danger" style="max-width:160px;margin-top:8px" onclick="adminLogout()">🔒 Lock Admin</button>
     </div>
   </div>
 </div>
@@ -878,16 +926,24 @@ function getDeleted(){try{return JSON.parse(localStorage.getItem('bf_deleted')||
 function saveDeleted(a){localStorage.setItem('bf_deleted',JSON.stringify(a))}
 function deleteBook(b){
   var key=bookKey(b);
+  // Always remove from both sources to avoid ghost duplicates
   var cust=getCust();
-  var isCustom=cust.some(function(x){return bookKey(x)===key});
-  if(isCustom){saveCust(cust.filter(function(x){return bookKey(x)!==key}));}
-  else{var del=getDeleted();if(del.indexOf(key)===-1){del.push(key);saveDeleted(del);}}
+  saveCust(cust.filter(function(x){return bookKey(x)!==key}));
+  var del=getDeleted();if(del.indexOf(key)===-1){del.push(key);saveDeleted(del);}
   var loans=getLoans();delete loans[key];saveLoans(loans);
   var stats=getStatuses();delete stats[key];saveStatuses(stats);
   updStats();updTabs();render();
   showToast('Book removed from library.');
 }
-function allBooks(){var del=getDeleted();return BASE.filter(function(b){return del.indexOf(bookKey(b))===-1}).concat(getCust())}
+function allBooks(){
+  var del=getDeleted();
+  var cust=getCust();
+  // Build a set of custom keys so base duplicates are suppressed
+  var custKeys={};
+  cust.forEach(function(b){custKeys[bookKey(b)]=true;});
+  var base=BASE.filter(function(b){return del.indexOf(bookKey(b))===-1 && !custKeys[bookKey(b)];});
+  return base.concat(cust);
+}
 
 function bookKey(b){return (b.title||'')+'|||'+(b.author||'')}
 function getStatuses(){try{return JSON.parse(localStorage.getItem('bf_statuses')||'{}')}catch(e){return{}}}
@@ -1274,11 +1330,11 @@ function refreshAdminState(){
   var ls=document.getElementById('adminLoginSection');if(ls)ls.style.display=isAdmin()?'none':'block';
   var ps=document.getElementById('adminPanelSection');if(ps)ps.style.display=isAdmin()?'block':'none';
   document.body.classList.toggle('admin-mode',isAdmin());
-  if(isAdmin()) setTimeout(initCheshbon,100);
+  if(isAdmin()) setTimeout(function(){ switchAdminTab('borrowed'); },100);
 
   buildMemberList();
 }
-function openAdmin(){showPage('admin');buildBorrowedList();buildReturnList();buildMemberList();initCheshbon();}
+function openAdmin(){showPage('admin');if(isAdmin()) switchAdminTab('borrowed');}
 
 function adminLogin(){
   var p=document.getElementById('adminPass').value;
@@ -1327,6 +1383,24 @@ function buildReturnList(){
   }).join('');
   el.querySelectorAll('button').forEach(function(btn){btn.onclick=function(){var key=this.dataset.key;var b=allBooks().filter(function(x){return bookKey(x)===key})[0];if(b){markReturned(b);}}});
 }
+function switchAdminTab(id){
+  document.querySelectorAll('.atab-pane').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.atab').forEach(function(b){b.classList.remove('active')});
+  var pane=document.getElementById('atab-'+id);
+  if(pane) pane.classList.add('active');
+  // activate the matching button
+  document.querySelectorAll('.atab').forEach(function(b){
+    if(b.getAttribute('onclick')==="switchAdminTab('"+id+"')") b.classList.add('active');
+  });
+  // refresh relevant content
+  if(id==='borrowed') buildBorrowedList();
+  if(id==='return') buildReturnList();
+  if(id==='members') buildMemberList();
+  if(id==='cheshbon') initCheshbon();
+  if(id==='coming') renderComingBooks();
+  if(id==='sale') renderSaleBooks();
+}
+
 function buildBorrowedList(){
   var el=document.getElementById('borrowedList');
   if(!el) return;
@@ -1405,7 +1479,7 @@ function showPage(name){
   var pg=document.getElementById('page-'+name);if(pg)pg.classList.add('active');
   var nb=document.querySelector('[data-page="'+name+'"]');if(nb)nb.classList.add('active');
   window.scrollTo(0,0);
-  if(name==='admin'){buildBorrowedList();buildReturnList();buildMemberList();}
+  if(name==='admin' && isAdmin()){switchAdminTab('borrowed');}
   if(name==='forsale'){renderSaleBooks();}
   if(name==='coming'){renderComingBooks();}
 }

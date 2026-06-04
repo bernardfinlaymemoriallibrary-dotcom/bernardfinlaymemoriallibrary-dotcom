@@ -606,6 +606,13 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
         <div id="memberList" style="margin-top:16px"></div>
       </div>
       <div class="asec">
+        <h3>📋 Currently Borrowed</h3>
+        <p class="smallnote">All books currently on loan, with borrower details.</p>
+        <input class="fi" type="text" id="borrowedSearch" placeholder="Filter by title or borrower…" oninput="buildBorrowedList()" style="margin-bottom:14px">
+        <div id="borrowedList"></div>
+      </div>
+
+      <div class="asec">
         <h3>📤 Return Books</h3>
         <div id="returnList"></div>
       </div>
@@ -1271,14 +1278,14 @@ function refreshAdminState(){
 
   buildMemberList();
 }
-function openAdmin(){showPage('admin');buildReturnList();buildMemberList();initCheshbon();}
+function openAdmin(){showPage('admin');buildBorrowedList();buildReturnList();buildMemberList();initCheshbon();}
 
 function adminLogin(){
   var p=document.getElementById('adminPass').value;
   if(p!==ADMIN_PASSWORD){alert('Incorrect password.');return}
   localStorage.setItem('bf_admin_unlocked','yes');
   document.getElementById('adminPass').value='';
-  refreshAdminState();buildReturnList();render();
+  refreshAdminState();buildBorrowedList();buildReturnList();render();
 }
 function adminLogout(){
   localStorage.removeItem('bf_admin_unlocked');
@@ -1298,6 +1305,7 @@ function markReturned(b){
     returnedDate:todayISO()
   });
   render();
+  buildBorrowedList();
   buildReturnList();
   showToast('\u2705 "'+b.title+'" marked as returned.');
 }
@@ -1319,6 +1327,57 @@ function buildReturnList(){
   }).join('');
   el.querySelectorAll('button').forEach(function(btn){btn.onclick=function(){var key=this.dataset.key;var b=allBooks().filter(function(x){return bookKey(x)===key})[0];if(b){markReturned(b);}}});
 }
+function buildBorrowedList(){
+  var el=document.getElementById('borrowedList');
+  if(!el) return;
+  var q=(document.getElementById('borrowedSearch')||{}).value||'';
+  q=q.toLowerCase();
+  var onLoan=allBooks().filter(function(b){return statusOf(b)!=='Available'});
+  if(!onLoan.length){el.innerHTML='<p class="smallnote">No books are currently on loan.</p>';return}
+  var filtered=onLoan.filter(function(b){
+    if(!q) return true;
+    var loan=getLoan(b)||{};
+    return (b.title||'').toLowerCase().indexOf(q)!==-1
+      ||(b.author||'').toLowerCase().indexOf(q)!==-1
+      ||(loan.name||loan.borrowerName||'').toLowerCase().indexOf(q)!==-1;
+  });
+  if(!filtered.length){el.innerHTML='<p class="smallnote">No matches found.</p>';return}
+  // sort: overdue first, then by due date
+  var today=todayISO();
+  filtered.sort(function(a,b){
+    var la=getLoan(a)||{},lb=getLoan(b)||{};
+    var da=la.dueDate||'9999',db=lb.dueDate||'9999';
+    return da<db?-1:da>db?1:0;
+  });
+  el.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:.82rem">'
+    +'<thead><tr style="background:var(--linen2);text-align:left">'
+    +'<th style="padding:8px 10px;border-bottom:1px solid var(--warm);color:var(--mid);font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Book</th>'
+    +'<th style="padding:8px 10px;border-bottom:1px solid var(--warm);color:var(--mid);font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Borrower</th>'
+    +'<th style="padding:8px 10px;border-bottom:1px solid var(--warm);color:var(--mid);font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Borrowed</th>'
+    +'<th style="padding:8px 10px;border-bottom:1px solid var(--warm);color:var(--mid);font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.5px">Due</th>'
+    +'</tr></thead><tbody>'
+    +filtered.map(function(b){
+      var loan=getLoan(b)||{};
+      var name=loan.name||loan.borrowerName||'—';
+      var email=loan.email||loan.borrowerEmail||'';
+      var phone=loan.phone||loan.borrowerPhone||'';
+      var due=loan.dueDate||'';
+      var borrowed=loan.dateBorrowed||'';
+      var overdue=due&&due<today;
+      var dueCss=overdue?'color:var(--red);font-weight:700':'color:var(--green)';
+      var contactLine=email?'<br><a href="mailto:'+htmlEsc(email)+'" style="color:var(--copper);text-decoration:none">'+htmlEsc(email)+'</a>':'';
+      if(phone) contactLine+=(contactLine?'<br>':'')+htmlEsc(phone);
+      return '<tr style="border-bottom:1px solid var(--linen2)">'
+        +'<td style="padding:10px 10px;vertical-align:top"><strong>'+htmlEsc(b.title)+'</strong>'+(b.author?'<br><em style="color:var(--mid)">'+htmlEsc(b.author)+'</em>':'')+'</td>'
+        +'<td style="padding:10px 10px;vertical-align:top">'+htmlEsc(name)+contactLine+'</td>'
+        +'<td style="padding:10px 10px;vertical-align:top;color:var(--mid)">'+htmlEsc(borrowed)+'</td>'
+        +'<td style="padding:10px 10px;vertical-align:top;'+dueCss+'">'+htmlEsc(due)+(overdue?' ⚠️ Overdue':'')+'</td>'
+        +'</tr>';
+    }).join('')
+    +'</tbody></table>'
+    +'<p class="smallnote" style="margin-top:10px">'+filtered.length+' book'+(filtered.length!==1?'s':'')+' on loan</p>';
+}
+
 function sendReminderEmail(){
   var name=document.getElementById('remName').value.trim();
   var email=document.getElementById('remEmail').value.trim();
@@ -1346,7 +1405,7 @@ function showPage(name){
   var pg=document.getElementById('page-'+name);if(pg)pg.classList.add('active');
   var nb=document.querySelector('[data-page="'+name+'"]');if(nb)nb.classList.add('active');
   window.scrollTo(0,0);
-  if(name==='admin'){buildReturnList();buildMemberList();}
+  if(name==='admin'){buildBorrowedList();buildReturnList();buildMemberList();}
   if(name==='forsale'){renderSaleBooks();}
   if(name==='coming'){renderComingBooks();}
 }

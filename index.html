@@ -365,6 +365,20 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
 .return-item:last-child{border-bottom:none}
 .return-item button{padding:5px 13px;border:none;border-radius:6px;background:var(--green);color:#fff;cursor:pointer;font-family:'Lato','Inter',system-ui,sans-serif;font-weight:600;font-size:.75rem;white-space:nowrap}
 
+
+/* ── ADMIN TABS ── */
+.admin-tabs{display:flex;gap:0;flex-wrap:wrap;border-bottom:2px solid var(--warm);margin-bottom:24px;overflow-x:auto;}
+.atab{
+  padding:10px 16px;font-size:.78rem;font-weight:600;cursor:pointer;
+  border:none;background:none;font-family:'Lato','Inter',system-ui,sans-serif;
+  color:var(--mid);border-bottom:2px solid transparent;margin-bottom:-2px;
+  white-space:nowrap;transition:all .15s;letter-spacing:.2px;
+}
+.atab:hover{color:var(--espresso);}
+.atab.active{color:var(--espresso);border-bottom-color:var(--copper);background:var(--linen2);}
+.atab-panel{display:none;}
+.atab-panel.active{display:block;}
+
 /* ── RESPONSIVE ── */
 @media(max-width:800px){
   .hero-inner{grid-template-columns:1fr;padding:32px 20px 26px;gap:20px}
@@ -542,109 +556,158 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
       </div>
     </div>
     <div id="adminPanelSection" style="display:none">
-      <div class="asec">
-        <h3>➕ Add a Book</h3>
-        <p class="smallnote">Saved in this browser and shown in the catalog immediately.</p>
-        <label class="fl">Title *</label><input class="fi" type="text" id="nt" placeholder="Book title">
-        <label class="fl">Author</label><input class="fi" type="text" id="na" placeholder="Author name">
-        <div class="fr" style="margin-top:14px">
-          <div><label class="fl">Category *</label>
-            <select class="fi" id="nc">
-              <option>Just Arrived</option><option>Fiction</option><option>Biographies</option>
-              <option>Non-Fiction</option><option>Holocaust</option><option>True Short Stories</option>
-              <option>Children &amp; Teens</option><option>עברית</option>
+      <!-- ADMIN TABS NAV -->
+      <div class="admin-tabs">
+        <button class="atab active" onclick="showAdminTab('tab-add')">➕ Add Book</button>
+        <button class="atab" onclick="showAdminTab('tab-remove')">🗑️ Remove</button>
+        <button class="atab" onclick="showAdminTab('tab-coming')">⭐ Coming Soon</button>
+        <button class="atab" onclick="showAdminTab('tab-sale')">🏷️ For Sale</button>
+        <button class="atab" onclick="showAdminTab('tab-members')">👥 Members</button>
+        <button class="atab" onclick="showAdminTab('tab-returns')">📤 Returns</button>
+        <button class="atab" onclick="showAdminTab('tab-cheshbon')">💰 Cheshbon</button>
+        <button class="atab" onclick="showAdminTab('tab-log')">📋 Borrow Log</button>
+      </div>
+
+      <!-- TAB: ADD BOOK -->
+      <div class="atab-panel active" id="tab-add">
+        <div class="asec">
+          <h3>➕ Add a Book</h3>
+          <p class="smallnote">Saved in this browser and shown in the catalog immediately.</p>
+          <label class="fl">Title *</label><input class="fi" type="text" id="nt" placeholder="Book title">
+          <label class="fl">Author</label><input class="fi" type="text" id="na" placeholder="Author name">
+          <div class="fr" style="margin-top:14px">
+            <div><label class="fl">Category *</label>
+              <select class="fi" id="nc">
+                <option>Just Arrived</option><option>Fiction</option><option>Biographies</option>
+                <option>Non-Fiction</option><option>Holocaust</option><option>True Short Stories</option>
+                <option>Children &amp; Teens</option><option>עברית</option>
+              </select>
+            </div>
+            <div><label class="fl">Status</label>
+              <select class="fi" id="ns"><option value="Available">Available</option><option value="In use">In use (On loan)</option></select>
+            </div>
+          </div>
+          <button class="sbtn" style="max-width:200px;margin-top:16px" onclick="addBook()">Add to Library</button>
+        </div>
+      </div>
+
+      <!-- TAB: REMOVE -->
+      <div class="atab-panel" id="tab-remove">
+        <div class="asec">
+          <h3>🗑️ Remove a Book</h3>
+          <p class="smallnote">Search for a book to permanently remove it from the catalog.</p>
+          <label class="fl">Search</label>
+          <input class="fi" type="text" id="removeSearch" placeholder="Type title or author…" oninput="renderRemoveList()">
+          <div id="removeList" style="margin-top:14px"><p class="smallnote">Start typing to search for a book.</p></div>
+        </div>
+      </div>
+
+      <!-- TAB: COMING SOON -->
+      <div class="atab-panel" id="tab-coming">
+        <div class="asec">
+          <h3>⭐ Coming Soon</h3>
+          <p class="smallnote">Books expected to arrive. They'll show on the Coming Soon page.</p>
+          <label class="fl">Title *</label><input class="fi" type="text" id="coming-title" placeholder="Book title">
+          <label class="fl">Author</label><input class="fi" type="text" id="coming-author" placeholder="Author name">
+          <label class="fl">Expected (e.g. "Next week", "August")</label>
+          <input class="fi" type="text" id="coming-when" placeholder="When is it arriving?">
+          <label class="fl">Notes</label>
+          <input class="fi" type="text" id="coming-notes" placeholder="Any extra info">
+          <button class="sbtn gold" style="max-width:220px;margin-top:16px" onclick="addComingBook()">Add Coming Soon</button>
+          <div id="comingAdminList" style="margin-top:16px"></div>
+        </div>
+      </div>
+
+      <!-- TAB: FOR SALE -->
+      <div class="atab-panel" id="tab-sale">
+        <div class="asec">
+          <h3>🏷️ Books for Sale</h3>
+          <p class="smallnote">These appear on the For Sale page.</p>
+          <label class="fl">Title *</label><input class="fi" type="text" id="sale-title" placeholder="Book title">
+          <label class="fl">Author</label><input class="fi" type="text" id="sale-author" placeholder="Author name">
+          <div class="fr" style="margin-top:0">
+            <div><label class="fl">Price</label><input class="fi" type="text" id="sale-price" placeholder="e.g. ₪20"></div>
+            <div><label class="fl">Notes</label><input class="fi" type="text" id="sale-notes" placeholder="e.g. Like new"></div>
+          </div>
+          <button class="sbtn gold" style="max-width:200px;margin-top:16px" onclick="addSaleBook()">Add for Sale</button>
+          <div id="saleAdminList" style="margin-top:16px"></div>
+        </div>
+      </div>
+
+      <!-- TAB: MEMBERS -->
+      <div class="atab-panel" id="tab-members">
+        <div class="asec">
+          <h3>👥 Members</h3>
+          <p class="smallnote">Add regular borrowers. Click a name to see their borrow history and balance.</p>
+          <div class="fr" style="margin-top:14px">
+            <div><label class="fl">Name * (only required field)</label><input class="fi" type="text" id="memName" placeholder="Member name"></div>
+            <div><label class="fl">Email <span style="font-weight:400;color:#aaa">(optional)</span></label><input class="fi" type="text" id="memEmail" placeholder="optional"></div>
+          </div>
+          <label class="fl">Phone</label><input class="fi" type="text" id="memPhone" placeholder="Phone number">
+          <button class="sbtn" style="max-width:180px;margin-top:14px" onclick="saveMemberFromAdmin()">Save Member</button>
+          <div id="memberList" style="margin-top:16px"></div>
+        </div>
+      </div>
+
+      <!-- TAB: RETURNS -->
+      <div class="atab-panel" id="tab-returns">
+        <div class="asec">
+          <h3>📤 Return Books</h3>
+          <p class="smallnote">All books currently on loan. Click Return when a book is brought back.</p>
+          <div id="returnList"></div>
+        </div>
+      </div>
+
+      <!-- TAB: CHESHBON -->
+      <div class="atab-panel" id="tab-cheshbon">
+        <div class="asec" id="cheshbonSec">
+          <h3>💰 Cheshbon — Fees Collected</h3>
+          <p class="smallnote">Books automatically add their fee when borrowed. Add late fees, sales, or refunds manually.</p>
+          <div id="cheshTotal" style="background:var(--linen2);border:1px solid var(--warm);border-radius:var(--rs);padding:16px 20px;margin:16px 0;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:.82rem;color:var(--mid);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Total Collected</span>
+            <span id="cheshTotalAmt" style="font-size:1.6rem;font-weight:700;color:var(--espresso)">₪0.00</span>
+          </div>
+          <div class="fr" style="margin-top:4px">
+            <div>
+              <label class="fl">Type</label>
+              <select class="fi" id="cf-type">
+                <option value="late">Late Fee</option>
+                <option value="sale">Book Sale</option>
+                <option value="other">Other</option>
+                <option value="refund">Refund / Correction</option>
+              </select>
+            </div>
+            <div><label class="fl">Amount (₪)</label><input class="fi" type="number" id="cf-amount" placeholder="0" min="0" step="0.5"></div>
+          </div>
+          <label class="fl">Name / Notes</label>
+          <input class="fi" type="text" id="cf-notes" placeholder="e.g. Chana Cohen – returned 3 days late">
+          <button class="sbtn gold" style="max-width:200px;margin-top:14px" onclick="cheshAddManual()">Add Entry</button>
+          <div id="cheshHistory" style="margin-top:20px"></div>
+          <button class="fbtn" style="margin-top:10px;color:#9b2020;border-color:#ffd0d0;font-size:.75rem" onclick="cheshClearAll()">🗑 Clear all entries</button>
+        </div>
+      </div>
+
+      <!-- TAB: BORROW LOG -->
+      <div class="atab-panel" id="tab-log">
+        <div class="asec">
+          <h3>📋 Borrow Log</h3>
+          <p class="smallnote">Every book borrowed and returned, in order. Updated automatically.</p>
+          <div style="display:flex;gap:8px;margin:14px 0 4px;flex-wrap:wrap;align-items:center">
+            <input class="fi" type="text" id="logSearch" placeholder="Filter by name or title…" oninput="renderBorrowLog()" style="flex:1;min-width:160px">
+            <select class="fi" id="logFilter" onchange="renderBorrowLog()" style="width:auto;min-width:130px">
+              <option value="all">All</option>
+              <option value="out">Still out</option>
+              <option value="returned">Returned</option>
             </select>
           </div>
-          <div><label class="fl">Status</label>
-            <select class="fi" id="ns"><option value="Available">Available</option><option value="In use">In use (On loan)</option></select>
-          </div>
+          <div id="borrowLogList" style="margin-top:12px"></div>
+          <button class="fbtn" style="margin-top:12px;color:#9b2020;border-color:#ffd0d0;font-size:.75rem" onclick="if(confirm('Clear entire borrow log?')){saveBorrowLog([]);renderBorrowLog();}">🗑 Clear log</button>
         </div>
-        <button class="sbtn" style="max-width:200px;margin-top:16px" onclick="addBook()">Add to Library</button>
-      </div>
-      <div class="asec">
-        <h3>🗑️ Remove a Book</h3>
-        <p class="smallnote">Search for a book to permanently remove it from the catalog.</p>
-        <label class="fl">Search</label>
-        <input class="fi" type="text" id="removeSearch" placeholder="Type title or author…" oninput="renderRemoveList()">
-        <div id="removeList" style="margin-top:14px"><p class="smallnote">Start typing to search for a book.</p></div>
       </div>
 
-      <div class="asec">
-        <h3>⭐ Coming Soon</h3>
-        <p class="smallnote">Books expected to arrive. They'll show on the Coming Soon page.</p>
-        <label class="fl">Title *</label><input class="fi" type="text" id="coming-title" placeholder="Book title">
-        <label class="fl">Author</label><input class="fi" type="text" id="coming-author" placeholder="Author name">
-        <label class="fl">Expected (e.g. "Next week", "August")</label>
-        <input class="fi" type="text" id="coming-when" placeholder="When is it arriving?">
-        <label class="fl">Notes</label>
-        <input class="fi" type="text" id="coming-notes" placeholder="Any extra info">
-        <button class="sbtn gold" style="max-width:220px;margin-top:16px" onclick="addComingBook()">Add Coming Soon</button>
-        <div id="comingAdminList" style="margin-top:16px"></div>
+      <div style="margin-top:24px">
+        <button class="sbtn danger" style="max-width:160px" onclick="adminLogout()">🔒 Lock Admin</button>
       </div>
-
-      <div class="asec">
-        <h3>🏷️ Books for Sale</h3>
-        <p class="smallnote">These appear on the For Sale page.</p>
-        <label class="fl">Title *</label><input class="fi" type="text" id="sale-title" placeholder="Book title">
-        <label class="fl">Author</label><input class="fi" type="text" id="sale-author" placeholder="Author name">
-        <div class="fr" style="margin-top:0">
-          <div><label class="fl">Price</label><input class="fi" type="text" id="sale-price" placeholder="e.g. ₪20"></div>
-          <div><label class="fl">Notes</label><input class="fi" type="text" id="sale-notes" placeholder="e.g. Like new"></div>
-        </div>
-        <button class="sbtn gold" style="max-width:200px;margin-top:16px" onclick="addSaleBook()">Add for Sale</button>
-        <div id="saleAdminList" style="margin-top:16px"></div>
-      </div>
-      <div class="asec">
-        <h3>👥 Saved Members</h3>
-        <p class="smallnote">Add regular borrowers — select them when lending to save time.</p>
-        <div class="fr" style="margin-top:14px">
-          <div><label class="fl">Name * (only required field)</label><input class="fi" type="text" id="memName" placeholder="Member name"></div>
-          <div><label class="fl">Email <span style="font-weight:400;color:#aaa">(optional)</span></label><input class="fi" type="text" id="memEmail" placeholder="optional"></div>
-        </div>
-        <label class="fl">Phone</label><input class="fi" type="text" id="memPhone" placeholder="Phone number">
-        <button class="sbtn" style="max-width:180px;margin-top:14px" onclick="saveMemberFromAdmin()">Save Member</button>
-        <div id="memberList" style="margin-top:16px"></div>
-      </div>
-      <div class="asec">
-        <h3>📤 Return Books</h3>
-        <div id="returnList"></div>
-      </div>
-      
-
-      <!-- ── CHESHBON ── -->
-      <div class="asec" id="cheshbonSec">
-        <h3>💰 Cheshbon — Fees Collected</h3>
-        <p class="smallnote">Books automatically add their fee when borrowed. Add late fees, sales, or refunds manually.</p>
-
-        <!-- Running total -->
-        <div id="cheshTotal" style="background:var(--linen2);border:1px solid var(--warm);border-radius:var(--rs);padding:16px 20px;margin:16px 0;display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:.82rem;color:var(--mid);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Total Collected</span>
-          <span id="cheshTotalAmt" style="font-size:1.6rem;font-weight:700;color:var(--espresso)">₪0.00</span>
-        </div>
-
-        <!-- Manual entry -->
-        <div class="fr" style="margin-top:4px">
-          <div>
-            <label class="fl">Type</label>
-            <select class="fi" id="cf-type">
-              <option value="late">Late Fee</option>
-              <option value="sale">Book Sale</option>
-              <option value="other">Other</option>
-              <option value="refund">Refund / Correction</option>
-            </select>
-          </div>
-          <div><label class="fl">Amount (₪)</label><input class="fi" type="number" id="cf-amount" placeholder="0" min="0" step="0.5"></div>
-        </div>
-        <label class="fl">Name / Notes</label>
-        <input class="fi" type="text" id="cf-notes" placeholder="e.g. Chana Cohen – returned 3 days late">
-        <button class="sbtn gold" style="max-width:200px;margin-top:14px" onclick="cheshAddManual()">Add Entry</button>
-
-        <!-- History -->
-        <div id="cheshHistory" style="margin-top:20px"></div>
-        <button class="fbtn" style="margin-top:10px;color:#9b2020;border-color:#ffd0d0;font-size:.75rem" onclick="cheshClearAll()">🗑 Clear all entries</button>
-      </div>
-
-      <button class="sbtn danger" style="max-width:160px" onclick="adminLogout()">🔒 Lock Admin</button>
     </div>
   </div>
 </div>
@@ -698,7 +761,7 @@ var CHESH_KEY = 'bf_cheshbon_v2';
 
 function cheshData(){ try{return JSON.parse(localStorage.getItem(CHESH_KEY)||'[]');}catch(e){return [];} }
 function cheshSave(a){ localStorage.setItem(CHESH_KEY, JSON.stringify(a)); }
-// ── BORROW HISTORY LOG ──────────────────────────────────────────────────────
+// ── BORROW HISTORY LOG ──────────────────────────────────────
 var BORROW_LOG_KEY = 'bf_borrow_log';
 function getBorrowLog(){try{return JSON.parse(localStorage.getItem(BORROW_LOG_KEY)||'[]');}catch(e){return[];}}
 function saveBorrowLog(a){localStorage.setItem(BORROW_LOG_KEY,JSON.stringify(a));}
@@ -709,11 +772,9 @@ function addBorrowLogEntry(name,bookTitle,bookAuthor,category,dateBorrowed){
 }
 function updateBorrowLogReturn(bookTitle,borrowerName,dateReturned){
   var log=getBorrowLog();
-  // Find the most recent open entry matching this book+borrower
   for(var i=log.length-1;i>=0;i--){
     if(log[i].title===bookTitle && log[i].name===borrowerName && !log[i].dateReturned){
-      log[i].dateReturned=dateReturned;
-      break;
+      log[i].dateReturned=dateReturned; break;
     }
   }
   saveBorrowLog(log);
@@ -721,23 +782,14 @@ function updateBorrowLogReturn(bookTitle,borrowerName,dateReturned){
 function getMemberBorrowHistory(memberName){
   return getBorrowLog().filter(function(e){return e.name===memberName;});
 }
-
-// ── MEMBER BALANCES ─────────────────────────────────────────────────────────
+// ── MEMBER BALANCES ─────────────────────────────────────────
 var BAL_KEY = 'bf_member_balances';
 function getBalances(){try{return JSON.parse(localStorage.getItem(BAL_KEY)||'{}');}catch(e){return{};}}
 function saveBalances(o){localStorage.setItem(BAL_KEY,JSON.stringify(o));}
-function getMemberBalance(name){var b=getBalances();return b[name]||0;}
+function getMemberBalance(name){return getBalances()[name]||0;}
 function adjustMemberBalance(name,delta){
-  var b=getBalances();
-  b[name]=(b[name]||0)+delta;
-  if(b[name]===0)delete b[name];
-  saveBalances(b);
-}
-function setMemberBalance(name,val){
-  var b=getBalances();
-  if(val===0)delete b[name];
-  else b[name]=val;
-  saveBalances(b);
+  var b=getBalances(); b[name]=(b[name]||0)+delta;
+  if(b[name]===0)delete b[name]; saveBalances(b);
 }
 
 
@@ -1293,15 +1345,9 @@ function saveMemberFromAdmin(){
   document.getElementById('memPhone').value='';
   buildMemberList();
 }
-function balBadge(name){
-  var bal=getMemberBalance(name);
-  if(bal===0) return '';
-  if(bal>0) return '<span style="display:inline-flex;align-items:center;gap:3px;background:#eaf4ee;color:#1a4d2e;border:1px solid #b6dfc4;border-radius:10px;padding:1px 8px;font-size:.7rem;font-weight:700;margin-left:6px">Credit ₪'+bal.toFixed(2)+'</span>';
-  return '<span style="display:inline-flex;align-items:center;gap:3px;background:#fdf0f0;color:#9b2020;border:1px solid #ffd0d0;border-radius:10px;padding:1px 8px;font-size:.7rem;font-weight:700;margin-left:6px">Owes ₪'+Math.abs(bal).toFixed(2)+'</span>';
-}
 function buildMemberList(){
   var members=getMembers();
-  var html = members.length ? members.map(function(m,i){
+  var html=members.length ? members.map(function(m,i){
     return '<div class="li"><span>'+
       '<button class="member-detail-btn" data-i="'+i+'" style="background:none;border:none;padding:0;cursor:pointer;font-family:inherit;text-align:left">'+
         '<strong style="color:var(--copper);text-decoration:underline dotted">'+htmlEsc(m.name||'')+'</strong>'+
@@ -1313,86 +1359,118 @@ function buildMemberList(){
   if(el) el.innerHTML=html;
   var q=document.getElementById('memberListQuick');
   if(q) q.innerHTML=html;
-  document.querySelectorAll('#memberList .ib.r, #memberListQuick .ib.r').forEach(function(btn){
+  document.querySelectorAll('#memberList .ib.r,#memberListQuick .ib.r').forEach(function(btn){
     btn.onclick=function(){var a=getMembers();a.splice(parseInt(this.dataset.i),1);saveMembers(a);buildMemberList();};
   });
-  document.querySelectorAll('#memberList .member-detail-btn, #memberListQuick .member-detail-btn').forEach(function(btn){
+  document.querySelectorAll('#memberList .member-detail-btn,#memberListQuick .member-detail-btn').forEach(function(btn){
     btn.onclick=function(){openMemberDetail(parseInt(this.dataset.i));};
   });
   var aq=document.getElementById('adminQuick');
   if(aq) aq.classList.toggle('open',isAdmin());
 }
+// ── ADMIN TAB SWITCHING ──────────────────────────────────────
+function showAdminTab(id){
+  document.querySelectorAll('.atab-panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.atab').forEach(function(b){b.classList.remove('active');});
+  var panel=document.getElementById(id);
+  if(panel) panel.classList.add('active');
+  document.querySelectorAll('.atab').forEach(function(b){
+    if(b.getAttribute('onclick') && b.getAttribute('onclick').indexOf("'"+id+"'")!==-1) b.classList.add('active');
+  });
+  if(id==='tab-returns') buildReturnList();
+  if(id==='tab-members') buildMemberList();
+  if(id==='tab-cheshbon') renderCheshbon();
+  if(id==='tab-log') renderBorrowLog();
+}
+
+// ── BORROW LOG RENDERER ─────────────────────────────────────
+function renderBorrowLog(){
+  var el=document.getElementById('borrowLogList');
+  if(!el) return;
+  var log=getBorrowLog().slice().reverse();
+  var q=(document.getElementById('logSearch')||{}).value||'';
+  var filt=(document.getElementById('logFilter')||{}).value||'all';
+  if(q) log=log.filter(function(e){return (e.name+e.title).toLowerCase().indexOf(q.toLowerCase())!==-1;});
+  if(filt==='out')      log=log.filter(function(e){return !e.dateReturned;});
+  if(filt==='returned') log=log.filter(function(e){return !!e.dateReturned;});
+  if(!log.length){el.innerHTML='<p class="smallnote">No entries yet — entries appear automatically when books are borrowed.</p>';return;}
+  var html='<div style="border:1px solid var(--warm);border-radius:var(--rs);overflow:hidden">';
+  log.forEach(function(e,i){
+    var status=e.dateReturned
+      ?'<span style="color:var(--green);font-size:.72rem;font-weight:700">&#10003; '+htmlEsc(e.dateReturned)+'</span>'
+      :'<span style="color:var(--red);font-size:.72rem;font-weight:700">Out</span>';
+    html+='<div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:9px 14px;border-bottom:1px solid var(--linen2);'+(i%2===0?'background:#fff':'background:var(--linen)')+'">'+
+      '<span><strong style="font-size:.84rem">'+htmlEsc(e.title)+'</strong>'+(e.author?' <em style="color:var(--mid);font-size:.76rem">'+htmlEsc(e.author)+'</em>':'')+
+      '<br><span style="font-size:.76rem;color:var(--mid)">'+htmlEsc(e.name||'')+'</span>'+
+      ' <span style="font-size:.72rem;color:var(--soft)">&#183; '+htmlEsc(e.dateBorrowed||'')+'</span></span>'+
+      '<span>'+status+'</span></div>';
+  });
+  html+='</div>';
+  html+='<p style="font-size:.74rem;color:var(--soft);margin-top:8px">'+log.length+' entries</p>';
+  el.innerHTML=html;
+}
+
+// ── MEMBER BALANCE BADGE ────────────────────────────────────
+function balBadge(name){
+  var bal=getMemberBalance(name);
+  if(bal===0) return '';
+  if(bal>0) return '<span style="display:inline-flex;align-items:center;background:#eaf4ee;color:#1a4d2e;border:1px solid #b6dfc4;border-radius:10px;padding:1px 8px;font-size:.7rem;font-weight:700;margin-left:6px">Credit &#8362;'+bal.toFixed(2)+'</span>';
+  return '<span style="display:inline-flex;align-items:center;background:#fdf0f0;color:#9b2020;border:1px solid #ffd0d0;border-radius:10px;padding:1px 8px;font-size:.7rem;font-weight:700;margin-left:6px">Owes &#8362;'+Math.abs(bal).toFixed(2)+'</span>';
+}
+
+// ── MEMBER DETAIL MODAL ─────────────────────────────────────
 function openMemberDetail(idx){
   var members=getMembers();
   var m=members[idx];
   if(!m) return;
   var name=m.name||'';
-  var history=getMemberBorrowHistory(name);
+  var history=getMemberBorrowHistory(name).slice().sort(function(a,b){return b.ts-a.ts;});
   var bal=getMemberBalance(name);
-
-  var histHtml='';
-  if(history.length===0){
-    histHtml='<p style="color:var(--soft);font-size:.84rem;margin-top:8px">No borrow history recorded yet.</p>';
-  } else {
-    var sorted=history.slice().sort(function(a,b){return b.ts-a.ts;});
-    histHtml='<div style="margin-top:12px;border:1px solid var(--warm);border-radius:var(--rs);overflow:hidden">';
-    histHtml+=sorted.map(function(e){
-      var status=e.dateReturned
-        ?'<span style="color:var(--green);font-size:.7rem;font-weight:700">✓ Returned '+htmlEsc(e.dateReturned)+'</span>'
-        :'<span style="color:var(--red);font-size:.7rem;font-weight:700">📖 Still out</span>';
-      return '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 14px;border-bottom:1px solid var(--linen2);gap:8px">'+
-        '<span><strong style="font-size:.84rem">'+htmlEsc(e.title)+'</strong>'+(e.author?'<br><em style="color:var(--mid);font-size:.76rem">'+htmlEsc(e.author)+'</em>':'')+'<br><span style="color:var(--soft);font-size:.74rem">Borrowed: '+htmlEsc(e.dateBorrowed||'')+'</span></span>'+
-        '<span style="flex-shrink:0;text-align:right">'+status+'</span>'+
-      '</div>';
-    }).join('')+'</div>';
-  }
-
   var balColor=bal>0?'var(--green)':bal<0?'var(--red)':'var(--mid)';
-  var balLabel=bal>0?'Credit':'Owes';
-  var balSign=bal>0?'+':(bal<0?'-':'');
+  var balSign=bal>0?'+':bal<0?'-':'';
+  var balLabel=bal>0?' Credit':bal<0?' Owes':'';
 
   var html='<h2>'+htmlEsc(name)+'</h2>';
-  html+='<p class="bsub">'+htmlEsc(m.email||'')+(m.phone?' · '+htmlEsc(m.phone):'')+'</p>';
-
-  // Balance card
-  html+='<div style="background:var(--linen2);border:1px solid var(--warm);border-radius:var(--rs);padding:14px 18px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">';
-  html+='<span style="font-size:.78rem;font-weight:600;color:var(--mid);text-transform:uppercase;letter-spacing:.5px">Balance</span>';
-  html+='<span id="mdBalDisplay" style="font-size:1.4rem;font-weight:700;color:'+balColor+'">'+
-    (bal===0?'₪0.00':(balSign+'₪'+Math.abs(bal).toFixed(2)))+
-    (bal!==0?' <small style="font-size:.65rem;font-weight:600">'+balLabel+'</small>':'')+
-  '</span></div>';
-
-  // Balance adjustment
+  html+='<p class="bsub">'+htmlEsc(m.email||'')+(m.phone?' &#183; '+htmlEsc(m.phone):'')+'</p>';
   html+='<input type="hidden" id="mdMemberName" value="'+htmlEsc(name)+'">';
-  html+='<div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:18px">';
-  html+='<div style="flex:1"><label style="display:block;font-size:.68rem;font-weight:600;color:var(--copper);margin-bottom:4px;text-transform:uppercase;letter-spacing:.7px">Adjust balance (₪)</label>';
-  html+='<input type="number" id="mdBalAdj" step="0.5" placeholder="e.g. 5 or -5" style="width:100%;padding:8px 12px;border:1.5px solid var(--warm);border-radius:var(--rs);font-size:.87rem;font-family:inherit;background:var(--linen);outline:none"></div>';
-  html+='<button onclick="doBalAdj()" class="ib g" style="height:38px;white-space:nowrap">Apply</button>';
-  html+='</div>';
-
-  html+='<label style="display:block;font-size:.68rem;font-weight:600;color:var(--copper);margin-bottom:6px;text-transform:uppercase;letter-spacing:.7px">Borrow History ('+history.length+' books)</label>';
-  html+=histHtml;
-
-  var md=document.getElementById('memberDetailModal');
+  html+='<div style="background:var(--linen2);border:1px solid var(--warm);border-radius:var(--rs);padding:14px 18px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">';
+  html+='<span style="font-size:.78rem;font-weight:600;color:var(--mid);text-transform:uppercase;letter-spacing:.5px">Balance</span>';
+  html+='<span id="mdBalDisplay" style="font-size:1.4rem;font-weight:700;color:'+balColor+'">'+(bal===0?'&#8362;0.00':(balSign+'&#8362;'+Math.abs(bal).toFixed(2)))+(bal!==0?'<small style="font-size:.65rem;font-weight:600;margin-left:4px">'+balLabel+'</small>':'')+'</span></div>';
+  html+='<div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:16px">';
+  html+='<div style="flex:1"><label style="display:block;font-size:.68rem;font-weight:600;color:var(--copper);margin-bottom:4px;text-transform:uppercase;letter-spacing:.7px">Adjust balance (&#8362;)</label>';
+  html+='<input type="number" id="mdBalAdj" step="0.5" placeholder="+ credit or - debt" style="width:100%;padding:8px 12px;border:1.5px solid var(--warm);border-radius:var(--rs);font-size:.87rem;font-family:inherit;background:var(--linen);outline:none"></div>';
+  html+='<button onclick="doBalAdj()" class="ib g" style="height:38px;white-space:nowrap">Apply</button></div>';
+  html+='<label style="display:block;font-size:.68rem;font-weight:600;color:var(--copper);margin-bottom:6px;text-transform:uppercase;letter-spacing:.7px">Borrow History ('+history.length+')</label>';
+  if(!history.length){
+    html+='<p style="color:var(--soft);font-size:.84rem">No history recorded yet.</p>';
+  } else {
+    html+='<div style="border:1px solid var(--warm);border-radius:var(--rs);overflow:hidden">';
+    history.forEach(function(e){
+      var st=e.dateReturned?'<span style="color:var(--green);font-size:.7rem;font-weight:700">&#10003; '+htmlEsc(e.dateReturned)+'</span>':'<span style="color:var(--red);font-size:.7rem;font-weight:700">Still out</span>';
+      html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:9px 14px;border-bottom:1px solid var(--linen2);gap:8px"><span><strong style="font-size:.84rem">'+htmlEsc(e.title)+'</strong>'+(e.author?'<br><em style="color:var(--mid);font-size:.76rem">'+htmlEsc(e.author)+'</em>':'')+'<br><span style="color:var(--soft);font-size:.74rem">Borrowed: '+htmlEsc(e.dateBorrowed||'')+'</span></span><span style="flex-shrink:0">'+st+'</span></div>';
+    });
+    html+='</div>';
+  }
   var mc=document.getElementById('memberDetailContent');
   if(mc) mc.innerHTML=html;
+  var md=document.getElementById('memberDetailModal');
   if(md) md.classList.add('open');
 }
-function doBalAdj(nameArg){
-  var name=nameArg||document.getElementById('mdMemberName').value;
+
+function doBalAdj(){
+  var name=document.getElementById('mdMemberName').value;
   var adj=parseFloat(document.getElementById('mdBalAdj').value);
-  if(isNaN(adj)||adj===0){alert('Enter a non-zero amount. Use positive for credit, negative for debt.');return;}
+  if(!name||isNaN(adj)||adj===0){alert('Enter a non-zero amount. Positive = credit, negative = debt.');return;}
   adjustMemberBalance(name,adj);
   buildMemberList();
-  // Refresh the balance display in modal
   var bal=getMemberBalance(name);
   var balColor=bal>0?'var(--green)':bal<0?'var(--red)':'var(--mid)';
-  var balLabel=bal>0?' <small style="font-size:.65rem;font-weight:600">Credit</small>':bal<0?' <small style="font-size:.65rem;font-weight:600">Owes</small>':'';
-  var balSign=bal>0?'+':(bal<0?'-':'');
+  var balSign=bal>0?'+':bal<0?'-':'';
+  var balLabel=bal>0?' Credit':bal<0?' Owes':'';
   var disp=document.getElementById('mdBalDisplay');
-  if(disp){disp.style.color=balColor;disp.innerHTML=(bal===0?'₪0.00':(balSign+'₪'+Math.abs(bal).toFixed(2)))+balLabel;}
+  if(disp){disp.style.color=balColor;disp.innerHTML=(bal===0?'&#8362;0.00':(balSign+'&#8362;'+Math.abs(bal).toFixed(2)))+(bal!==0?'<small style="font-size:.65rem;font-weight:600;margin-left:4px">'+balLabel+'</small>':'');}
   document.getElementById('mdBalAdj').value='';
-  showToast(adj>0?'✅ ₪'+adj.toFixed(2)+' credit added for '+name:'✅ ₪'+Math.abs(adj).toFixed(2)+' debt recorded for '+name);
+  showToast(adj>0?'Credit added for '+name:'Debt recorded for '+name);
 }
 
 
@@ -1734,7 +1812,7 @@ renderComingBooks();
 <!-- Member Detail Modal -->
 <div class="overlay" id="memberDetailModal" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal" style="max-width:540px">
-    <button class="mc" onclick="document.getElementById('memberDetailModal').classList.remove('open')">✕</button>
+    <button class="mc" onclick="document.getElementById('memberDetailModal').classList.remove('open')">&#10005;</button>
     <div id="memberDetailContent"></div>
   </div>
 </div>

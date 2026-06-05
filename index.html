@@ -1363,10 +1363,11 @@ function openMemberDetail(idx){
   '</span></div>';
 
   // Balance adjustment
+  html+='<input type="hidden" id="mdMemberName" value="'+htmlEsc(name)+'">';
   html+='<div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:18px">';
   html+='<div style="flex:1"><label style="display:block;font-size:.68rem;font-weight:600;color:var(--copper);margin-bottom:4px;text-transform:uppercase;letter-spacing:.7px">Adjust balance (₪)</label>';
   html+='<input type="number" id="mdBalAdj" step="0.5" placeholder="e.g. 5 or -5" style="width:100%;padding:8px 12px;border:1.5px solid var(--warm);border-radius:var(--rs);font-size:.87rem;font-family:inherit;background:var(--linen);outline:none"></div>';
-  html+='<button onclick="doBalAdj(''+htmlEsc(name)+'')" class="ib g" style="height:38px;white-space:nowrap">Apply</button>';
+  html+='<button onclick="doBalAdj()" class="ib g" style="height:38px;white-space:nowrap">Apply</button>';
   html+='</div>';
 
   html+='<label style="display:block;font-size:.68rem;font-weight:600;color:var(--copper);margin-bottom:6px;text-transform:uppercase;letter-spacing:.7px">Borrow History ('+history.length+' books)</label>';
@@ -1377,7 +1378,8 @@ function openMemberDetail(idx){
   if(mc) mc.innerHTML=html;
   if(md) md.classList.add('open');
 }
-function doBalAdj(name){
+function doBalAdj(nameArg){
+  var name=nameArg||document.getElementById('mdMemberName').value;
   var adj=parseFloat(document.getElementById('mdBalAdj').value);
   if(isNaN(adj)||adj===0){alert('Enter a non-zero amount. Use positive for credit, negative for debt.');return;}
   adjustMemberBalance(name,adj);

@@ -1384,7 +1384,30 @@ function showAdminTab(id){
 }
 
 // ── BORROW LOG RENDERER ─────────────────────────────────────
+
+function seedBorrowLogFromLoans(){
+  try {
+    var loans=getLoans();
+    var log=getBorrowLog();
+    var existing=log.map(function(e){return e.title+'|||'+e.name;});
+    var added=0;
+    Object.keys(loans).forEach(function(k){
+      var loan=loans[k];
+      if(!loan||!loan.name) return;
+      var key=(loan.title||'')+'|||'+(loan.name||'');
+      if(existing.indexOf(key)===-1){
+        log.push({name:loan.name||'',title:loan.title||'',author:loan.author||'',
+          category:'',dateBorrowed:loan.dateBorrowed||'',dateReturned:null,
+          ts:loan.dateBorrowed?new Date(loan.dateBorrowed).getTime():Date.now()});
+        existing.push(key);
+        added++;
+      }
+    });
+    if(added>0) saveBorrowLog(log);
+  } catch(e){}
+}
 function renderBorrowLog(){
+  seedBorrowLogFromLoans();
   var el=document.getElementById('borrowLogList');
   if(!el) return;
   var log=getBorrowLog().slice().reverse();
@@ -1474,36 +1497,7 @@ function doBalAdj(){
 }
 
 
-// ── SEED BORROW LOG FROM EXISTING LOANS ────────────────────
-function seedBorrowLogFromLoans(){
-  var loans=getLoans(); // {bookKey: {name,title,dateBorrowed,...}}
-  var log=getBorrowLog();
-  var existing=log.map(function(e){return e.title+'|||'+e.name;});
-  var added=0;
-  Object.keys(loans).forEach(function(k){
-    var loan=loans[k];
-    if(!loan||!loan.name) return;
-    var key=(loan.title||'')+'|||'+(loan.name||'');
-    if(existing.indexOf(key)===-1){
-      log.push({
-        name:loan.name||'',
-        title:loan.title||'',
-        author:loan.author||'',
-        category:'',
-        dateBorrowed:loan.dateBorrowed||'',
-        dateReturned:null,
-        ts:loan.dateBorrowed ? new Date(loan.dateBorrowed).getTime() : Date.now()
-      });
-      existing.push(key);
-      added++;
-    }
-  });
-  if(added>0){ saveBorrowLog(log); }
-  return added;
-}
-
 function refreshAdminState(){
-  seedBorrowLogFromLoans();
   var nb=document.getElementById('adminNavBtn');
   if(nb){nb.classList.toggle('unlocked',isAdmin());nb.textContent=isAdmin()?'\u2705 Admin':'\uD83D\uDD10 Admin';}
   var ls=document.getElementById('adminLoginSection');if(ls)ls.style.display=isAdmin()?'none':'block';

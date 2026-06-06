@@ -742,7 +742,8 @@ var ADMIN_PASSWORD = "libraryadmin";
 // See the instructions document for step-by-step guide
 var EMAILJS_PUBLIC_KEY  = "bg9BNuMll6QzC9ign";   // e.g. "user_aBcDeFgHiJkLm"
 var EMAILJS_SERVICE_ID  = "service_83oann5";   // e.g. "service_gmail"
-var EMAILJS_TEMPLATE_ID = "template_2gwrukk";   // e.g. "template_borrow"
+var EMAILJS_TEMPLATE_ID = "template_2gwrukk";  // borrow confirmation
+var EMAILJS_REMINDER_ID  = "";  // due-date reminder — fill in after creating 2nd template   // e.g. "template_borrow"
 // ════════════════════════════════════════════════════════
 
 // ════════════════════════════════════════════════════════
@@ -873,7 +874,7 @@ function scheduleBorrowConfirmation(borrowerEmail, borrowerName, bookTitle, dueD
     name: borrowerName,
     email: borrowerEmail,
     books: [{title: bookTitle, due: dueDate}],
-    timer: setTimeout(function() { fireBorrowEmail(key); }, 15 * 60 * 1000)
+    timer: setTimeout(function() { fireBorrowEmail(key); }, 12 * 60 * 60 * 1000)
   };
   updateBorrowToast();
 }
@@ -1471,6 +1472,35 @@ function doBalAdj(){
   showToast(adj>0?'Credit added for '+name:'Debt recorded for '+name);
 }
 
+
+// ── DUE DATE REMINDERS ───────────────────────────────────────
+function checkDueDateReminders(){
+  if(!EMAILJS_PUBLIC_KEY||!EMAILJS_SERVICE_ID||!EMAILJS_REMINDER_ID) return;
+  var loans=getLoans();
+  var tomorrow=addDaysISO(todayISO(),1);
+  var sent=0;
+  Object.keys(loans).forEach(function(k){
+    var l=loans[k];
+    if(!l||!l.email||!l.dueDate) return;
+    if(l.dueDate!==tomorrow) return;
+    if(l.reminderSent) return; // already sent
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_REMINDER_ID, {
+      to_name:    l.name||'',
+      to_email:   l.email,
+      books:      '  • '+l.title+' (due back: '+l.dueDate+')',
+      book_count: 1,
+      library_email: LIBRARY_EMAIL,
+      reply_to:   LIBRARY_EMAIL
+    }, EMAILJS_PUBLIC_KEY)
+    .then(function(){
+      var o=getLoans(); if(o[k]) o[k].reminderSent=true; saveLoans(o);
+      showToast('⏰ Reminder sent to '+l.name+' for "'+l.title+'"');
+    })
+    .catch(function(e){ console.error('Reminder failed:',e); });
+    sent++;
+  });
+  if(sent===0) console.log('No reminders due tomorrow.');
+}
 
 function refreshAdminState(){
   var nb=document.getElementById('adminNavBtn');

@@ -736,12 +736,13 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
             <label style="font-size:0.85em;font-weight:600;white-space:nowrap">Subject:</label>
             <input class="fi" type="text" id="nlSubject" value="New Books at the Bernard Finlay Memorial Library 📚" style="flex:1;min-width:200px">
           </div>
-          <div style="display:flex;gap:8px;margin-bottom:10px">
+          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
             <button class="sbtn" onclick="nlPreviewEmail()">👁 Preview</button>
-            <button class="sbtn gold" id="nlSendBtn" onclick="nlSendEmail()">📧 Open in Email to Send</button>
+            <button class="sbtn gold" id="nlSendBtn" onclick="nlSendEmail()">📧 Send Newsletter</button>
+            <span id="nlSendStatus" style="font-size:0.85em"></span>
           </div>
           <div id="nlPreviewBox" style="display:none;background:#f9f6f0;border:1px solid #ddd;border-radius:8px;padding:14px;font-size:0.85em;white-space:pre-wrap;line-height:1.6;max-height:220px;overflow-y:auto;color:#333;margin-bottom:8px"></div>
-          <p class="smallnote">This opens your email app (Gmail/Outlook) with the newsletter pre-filled — all subscribers in BCC. You review and click Send yourself.</p>
+          <p class="smallnote">Emails are sent directly to each subscriber via EmailJS. Make sure you have set up a newsletter template in your EmailJS account.</p>
         </div>
       </div>
 
@@ -799,7 +800,8 @@ var ADMIN_PASSWORD = "libraryadmin";
 var EMAILJS_PUBLIC_KEY  = "bg9BNuMll6QzC9ign";   // e.g. "user_aBcDeFgHiJkLm"
 var EMAILJS_SERVICE_ID  = "service_83oann5";   // e.g. "service_gmail"
 var EMAILJS_TEMPLATE_ID = "template_2gwrukk";  // borrow confirmation
-var EMAILJS_REMINDER_ID  = "template_ke0bg2i";  // due-date reminder — fill in after creating 2nd template   // e.g. "template_borrow"
+var EMAILJS_REMINDER_ID      = "template_ke0bg2i";  // due-date reminder — fill in after
+// Newsletter emails are sent via Google Apps Script (see backend) creating 2nd template   // e.g. "template_borrow"
 // ════════════════════════════════════════════════════════
 
 // ════════════════════════════════════════════════════════
@@ -921,6 +923,15 @@ var pendingBorrowEmails = {}; // keyed by borrower email (lowercase)
 
 function scheduleBorrowConfirmation(borrowerEmail, borrowerName, bookTitle, dueDate) {
   var key = borrowerEmail.toLowerCase();
+
+  // Persist to localStorage so the reminder survives page refresh / tab close
+  var stored = JSON.parse(localStorage.getItem('bf_pending_reminders') || '{}');
+  if (!stored[key]) {
+    stored[key] = { name: borrowerName, email: borrowerEmail, books: [], sendAt: Date.now() + 12 * 60 * 60 * 1000 };
+  }
+  stored[key].books.push({ title: bookTitle, due: dueDate });
+  localStorage.setItem('bf_pending_reminders', JSON.stringify(stored));
+
   if (pendingBorrowEmails[key]) {
     pendingBorrowEmails[key].books.push({title: bookTitle, due: dueDate});
     updateBorrowToast();
@@ -939,6 +950,10 @@ function fireBorrowEmail(key){
   var p=pendingBorrowEmails[key];
   if(!p) return;
   delete pendingBorrowEmails[key];
+  // Remove from localStorage so it doesn't fire again on next page load
+  var stored = JSON.parse(localStorage.getItem('bf_pending_reminders') || '{}');
+  delete stored[key];
+  localStorage.setItem('bf_pending_reminders', JSON.stringify(stored));
   var bookLines=p.books.map(function(b){return '  • '+b.title+' (due back: '+b.due+')'}).join('\n');
   if(!EMAILJS_PUBLIC_KEY||!EMAILJS_SERVICE_ID||!EMAILJS_TEMPLATE_ID){
     console.log('EmailJS not configured — skipping email to '+p.email);
@@ -954,6 +969,28 @@ function fireBorrowEmail(key){
   }, EMAILJS_PUBLIC_KEY)
   .then(function(){ showToast('\u2705 Confirmation email sent to '+p.email); })
   .catch(function(err){ console.error('EmailJS error:',err); showToast('\u26a0\ufe0f Email failed: check EmailJS setup'); });
+}
+
+// Restore any pending reminders that survived a page refresh or tab close
+function checkPendingReminders() {
+  var stored = JSON.parse(localStorage.getItem('bf_pending_reminders') || '{}');
+  var now = Date.now();
+  Object.keys(stored).forEach(function(key) {
+    if (pendingBorrowEmails[key]) return; // already queued this session
+    var p = stored[key];
+    var delay = p.sendAt - now;
+    pendingBorrowEmails[key] = {
+      name:  p.name,
+      email: p.email,
+      books: p.books,
+      timer: setTimeout(function() { fireBorrowEmail(key); }, Math.max(0, delay))
+    };
+    if (delay <= 0) {
+      // Overdue — fire immediately (page was opened after the 12-hour window)
+      fireBorrowEmail(key);
+    }
+  });
+  updateBorrowToast();
 }
 
 function updateBorrowToast() {
@@ -1891,6 +1928,7 @@ refreshAdminState();
 render();
 renderSaleBooks();
 renderComingBooks();
+checkPendingReminders();
 
 
 function sendTestEmail(){
@@ -2051,10 +2089,23 @@ function nlSendEmail() {
   if (!selected.length) { alert('Please select at least one book to include.'); return; }
   var subs = getNlSubs();
   if (!subs.length) { alert('No subscribers on the mailing list yet.'); return; }
-  var subject = encodeURIComponent((document.getElementById('nlSubject') || {value:''}).value.trim() || 'New Books at the Bernard Finlay Memorial Library');
-  var body    = encodeURIComponent(nlBuildBody());
-  var bcc     = encodeURIComponent(subs.map(function(s){ return s.email; }).join(','));
-  window.location.href = 'mailto:?bcc=' + bcc + '&subject=' + subject + '&body=' + body;
+
+  var subject  = (document.getElementById('nlSubject') || {value:''}).value.trim() || 'New Books at the Bernard Finlay Memorial Library';
+  var body     = nlBuildBody();
+  var sendBtn  = document.getElementById('nlSendBtn');
+  var statusEl = document.getElementById('nlSendStatus');
+
+  sendBtn.disabled    = true;
+  sendBtn.textContent = 'Sending...';
+  if (statusEl) statusEl.innerHTML = '<span style="color:#666">Sending to ' + subs.length + ' subscriber' + (subs.length !== 1 ? 's' : '') + '...</span>';
+
+  sendToBackend({ action: 'send_newsletter', subject: subject, body: body, subscribers: subs });
+
+  setTimeout(function() {
+    sendBtn.disabled    = false;
+    sendBtn.textContent = '📧 Send Newsletter';
+    if (statusEl) statusEl.innerHTML = '<span style="color:var(--green)">✅ Newsletter sent to ' + subs.length + ' subscriber' + (subs.length !== 1 ? 's' : '') + '!</span>';
+  }, 4000);
 }
 
 // ── Init newsletter admin whenever tab is shown ────────────────────────

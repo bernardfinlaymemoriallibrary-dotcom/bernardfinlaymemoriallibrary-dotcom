@@ -415,7 +415,7 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
     <button class="nav-btn" data-page="forsale" onclick="showPage('forsale')">🏷️ For Sale</button>
     <button class="nav-btn" data-page="coming" onclick="showPage('coming')">⭐ Coming Soon</button>
     <button class="nav-btn" data-page="contact" onclick="showPage('contact')">📞 Contact</button>
-      <button class="nav-btn" data-page="newsletter" onclick="showPage('newsletter')">📧 Newsletter</button>
+    <button class="nav-btn" data-page="newsletter" onclick="showPage('newsletter')">📧 Newsletter</button>
     <span class="nav-loc">📍 Yirmiyahu 16/8, Floor 1</span>
     <button class="nav-btn admin-nav" id="adminNavBtn" data-page="admin" onclick="showPage('admin')">🔐 Admin</button>
   </div>
@@ -550,7 +550,7 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
         <div><label class="fl">Your name *</label><input class="fi" type="text" id="nlName" placeholder="Your name"></div>
         <div><label class="fl">Email address *</label><input class="fi" type="email" id="nlEmail" placeholder="you@example.com"></div>
       </div>
-      <button class="sbtn gold" style="margin-top:14px" onclick="submitNewsletterSignup()">Sign Me Up →</button>
+      <button class="sbtn gold" style="margin-top:14px" onclick="submitNewsletterSignup()">Sign Me Up &#8594;</button>
     </div>
   </div>
 </div>
@@ -579,7 +579,8 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
         <button class="atab" onclick="showAdminTab('tab-returns')">&#128228; Returns</button>
         <button class="atab" onclick="showAdminTab('tab-cheshbon')">&#128176; Cheshbon</button>
         <button class="atab" onclick="showAdminTab('tab-log')">&#128203; Borrow Log</button>
-        <button class="atab" onclick="showAdminTab('tab-newsletter')">📧 Newsletter</button>
+        <button class="atab" onclick="showAdminTab('tab-newsletter')">&#128231; Newsletter</button>
+        <button class="atab" onclick="showAdminTab('tab-waitlist')">&#128203; Waitlist</button>
       </div>
 
       <div class="atab-panel active" id="tab-add">
@@ -709,7 +710,7 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
       <!-- NEWSLETTER ADMIN TAB -->
       <div class="atab-panel" id="tab-newsletter">
         <div class="asec">
-          <h3>📧 Mailing List</h3>
+          <h3>&#128231; Mailing List</h3>
           <p class="smallnote" style="margin-bottom:10px">Add subscribers manually, or they can sign up on the public Newsletter page.</p>
           <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
             <input class="fi" type="text" id="nlAdminName" placeholder="Name (optional)" style="flex:1;min-width:120px">
@@ -718,9 +719,8 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
           </div>
           <div id="nlSubList"><p class="smallnote" style="font-style:italic">No subscribers yet.</p></div>
         </div>
-
         <div class="asec" style="margin-top:20px">
-          <h3>📚 Books to Announce</h3>
+          <h3>&#128218; Books to Announce</h3>
           <p class="smallnote" style="margin-bottom:10px">Add the new books, check the ones to include, then send.</p>
           <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
             <input class="fi" type="text" id="nlBookTitle" placeholder="Book title" style="flex:1;min-width:140px">
@@ -729,20 +729,36 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
           </div>
           <div id="nlBookList"><p class="smallnote" style="font-style:italic">No books added yet.</p></div>
         </div>
-
         <div class="asec" style="margin-top:20px">
-          <h3>✉️ Send Newsletter</h3>
+          <h3>&#9993; Send Newsletter</h3>
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
             <label style="font-size:0.85em;font-weight:600;white-space:nowrap">Subject:</label>
             <input class="fi" type="text" id="nlSubject" value="New Books at the Bernard Finlay Memorial Library" style="flex:1;min-width:200px">
           </div>
           <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
-            <button class="sbtn" onclick="nlPreviewEmail()">👁 Preview</button>
-            <button class="sbtn gold" id="nlSendBtn" onclick="nlSendEmail()">📧 Send Newsletter</button>
+            <button class="sbtn" onclick="nlPreviewEmail()">Preview</button>
+            <button class="sbtn gold" id="nlSendBtn" onclick="nlSendEmail()">&#128231; Send Newsletter</button>
             <span id="nlSendStatus" style="font-size:0.85em"></span>
           </div>
           <div id="nlPreviewBox" style="display:none;background:#f9f6f0;border:1px solid #ddd;border-radius:8px;padding:14px;font-size:0.85em;white-space:pre-wrap;line-height:1.6;max-height:220px;overflow-y:auto;color:#333;margin-bottom:8px"></div>
           <p class="smallnote">Emails are sent directly to each subscriber via your Gmail account.</p>
+        </div>
+      </div>
+
+      <!-- WAITLIST ADMIN TAB -->
+      <div class="atab-panel" id="tab-waitlist">
+        <div class="asec">
+          <h3>&#128203; Book Waitlist</h3>
+          <p class="smallnote" style="margin-bottom:12px">Log a reservation here whether someone requested via email or the website. When the book is returned, they will be emailed automatically.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+            <input class="fi" type="text" id="wlTitle" placeholder="Book title" style="flex:1;min-width:150px">
+            <input class="fi" type="text" id="wlName" placeholder="Person's name" style="flex:1;min-width:120px">
+            <input class="fi" type="email" id="wlEmail" placeholder="Email address" style="flex:1;min-width:160px">
+            <button class="sbtn" onclick="wlAdd()">+ Add</button>
+          </div>
+          <p class="smallnote" style="margin-bottom:8px">Reservations logged this session:</p>
+          <div id="wlList"><p class="smallnote" style="font-style:italic">None added yet.</p></div>
+          <p class="smallnote" style="margin-top:10px">All reservations (including website form submissions) are stored in your Google Sheet under action "RESERVE BOOK".</p>
         </div>
       </div>
 
@@ -800,8 +816,7 @@ var ADMIN_PASSWORD = "libraryadmin";
 var EMAILJS_PUBLIC_KEY  = "bg9BNuMll6QzC9ign";   // e.g. "user_aBcDeFgHiJkLm"
 var EMAILJS_SERVICE_ID  = "service_83oann5";   // e.g. "service_gmail"
 var EMAILJS_TEMPLATE_ID = "template_2gwrukk";  // borrow confirmation
-var EMAILJS_REMINDER_ID      = "template_ke0bg2i";  // due-date reminder — fill in after
-// Newsletter emails are sent via Google Apps Script (see backend) creating 2nd template   // e.g. "template_borrow"
+var EMAILJS_REMINDER_ID  = "template_ke0bg2i";  // due-date reminder — fill in after creating 2nd template   // e.g. "template_borrow"
 // ════════════════════════════════════════════════════════
 
 // ════════════════════════════════════════════════════════
@@ -923,15 +938,12 @@ var pendingBorrowEmails = {}; // keyed by borrower email (lowercase)
 
 function scheduleBorrowConfirmation(borrowerEmail, borrowerName, bookTitle, dueDate) {
   var key = borrowerEmail.toLowerCase();
-
-  // Persist to localStorage so the reminder survives page refresh / tab close
   var stored = JSON.parse(localStorage.getItem('bf_pending_reminders') || '{}');
   if (!stored[key]) {
     stored[key] = { name: borrowerName, email: borrowerEmail, books: [], sendAt: Date.now() + 12 * 60 * 60 * 1000 };
   }
   stored[key].books.push({ title: bookTitle, due: dueDate });
   localStorage.setItem('bf_pending_reminders', JSON.stringify(stored));
-
   if (pendingBorrowEmails[key]) {
     pendingBorrowEmails[key].books.push({title: bookTitle, due: dueDate});
     updateBorrowToast();
@@ -950,7 +962,6 @@ function fireBorrowEmail(key){
   var p=pendingBorrowEmails[key];
   if(!p) return;
   delete pendingBorrowEmails[key];
-  // Remove from localStorage so it doesn't fire again on next page load
   var stored = JSON.parse(localStorage.getItem('bf_pending_reminders') || '{}');
   delete stored[key];
   localStorage.setItem('bf_pending_reminders', JSON.stringify(stored));
@@ -971,24 +982,18 @@ function fireBorrowEmail(key){
   .catch(function(err){ console.error('EmailJS error:',err); showToast('\u26a0\ufe0f Email failed: check EmailJS setup'); });
 }
 
-// Restore any pending reminders that survived a page refresh or tab close
 function checkPendingReminders() {
   var stored = JSON.parse(localStorage.getItem('bf_pending_reminders') || '{}');
   var now = Date.now();
   Object.keys(stored).forEach(function(key) {
-    if (pendingBorrowEmails[key]) return; // already queued this session
+    if (pendingBorrowEmails[key]) return;
     var p = stored[key];
     var delay = p.sendAt - now;
     pendingBorrowEmails[key] = {
-      name:  p.name,
-      email: p.email,
-      books: p.books,
+      name: p.name, email: p.email, books: p.books,
       timer: setTimeout(function() { fireBorrowEmail(key); }, Math.max(0, delay))
     };
-    if (delay <= 0) {
-      // Overdue — fire immediately (page was opened after the 12-hour window)
-      fireBorrowEmail(key);
-    }
+    if (delay <= 0) { fireBorrowEmail(key); }
   });
   updateBorrowToast();
 }
@@ -1955,42 +1960,35 @@ function sendTestEmail(){
 }
 
 
-// ═══════════════════════════════════════════════
-// NEWSLETTER  (subscribers + book announcements)
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// NEWSLETTER
+// ══════════════════════════════════════════════════
 var NL_KEY  = 'bf_nl_subscribers';
 var NLB_KEY = 'bf_nl_books';
-
-function getNlSubs()  { return JSON.parse(localStorage.getItem(NL_KEY)  || '[]'); }
-function saveNlSubs(a){ localStorage.setItem(NL_KEY,  JSON.stringify(a)); }
-function getNlBooks() { return JSON.parse(localStorage.getItem(NLB_KEY) || '[]'); }
+function getNlSubs()   { return JSON.parse(localStorage.getItem(NL_KEY)  || '[]'); }
+function saveNlSubs(a) { localStorage.setItem(NL_KEY,  JSON.stringify(a)); }
+function getNlBooks()  { return JSON.parse(localStorage.getItem(NLB_KEY) || '[]'); }
 function saveNlBooks(a){ localStorage.setItem(NLB_KEY, JSON.stringify(a)); }
 
-// ── Public sign-up page ──────────────────────────────────────────────
 function submitNewsletterSignup() {
   var name  = (document.getElementById('nlName')  || {}).value || '';
   var email = (document.getElementById('nlEmail') || {}).value || '';
-  name  = name.trim();
-  email = email.trim().toLowerCase();
+  name = name.trim(); email = email.trim().toLowerCase();
   if (!name)  { alert('Please enter your name.'); return; }
   if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
   var subs = getNlSubs();
-  if (subs.find(function(s){ return s.email === email; })) {
-    alert('That email is already subscribed!'); return;
-  }
+  if (subs.find(function(s){ return s.email === email; })) { alert('That email is already subscribed!'); return; }
   subs.push({ name: name, email: email, id: Date.now() });
   saveNlSubs(subs);
   sendToBackend({ action: 'newsletter_signup', name: name, email: email });
   var card = document.getElementById('newsletterSignupCard');
-  if (card) card.innerHTML = '<div style="text-align:center;padding:30px 0"><div style="font-size:2.5em">&#10003;</div><h3 style="color:var(--green);margin:10px 0">You\'re signed up!</h3><p>Thank you, ' + name + '. We\'ll let you know when new books arrive.</p></div>';
+  if (card) card.innerHTML = '<div style="text-align:center;padding:30px 0"><div style="font-size:2.5em">\u2713</div><h3 style="color:var(--green);margin:10px 0">You\'re signed up!</h3><p>Thank you, ' + name + '. We\'ll let you know when new books arrive.</p></div>';
 }
 
-// ── Admin: subscribers ───────────────────────────────────────────────
 function nlAdminAddSub() {
   var name  = (document.getElementById('nlAdminName')  || {}).value || '';
   var email = (document.getElementById('nlAdminEmail') || {}).value || '';
-  name  = name.trim();
-  email = email.trim().toLowerCase();
+  name = name.trim(); email = email.trim().toLowerCase();
   if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
   var subs = getNlSubs();
   if (subs.find(function(s){ return s.email === email; })) { alert('Already on the list.'); return; }
@@ -2002,32 +2000,29 @@ function nlAdminAddSub() {
 }
 
 function nlRemoveSub(id) {
-  var subs = getNlSubs().filter(function(s){ return s.id !== id; });
-  saveNlSubs(subs);
+  saveNlSubs(getNlSubs().filter(function(s){ return s.id !== id; }));
   nlRenderSubs();
 }
 
 function nlRenderSubs() {
-  var el   = document.getElementById('nlSubList');
+  var el = document.getElementById('nlSubList');
   if (!el) return;
   var subs = getNlSubs();
   if (!subs.length) { el.innerHTML = '<p class="smallnote" style="font-style:italic">No subscribers yet.</p>'; return; }
-  var html = '<p class="smallnote" style="margin-bottom:6px">' + subs.length + ' subscriber' + (subs.length !== 1 ? 's' : '') + '</p>';
+  var h = '<p class="smallnote" style="margin-bottom:6px">' + subs.length + ' subscriber' + (subs.length !== 1 ? 's' : '') + '</p>';
   subs.forEach(function(s) {
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#f4f1eb;border-radius:6px;margin-bottom:5px;font-size:0.88em">'
-          + '<span>' + (s.name ? '<strong>' + s.name + '</strong> &lt;' + s.email + '&gt;' : s.email) + '</span>'
-          + '<button class="sbtn" style="background:#c0392b;color:#fff;padding:3px 9px;font-size:0.78em" onclick="nlRemoveSub(' + s.id + ')">Remove</button>'
-          + '</div>';
+    h += '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#f4f1eb;border-radius:6px;margin-bottom:5px;font-size:0.88em">'
+       + '<span>' + (s.name ? '<strong>' + s.name + '</strong> &lt;' + s.email + '&gt;' : s.email) + '</span>'
+       + '<button class="sbtn" style="background:#c0392b;color:#fff;padding:3px 9px;font-size:0.78em" onclick="nlRemoveSub(' + s.id + ')">Remove</button>'
+       + '</div>';
   });
-  el.innerHTML = html;
+  el.innerHTML = h;
 }
 
-// ── Admin: books ─────────────────────────────────────────────────────
 function nlAddBook() {
   var title  = (document.getElementById('nlBookTitle')  || {}).value || '';
   var author = (document.getElementById('nlBookAuthor') || {}).value || '';
-  title  = title.trim();
-  author = author.trim();
+  title = title.trim(); author = author.trim();
   if (!title) { alert('Please enter a book title.'); return; }
   var books = getNlBooks();
   books.push({ title: title, author: author, id: Date.now(), selected: true });
@@ -2037,11 +2032,7 @@ function nlAddBook() {
   nlRenderBooks();
 }
 
-function nlRemoveBook(id) {
-  saveNlBooks(getNlBooks().filter(function(b){ return b.id !== id; }));
-  nlRenderBooks();
-}
-
+function nlRemoveBook(id) { saveNlBooks(getNlBooks().filter(function(b){ return b.id !== id; })); nlRenderBooks(); }
 function nlToggleBook(id) {
   var books = getNlBooks();
   var b = books.find(function(x){ return x.id === id; });
@@ -2055,23 +2046,22 @@ function nlRenderBooks() {
   if (!el) return;
   var books = getNlBooks();
   if (!books.length) { el.innerHTML = '<p class="smallnote" style="font-style:italic">No books added yet.</p>'; return; }
-  var html = '';
+  var h = '';
   books.forEach(function(b) {
-    html += '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:#f4f1eb;border-radius:6px;margin-bottom:5px;cursor:pointer" onclick="nlToggleBook(' + b.id + ')">'
-          + '<input type="checkbox" ' + (b.selected ? 'checked' : '') + ' onclick="event.stopPropagation();nlToggleBook(' + b.id + ')" style="margin-top:2px;accent-color:var(--green)">'
-          + '<div style="flex:1"><div style="font-weight:600;font-size:0.9em">' + b.title + '</div>'
-          + (b.author ? '<div style="font-size:0.8em;color:#666">by ' + b.author + '</div>' : '')
-          + '</div>'
-          + '<button class="sbtn" style="background:#c0392b;color:#fff;padding:3px 9px;font-size:0.78em" onclick="event.stopPropagation();nlRemoveBook(' + b.id + ')">✕</button>'
-          + '</div>';
+    h += '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:#f4f1eb;border-radius:6px;margin-bottom:5px;cursor:pointer" onclick="nlToggleBook(' + b.id + ')">'
+       + '<input type="checkbox" ' + (b.selected ? 'checked' : '') + ' onclick="event.stopPropagation();nlToggleBook(' + b.id + ')" style="margin-top:2px;accent-color:var(--green)">'
+       + '<div style="flex:1"><div style="font-weight:600;font-size:0.9em">' + b.title + '</div>'
+       + (b.author ? '<div style="font-size:0.8em;color:#666">by ' + b.author + '</div>' : '')
+       + '</div>'
+       + '<button class="sbtn" style="background:#c0392b;color:#fff;padding:3px 9px;font-size:0.78em" onclick="event.stopPropagation();nlRemoveBook(' + b.id + ')">&#10005;</button>'
+       + '</div>';
   });
-  el.innerHTML = html;
+  el.innerHTML = h;
 }
 
-// ── Email builder ─────────────────────────────────────────────────────
 function nlBuildBody() {
   var selected = getNlBooks().filter(function(b){ return b.selected; });
-  var lines = selected.map(function(b){ return b.author ? '  • ' + b.title + ' — ' + b.author : '  • ' + b.title; }).join('\n');
+  var lines = selected.map(function(b){ return b.author ? '  \u2022 ' + b.title + ' \u2014 ' + b.author : '  \u2022 ' + b.title; }).join('\n');
   return 'Shalom,\n\nWe are excited to let you know that the following new books have just arrived at the Bernard Finlay Memorial Library:\n\n' + lines + '\n\nThese books are now available to borrow. Please get in touch to reserve your copy or to find out more.\n\nWarm regards,\nThe Bernard Finlay Memorial Library';
 }
 
@@ -2089,26 +2079,49 @@ function nlSendEmail() {
   if (!selected.length) { alert('Please select at least one book to include.'); return; }
   var subs = getNlSubs();
   if (!subs.length) { alert('No subscribers on the mailing list yet.'); return; }
-
   var subject  = (document.getElementById('nlSubject') || {value:''}).value.trim() || 'New Books at the Bernard Finlay Memorial Library';
   var body     = nlBuildBody();
   var sendBtn  = document.getElementById('nlSendBtn');
   var statusEl = document.getElementById('nlSendStatus');
-
   sendBtn.disabled    = true;
   sendBtn.textContent = 'Sending...';
   if (statusEl) statusEl.innerHTML = '<span style="color:#666">Sending to ' + subs.length + ' subscriber' + (subs.length !== 1 ? 's' : '') + '...</span>';
-
   sendToBackend({ action: 'send_newsletter', subject: subject, body: body, subscribers: subs });
-
   setTimeout(function() {
     sendBtn.disabled    = false;
-    sendBtn.textContent = '📧 Send Newsletter';
-    if (statusEl) statusEl.innerHTML = '<span style="color:var(--green)">✅ Newsletter sent to ' + subs.length + ' subscriber' + (subs.length !== 1 ? 's' : '') + '!</span>';
+    sendBtn.textContent = '\u{1F4E7} Send Newsletter';
+    if (statusEl) statusEl.innerHTML = '<span style="color:var(--green)">\u2713 Newsletter sent to ' + subs.length + ' subscriber' + (subs.length !== 1 ? 's' : '') + '!</span>';
   }, 4000);
 }
 
-// ── Init newsletter admin whenever tab is shown ────────────────────────
+// ══════════════════════════════════════════════════
+// WAITLIST
+// ══════════════════════════════════════════════════
+var wlAdded = [];
+function wlAdd() {
+  var title = (document.getElementById('wlTitle') || {}).value || '';
+  var name  = (document.getElementById('wlName')  || {}).value || '';
+  var email = (document.getElementById('wlEmail') || {}).value || '';
+  title = title.trim(); name = name.trim(); email = email.trim().toLowerCase();
+  if (!title) { alert('Please enter the book title.'); return; }
+  if (!name)  { alert("Please enter the person's name."); return; }
+  if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+  sendToBackend({ action: 'manual_reservation', title: title, name: name, email: email });
+  wlAdded.push({ title: title, name: name, email: email });
+  wlRender();
+  document.getElementById('wlTitle').value = '';
+  document.getElementById('wlName').value  = '';
+  document.getElementById('wlEmail').value = '';
+}
+function wlRender() {
+  var el = document.getElementById('wlList');
+  if (!el) return;
+  if (!wlAdded.length) { el.innerHTML = '<p class="smallnote" style="font-style:italic">None added yet.</p>'; return; }
+  el.innerHTML = wlAdded.map(function(r) {
+    return '<div style="padding:6px 10px;background:#f4f1eb;border-radius:6px;margin-bottom:5px;font-size:0.88em"><strong>' + r.title + '</strong> &rarr; ' + r.name + ' &lt;' + r.email + '&gt;</div>';
+  }).join('');
+}
+
 var _origShowAdminTab = showAdminTab;
 showAdminTab = function(tabId) {
   _origShowAdminTab(tabId);

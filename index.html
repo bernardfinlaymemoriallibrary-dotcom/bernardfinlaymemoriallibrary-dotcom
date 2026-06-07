@@ -756,9 +756,11 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
             <input class="fi" type="email" id="wlEmail" placeholder="Email address" style="flex:1;min-width:160px">
             <button class="sbtn" onclick="wlAdd()">+ Add</button>
           </div>
-          <p class="smallnote" style="margin-bottom:8px">Reservations logged this session:</p>
-          <div id="wlList"><p class="smallnote" style="font-style:italic">None added yet.</p></div>
-          <p class="smallnote" style="margin-top:10px">All reservations (including website form submissions) are stored in your Google Sheet under action "RESERVE BOOK".</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <p class="smallnote" style="margin:0">All reservations (from website &amp; manual):</p>
+            <button class="sbtn" style="padding:4px 10px;font-size:0.78em" onclick="wlLoadFromSheet()">&#8635; Refresh</button>
+          </div>
+          <div id="wlList"><p class="smallnote" style="font-style:italic">Click Refresh to load reservations from your sheet.</p></div>
         </div>
       </div>
 
@@ -2107,19 +2109,52 @@ function wlAdd() {
   if (!name)  { alert("Please enter the person's name."); return; }
   if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
   sendToBackend({ action: 'manual_reservation', title: title, name: name, email: email });
-  wlAdded.push({ title: title, name: name, email: email });
-  wlRender();
+  wlAdded.push({ title: title, name: name, email: email, date: new Date().toLocaleDateString('en-GB') });
   document.getElementById('wlTitle').value = '';
   document.getElementById('wlName').value  = '';
   document.getElementById('wlEmail').value = '';
+  wlLoadFromSheet();
 }
-function wlRender() {
+
+function wlLoadFromSheet() {
   var el = document.getElementById('wlList');
   if (!el) return;
-  if (!wlAdded.length) { el.innerHTML = '<p class="smallnote" style="font-style:italic">None added yet.</p>'; return; }
-  el.innerHTML = wlAdded.map(function(r) {
-    return '<div style="padding:6px 10px;background:#f4f1eb;border-radius:6px;margin-bottom:5px;font-size:0.88em"><strong>' + r.title + '</strong> &rarr; ' + r.name + ' &lt;' + r.email + '&gt;</div>';
-  }).join('');
+  if (!backendReady()) { el.innerHTML = '<p class="smallnote" style="color:#c0392b">Backend not connected.</p>'; return; }
+  el.innerHTML = '<p class="smallnote" style="font-style:italic">Loading...</p>';
+  fetch(WEB_APP_URL + '?action=reservations', { mode: 'cors' })
+    .then(function(r) { return r.json(); })
+    .then(function(rows) { wlRender(rows); })
+    .catch(function() { el.innerHTML = '<p class="smallnote" style="color:#c0392b">Could not load. Check Apps Script is deployed.</p>'; });
+}
+
+function wlRender(rows) {
+  var el = document.getElementById('wlList');
+  if (!el) return;
+  var all = (rows || []).concat(wlAdded.filter(function(a) {
+    return !(rows || []).some(function(r) { return r.email === a.email && r.title.toLowerCase() === a.title.toLowerCase(); });
+  }));
+  if (!all.length) { el.innerHTML = '<p class="smallnote" style="font-style:italic">No reservations yet.</p>'; return; }
+  // Group by title
+  var byTitle = {};
+  all.forEach(function(r) {
+    var t = r.title || 'Unknown';
+    if (!byTitle[t]) byTitle[t] = [];
+    byTitle[t].push(r);
+  });
+  var h = '';
+  Object.keys(byTitle).forEach(function(t) {
+    h += '<div style="margin-bottom:12px">';
+    h += '<div style="font-weight:700;font-size:0.9em;color:#1c1209;margin-bottom:4px;border-bottom:1px solid #ddd;padding-bottom:3px">' + t + '</div>';
+    byTitle[t].forEach(function(r, idx) {
+      var badge = r.notified ? '<span style="background:#27ae60;color:#fff;font-size:0.7em;padding:1px 6px;border-radius:8px;margin-left:6px">Notified</span>' : '<span style="background:#e67e22;color:#fff;font-size:0.7em;padding:1px 6px;border-radius:8px;margin-left:6px">#' + (idx+1) + ' in queue</span>';
+      h += '<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:#f4f1eb;border-radius:6px;margin-bottom:4px;font-size:0.85em">';
+      h += '<span style="flex:1"><strong>' + (r.name || '-') + '</strong> &lt;' + (r.email || '-') + '&gt;' + badge + '</span>';
+      if (r.date) h += '<span style="color:#999;font-size:0.8em">' + r.date + '</span>';
+      h += '</div>';
+    });
+    h += '</div>';
+  });
+  el.innerHTML = h;
 }
 
 var _origShowAdminTab = showAdminTab;

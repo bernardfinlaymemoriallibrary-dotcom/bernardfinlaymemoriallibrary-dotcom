@@ -1944,7 +1944,7 @@ function submitNewsletterSignup() {
   saveNlSubs(subs);
   sendToBackend({ action: 'newsletter_signup', name: name, email: email });
   var card = document.getElementById('newsletterSignupCard');
-  if (card) card.innerHTML = '<div style="text-align:center;padding:30px 0"><div style="font-size:2.5em">✅</div><h3 style="color:var(--green);margin:10px 0">You're signed up!</h3><p>Thank you, ' + name + '. We'll let you know when new books arrive.</p></div>';
+  if (card) card.innerHTML = '<div style="text-align:center;padding:30px 0"><div style="font-size:2.5em">&#10003;</div><h3 style="color:var(--green);margin:10px 0">You\'re signed up!</h3><p>Thank you, ' + name + '. We\'ll let you know when new books arrive.</p></div>';
 }
 
 // ── Admin: subscribers ───────────────────────────────────────────────

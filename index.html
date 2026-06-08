@@ -585,7 +585,7 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
 
       <div class="atab-panel active" id="tab-add">
         <div class="asec"><h3>&#10133; Add a Book</h3>
-          <p class="smallnote">Saved in this browser and shown in the catalog immediately.</p>
+          <p class="smallnote">Added to Google Sheets — visible to all visitors immediately.</p>
           <label class="fl">Title *</label><input class="fi" type="text" id="nt" placeholder="Book title">
           <label class="fl">Author</label><input class="fi" type="text" id="na" placeholder="Author name">
           <div class="fr" style="margin-top:14px">
@@ -601,6 +601,9 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
             </div>
           </div>
           <button class="sbtn" style="max-width:200px;margin-top:16px" onclick="addBook()">Add to Library</button>
+          <hr style="border:none;border-top:1px solid #e2d5c0;margin:20px 0">
+          <p class="smallnote"><strong>First-time setup only:</strong> click the button below once to upload all built-in books to Google Sheets. Do not click it again after that.</p>
+          <button id="seedBtn" class="sbtn" style="max-width:280px;background:#4f7942;margin-top:6px" onclick="seedBooksToSheets()">&#9729; Upload Base Books to Sheets</button>
         </div>
       </div>
 
@@ -1042,11 +1045,76 @@ var COVER_MAP = {
 };
 function coverForBook(b){return COVER_MAP[bookKey(b)]||null;}
 var filteredBooks = [];
+// ═══════════════════════════════════════════════════════════════════
+// GOOGLE SHEETS LIVE SYNC
+// Book catalog data (custom books, deletions, statuses, coming soon,
+// for sale) is stored in Google Sheets so EVERY visitor sees the same
+// library.  Loans / members / admin-only data stay in localStorage.
+// ═══════════════════════════════════════════════════════════════════
+var _libState = { customBooks:[], deletedKeys:[], statuses:{}, comingSoon:[], forSale:null };
+var _libLoaded = false;
 
-function getCust(){try{return JSON.parse(localStorage.getItem('lb2')||'[]')}catch(e){return[]}}
-function saveCust(a){localStorage.setItem('lb2',JSON.stringify(a))}
-function getDeleted(){try{return JSON.parse(localStorage.getItem('bf_deleted')||'[]')}catch(e){return[]}}
-function saveDeleted(a){localStorage.setItem('bf_deleted',JSON.stringify(a))}
+// Fire-and-forget save — uses no-cors FormData (same pattern as sendToBackend)
+function _saveSheetState(key, data) {
+  if (!backendReady()) return;
+  var fd = new FormData();
+  fd.append('payload', JSON.stringify({ action:'saveLibraryState', key:key, data:data }));
+  fetch(WEB_APP_URL, { method:'POST', mode:'no-cors', body:fd })
+    .catch(function(e){ console.log('[Sheets] save error:', key, e); });
+}
+
+// Called on page load — fetches all catalog state then re-renders
+function loadLibraryState() {
+  if (!backendReady()) {
+    _libLoaded = true;
+    updStats(); updTabs(); render(); renderSaleBooks(); renderComingBooks();
+    return;
+  }
+  fetch(WEB_APP_URL + '?action=getLibraryState', { mode:'cors' })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (d && !d.error) {
+        _libState.customBooks = Array.isArray(d.customBooks) ? d.customBooks : [];
+        _libState.deletedKeys = Array.isArray(d.deletedKeys) ? d.deletedKeys : [];
+        _libState.statuses    = (d.statuses && typeof d.statuses==='object') ? d.statuses : {};
+        _libState.comingSoon  = Array.isArray(d.comingSoon)  ? d.comingSoon  : [];
+        _libState.forSale     = Array.isArray(d.forSale)     ? d.forSale     : null;
+      }
+      _libLoaded = true;
+      updStats(); updTabs(); render(); renderSaleBooks(); renderComingBooks();
+    })
+    .catch(function(e){
+      console.log('[Sheets] load failed, using defaults.', e);
+      _libLoaded = true;
+      updStats(); updTabs(); render(); renderSaleBooks(); renderComingBooks();
+    });
+}
+
+// One-time migration: uploads the hardcoded BASE array to Google Sheets
+function seedBooksToSheets() {
+  if (!backendReady()) { alert('WEB_APP_URL is not set.'); return; }
+  if (!confirm('This will upload all ' + BASE.length + ' built-in books to Google Sheets.\nOnly do this ONCE during initial setup. Continue?')) return;
+  var btn = document.getElementById('seedBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Uploading\u2026'; }
+  var fd = new FormData();
+  fd.append('payload', JSON.stringify({ action:'seedBooks', books: BASE }));
+  fetch(WEB_APP_URL, { method:'POST', mode:'no-cors', body:fd })
+    .then(function(){
+      showToast('\u2705 Books uploaded! Reload the page to see them.');
+      if (btn) { btn.disabled = false; btn.textContent = '\u2601\ufe0f Upload Base Books to Sheets'; }
+    })
+    .catch(function(e){
+      alert('Upload failed: ' + e);
+      if (btn) { btn.disabled = false; btn.textContent = '\u2601\ufe0f Upload Base Books to Sheets'; }
+    });
+}
+// ═══════════════════════════════════════════════════════════════════
+
+
+function getCust(){return _libState.customBooks.slice();}
+function saveCust(a){_libState.customBooks=a;_saveSheetState('customBooks',a);}
+function getDeleted(){return _libState.deletedKeys.slice();}
+function saveDeleted(a){_libState.deletedKeys=a;_saveSheetState('deletedKeys',a);}
 function deleteBook(b){
   var key=bookKey(b);
   var cust=getCust();
@@ -1061,8 +1129,8 @@ function deleteBook(b){
 function allBooks(){var del=getDeleted();return BASE.filter(function(b){return del.indexOf(bookKey(b))===-1}).concat(getCust())}
 
 function bookKey(b){return (b.title||'')+'|||'+(b.author||'')}
-function getStatuses(){try{return JSON.parse(localStorage.getItem('bf_statuses')||'{}')}catch(e){return{}}}
-function saveStatuses(o){localStorage.setItem('bf_statuses',JSON.stringify(o))}
+function getStatuses(){return Object.assign({},_libState.statuses);}
+function saveStatuses(o){_libState.statuses=o;_saveSheetState('statuses',o);}
 function statusOf(b){var o=getStatuses();return o[bookKey(b)]||b.status||'Available'}
 function setBookStatus(b,st){var o=getStatuses();o[bookKey(b)]=st;saveStatuses(o);b.status=st;updStats();updTabs();}
 function isAdmin(){return localStorage.getItem('bf_admin_unlocked')==='yes'}
@@ -1191,6 +1259,7 @@ function render(){
   var ri=document.getElementById('ri');
   ri.textContent=filteredBooks.length<all.length?'Showing '+filteredBooks.length+' of '+all.length+' books':'';
   var grid=document.getElementById('grid');
+  if(!_libLoaded){grid.innerHTML='<div class="nores" style="padding:40px;font-size:1rem">&#128218; Loading library&#8230;</div>';return;}
   if(!filteredBooks.length){grid.innerHTML='<div class="nores">&#128219; No books found.</div>';return}
   var custSet={};
   getCust().forEach(function(b){custSet[b.title]=true});
@@ -1713,14 +1782,8 @@ function showToast(msg){
 
 // ── FOR SALE ──
 var DEFAULT_SALE_BOOKS=[{"title": "Catching the Sunrise", "author": "Tamar Shy", "price": "\₪30", "notes": "Samphire School series"}, {"title": "String of Secrets", "author": "Tamar Shy", "price": "\₪30", "notes": "Samphire School series"}, {"title": "Flying High", "author": "Tamar Shy", "price": "\₪30", "notes": "Samphire School series"}, {"title": "Sisters of the Snow", "author": "R. Tanenwald", "price": "\₪30", "notes": ""}, {"title": "Thanks to Her", "author": "R. Tanenwald", "price": "\₪25", "notes": ""}, {"title": "Mind Games", "author": "P. Scharff", "price": "\₪20", "notes": ""}, {"title": "The Four", "author": "Chaim Eliav", "price": "\₪15", "notes": ""}, {"title": "The Birdsong", "author": "Meir Uri Gottesman", "price": "\₪5", "notes": ""}, {"title": "School of Secrets", "author": "Ruthie Peralman", "price": "\₪5", "notes": ""}, {"title": "Scattered Worlds", "author": "Yair Weinstock", "price": "\₪15", "notes": ""}, {"title": "Storm Clouds", "author": "S. Feldbrand", "price": "\₪30", "notes": ""}, {"title": "Trailblazer", "author": "Sukey Gross", "price": "\₪20", "notes": ""}, {"title": "Full Circle", "author": "Gita Gordon", "price": "\₪25", "notes": ""}, {"title": "Courtyard of Dreams", "author": "S. Feldbrand", "price": "\₪20", "notes": ""}, {"title": "The Lion", "author": "Meir E. Gottesman", "price": "\₪20", "notes": ""}, {"title": "Wall of Fire", "author": "Meir E. Gottesman", "price": "\₪20", "notes": ""}, {"title": "The Lonely Shul", "author": "Meir E. Gottesman", "price": "\₪10", "notes": ""}, {"title": "Light Years Away", "author": "R. Kepler", "price": "\₪10", "notes": "Missing cover"}];
-function getSaleBooks(){
-  try{
-    var stored=localStorage.getItem('bf_sale');
-    if(stored===null){return DEFAULT_SALE_BOOKS.slice();}
-    return JSON.parse(stored)||[];
-  }catch(e){return DEFAULT_SALE_BOOKS.slice();}
-}
-function saveSaleBooks(a){localStorage.setItem('bf_sale',JSON.stringify(a))}
+function getSaleBooks(){return (_libState.forSale!==null?_libState.forSale:DEFAULT_SALE_BOOKS).slice();}
+function saveSaleBooks(a){_libState.forSale=a;_saveSheetState('forSale',a);}
 function addSaleBook(){
   var title=document.getElementById('sale-title').value.trim();
   var author=document.getElementById('sale-author').value.trim();
@@ -1877,8 +1940,8 @@ function saveEditBook(){
 }
 
 // ── COMING SOON ──
-function getComingBooks(){try{var s=localStorage.getItem('bf_coming');return s?JSON.parse(s):[];}catch(e){return[];}}
-function saveComingBooks(a){localStorage.setItem('bf_coming',JSON.stringify(a));}
+function getComingBooks(){return _libState.comingSoon.slice();}
+function saveComingBooks(a){_libState.comingSoon=a;_saveSheetState('comingSoon',a);}
 function addComingBook(){
   var title=document.getElementById('coming-title').value.trim();
   var author=document.getElementById('coming-author').value.trim();
@@ -1932,9 +1995,7 @@ function removeComingBook(i){
 }
 
 refreshAdminState();
-render();
-renderSaleBooks();
-renderComingBooks();
+loadLibraryState();  // fetches Sheets data, then calls render/renderSaleBooks/renderComingBooks
 checkPendingReminders();
 
 

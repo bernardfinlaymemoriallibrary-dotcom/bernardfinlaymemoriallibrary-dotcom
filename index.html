@@ -1478,6 +1478,7 @@ function sendRequestEmail(){
   var type=document.getElementById('rtype').value;
   if(!name||!email||!title){alert('Please fill in your name, email and book title.');return}
   sendToBackend({action:'request',requestType:type,name:name,email:email,phone:phone,title:title,author:author,notes:notes});
+  if(type==='Reserve Book') sendToBackend({action:'manual_reservation', title:title, name:name, email:email});
   var card=document.getElementById('reserveFormCard');
   if(card){
     var isRes=(type==='Reserve Book');

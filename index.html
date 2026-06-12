@@ -822,6 +822,7 @@ var EMAILJS_PUBLIC_KEY  = "bg9BNuMll6QzC9ign";   // e.g. "user_aBcDeFgHiJkLm"
 var EMAILJS_SERVICE_ID  = "service_83oann5";   // e.g. "service_gmail"
 var EMAILJS_TEMPLATE_ID = "template_2gwrukk";  // borrow confirmation
 var EMAILJS_REMINDER_ID  = "template_ke0bg2i";  // due-date reminder — fill in after creating 2nd template   // e.g. "template_borrow"
+var EMAILJS_WAITLIST_ID  = "PASTE_YOUR_NEW_TEMPLATE_ID_HERE"; // waitlist notify - sent when reserved book returned
 // ════════════════════════════════════════════════════════
 
 // ════════════════════════════════════════════════════════
@@ -1716,6 +1717,40 @@ function adminLogout(){
   localStorage.removeItem('bf_admin_unlocked');
   refreshAdminState();render();
 }
+
+// WAITLIST NOTIFY ON RETURN
+function notifyWaitlistOnReturn(b){
+  if(!EMAILJS_PUBLIC_KEY||!EMAILJS_SERVICE_ID||!EMAILJS_WAITLIST_ID) return;
+  if(!backendReady()) return;
+  fetch(WEB_APP_URL + '?action=reservations', { mode: 'cors' })
+    .then(function(r){ return r.json(); })
+    .then(function(rows){
+      var sentKey = 'bf_waitlist_notified';
+      var sent = JSON.parse(localStorage.getItem(sentKey) || '[]');
+      (rows||[]).forEach(function(r){
+        if(!r.title||!r.email) return;
+        if(r.title.trim().toLowerCase() !== b.title.trim().toLowerCase()) return;
+        if(r.notified) return;
+        var key = (r.title+'|||'+r.email).toLowerCase();
+        if(sent.indexOf(key) !== -1) return;
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_WAITLIST_ID, {
+          to_name:    r.name||'',
+          to_email:   r.email,
+          book_title: r.title,
+          library_email: LIBRARY_EMAIL,
+          reply_to:   LIBRARY_EMAIL
+        }, EMAILJS_PUBLIC_KEY)
+        .then(function(){
+          sent.push(key);
+          localStorage.setItem(sentKey, JSON.stringify(sent));
+          showToast('Waitlist email sent to '+(r.name||r.email)+' for "'+r.title+'"');
+        })
+        .catch(function(e){ console.error('Waitlist notify failed for '+r.email+':', e); });
+      });
+    })
+    .catch(function(e){ console.error('Could not load reservations for waitlist notify:', e); });
+}
+
 function markReturned(b){
   var loan=getLoan(b)||{};
   if(loan.name) updateBorrowLogReturn(b.title,loan.name,todayISO());
@@ -1730,6 +1765,7 @@ function markReturned(b){
     dateBorrowed:loan.dateBorrowed||'',
     returnedDate:todayISO()
   });
+  notifyWaitlistOnReturn(b);
   render();
   buildReturnList();
   showToast('\u2705 "'+b.title+'" marked as returned.');
@@ -2009,6 +2045,7 @@ function removeComingBook(i){
 refreshAdminState();
 loadLibraryState();  // fetches Sheets data, then calls render/renderSaleBooks/renderComingBooks
 checkPendingReminders();
+    checkDueDateReminders();
 
 
 function sendTestEmail(){

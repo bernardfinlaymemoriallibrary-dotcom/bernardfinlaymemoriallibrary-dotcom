@@ -822,7 +822,6 @@ var EMAILJS_PUBLIC_KEY  = "bg9BNuMll6QzC9ign";   // e.g. "user_aBcDeFgHiJkLm"
 var EMAILJS_SERVICE_ID  = "service_83oann5";   // e.g. "service_gmail"
 var EMAILJS_TEMPLATE_ID = "template_2gwrukk";  // borrow confirmation
 var EMAILJS_REMINDER_ID  = "template_ke0bg2i";  // due-date reminder — fill in after creating 2nd template   // e.g. "template_borrow"
-var EMAILJS_WAITLIST_ID  = "PASTE_YOUR_NEW_TEMPLATE_ID_HERE"; // waitlist notify - sent when reserved book returned
 // ════════════════════════════════════════════════════════
 
 // ════════════════════════════════════════════════════════
@@ -979,6 +978,10 @@ function fireBorrowEmail(key){
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
     to_name:    p.name,
     to_email:   p.email,
+      subject:    'Library Reminder',
+      intro:      'This is a friendly reminder that you have book(s) due back tomorrow:',
+      details:    bookLines,
+      outro:      'Please return them to us at Yirmiyahu 16/8, Floor 1, Bet Shemesh.\n\nIf you\'d like to keep them a little longer, you\'re welcome to — just note that the borrowing fee continues at ₪5 per English book and ₪1 per Hebrew book for every additional 2 weeks.',
     books:      bookLines,
     book_count: p.books.length,
     library_email: LIBRARY_EMAIL,
@@ -1720,7 +1723,7 @@ function adminLogout(){
 
 // WAITLIST NOTIFY ON RETURN
 function notifyWaitlistOnReturn(b){
-  if(!EMAILJS_PUBLIC_KEY||!EMAILJS_SERVICE_ID||!EMAILJS_WAITLIST_ID) return;
+  if(!EMAILJS_PUBLIC_KEY||!EMAILJS_SERVICE_ID||!EMAILJS_REMINDER_ID) return;
   if(!backendReady()) return;
   fetch(WEB_APP_URL + '?action=reservations', { mode: 'cors' })
     .then(function(r){ return r.json(); })
@@ -1733,10 +1736,13 @@ function notifyWaitlistOnReturn(b){
         if(r.notified) return;
         var key = (r.title+'|||'+r.email).toLowerCase();
         if(sent.indexOf(key) !== -1) return;
-        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_WAITLIST_ID, {
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_REMINDER_ID, {
           to_name:    r.name||'',
           to_email:   r.email,
-          book_title: r.title,
+          subject:    'Your reserved book is available!',
+          intro:      'Good news — the book you reserved has just been returned and is now available to borrow:',
+          details:    r.title,
+          outro:      'Please come by to pick it up, or reply to this email to arrange a time. Reservations are held for a limited time, so please come collect it soon.',
           library_email: LIBRARY_EMAIL,
           reply_to:   LIBRARY_EMAIL
         }, EMAILJS_PUBLIC_KEY)

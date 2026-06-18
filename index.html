@@ -1594,7 +1594,7 @@ function returnBookFromLog(title, memberName){
   for(var i=0;i<books.length;i++){
     if(books[i].title === title && statusOf(books[i]) !== 'Available'){ b=books[i]; break; }
   }
-  if(!b){ showToast('Could not find "'+title+'" as currently on loan.'); return; }
+  if(!b){ if(!confirm('Mark "'+title+'" as returned?'))return; updateBorrowLogReturn(title,memberName,todayISO()); if(typeof sendToBackend==='function')sendToBackend({action:'return',title:title,borrowerName:memberName,returnedDate:todayISO()}); var _ms=getMembers(),_k; for(_k=0;_k<_ms.length;_k++){if(_ms[_k].name===memberName){openMemberDetail(_k);break;}} showToast('Marked "'+title+'" as returned.'); return; }
   if(!confirm('Mark "'+title+'" as returned?')) return;
   markReturned(b);
   // Refresh the member detail modal

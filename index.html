@@ -2314,5 +2314,5 @@ showAdminTab = function(tabId) {
   }catch(e){}
 })();
 </script>
-</body>
+<script>/* BFML: reload loans + borrow log from Google Sheet on startup */(function(){  try{    if (typeof WEB_APP_URL === "undefined" || !WEB_APP_URL) return;    fetch(WEB_APP_URL + "?action=getKV&k=borrowLog").then(function(r){return r.json();}).then(function(j){      if (j && j.length){ try{ localStorage.setItem("bf_borrow_log", JSON.stringify(j)); }catch(e){} if(typeof renderBorrowLog==="function"){try{renderBorrowLog();}catch(e){}} }    }).catch(function(){});    fetch(WEB_APP_URL + "?action=getKV&k=loans").then(function(r){return r.json();}).then(function(j){      if (j && typeof j==="object"){ try{ localStorage.setItem("bf_loans", JSON.stringify(j)); }catch(e){} if(typeof render==="function"){try{render();}catch(e){}} }    }).catch(function(){});  }catch(e){}})();</script></body>
 </html>

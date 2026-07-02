@@ -2297,5 +2297,22 @@ showAdminTab = function(tabId) {
     <div id="memberDetailContent"></div>
   </div>
 </div>
+<script>
+/* BFML: reload members from Google Sheet on startup so a cleared cache cannot lose them */
+(function(){
+  try{
+    if (typeof WEB_APP_URL === "undefined" || !WEB_APP_URL) return;
+    fetch(WEB_APP_URL + "?action=getMembers")
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        if (j && j.members && j.members.length){
+          try{ localStorage.setItem("bf_members", JSON.stringify(j.members)); }catch(e){}
+          if (typeof buildMemberList === "function"){ try{ buildMemberList(); }catch(e){} }
+        }
+      })
+      .catch(function(){});
+  }catch(e){}
+})();
+</script>
 </body>
 </html>

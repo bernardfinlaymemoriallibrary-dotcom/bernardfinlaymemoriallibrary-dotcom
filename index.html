@@ -816,6 +816,46 @@ var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxB2gtzqFvm98iuv1E8yO
 var ADMIN_PASSWORD = "libraryadmin";
 
 // ════════════════════════════════════════════════════════
+// SUPABASE — durable storage for the book catalog + cheshbon.
+// These two values come from your Supabase project:
+//   Project Settings → Data API / API Keys
+// Paste the Project URL and the "anon" public key below.
+var SUPABASE_URL      = "https://nyzuyypcezdckxukbxrc.supabase.co";
+var SUPABASE_ANON_KEY = "sb_publishable_8nh_g_47ZE2BTxeWejwuKQ_zzPlpbJU";
+
+function _sbReady(){
+  return SUPABASE_URL.indexOf('https://')===0
+      && SUPABASE_URL.indexOf('YOUR-PROJECT')===-1
+      && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY.indexOf('YOUR-')===-1;
+}
+function _sbHeaders(extra){
+  var h = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json' };
+  if(extra){ for(var k in extra){ h[k]=extra[k]; } }
+  return h;
+}
+// Read every stored key at once → resolves to { key: value, ... }, or null on failure
+function sbGetAll(){
+  if(!_sbReady()) return Promise.resolve(null);
+  return fetch(SUPABASE_URL + '/rest/v1/bf_store?select=key,value', { headers: _sbHeaders() })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(rows){ if(!rows) return null; var o={}; rows.forEach(function(x){ o[x.key]=x.value; }); return o; })
+    .catch(function(){ return null; });
+}
+// Save one key (insert or update). Resolves true on success, false on failure.
+function sbSet(key, value){
+  if(!_sbReady()) return Promise.resolve(false);
+  return fetch(SUPABASE_URL + '/rest/v1/bf_store?on_conflict=key', {
+    method: 'POST',
+    headers: _sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+    body: JSON.stringify({ key: key, value: value, updated_at: new Date().toISOString() })
+  }).then(function(r){
+    if(!r.ok){ console.log('[Supabase] save failed for', key, r.status); return false; }
+    return true;
+  }).catch(function(e){ console.log('[Supabase] save error', key, e); return false; });
+}
+// ════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════
 // EMAILJS SETUP — fill these in after creating your EmailJS account
 // See the instructions document for step-by-step guide
 var EMAILJS_PUBLIC_KEY  = "bg9BNuMll6QzC9ign";   // e.g. "user_aBcDeFgHiJkLm"
@@ -830,9 +870,19 @@ var EMAILJS_REMINDER_ID  = "template_ke0bg2i";  // due-date reminder — fill in
 
 // ── CHESHBON ──────────────────────────────────────────────
 var CHESH_KEY = 'bf_cheshbon_v2';
+var _cheshCache = null;    // in-memory copy, loaded from Supabase (localStorage is a fallback cache)
+var _cheshLoaded = false;  // true once we've successfully read the cheshbon from Supabase
 
-function cheshData(){ try{return JSON.parse(localStorage.getItem(CHESH_KEY)||'[]');}catch(e){return [];} }
-function cheshSave(a){ localStorage.setItem(CHESH_KEY, JSON.stringify(a)); }
+function cheshData(){
+  if(_cheshCache) return _cheshCache;
+  try{ _cheshCache = JSON.parse(localStorage.getItem(CHESH_KEY)||'[]'); }catch(e){ _cheshCache = []; }
+  return _cheshCache;
+}
+function cheshSave(a){
+  _cheshCache = a;
+  try{ localStorage.setItem(CHESH_KEY, JSON.stringify(a)); }catch(e){}  // fast local cache
+  _saveSheetState('cheshbon', a);                                       // durable save to Supabase
+}
 
 var BORROW_LOG_KEY='bf_borrow_log';
 function getBorrowLog(){try{return JSON.parse(localStorage.getItem(BORROW_LOG_KEY)||'[]');}catch(e){return[];}}
@@ -919,12 +969,14 @@ function renderCheshbon(){
 
 function cheshClearAll(){
   if(!confirm('Clear all fee entries? This cannot be undone.')) return;
-  localStorage.removeItem(CHESH_KEY);
+  cheshSave([]);   // clears the local cache AND the database
   renderCheshbon();
 }
 
 function initCheshbon(){
-  if(!localStorage.getItem(CHESH_KEY)){
+  // Only seed the opening balance once we KNOW the database is empty,
+  // so we never create a duplicate opening entry or clobber real data.
+  if(_cheshLoaded && !cheshData().length){
     var opening = [{
       type:'opening', amount:-412.90,
       date:'2026-06-03',
@@ -1059,51 +1111,61 @@ var _libState = {"customBooks":[{"title":"Land Girls","author":"Esther Malky Nei
 var _libLoaded = false;
 var _libSeeded = true; // pre-loaded from admin browser; will auto-push to Sheets on first load
 
-// Fire-and-forget save — uses no-cors FormData (same pattern as sendToBackend)
+// Save one piece of library state to Supabase. Surfaces a warning if it fails,
+// so a failed save is never silent (the old cause of "removals came back").
 function _saveSheetState(key, data) {
-  if (!backendReady()) return;
-  var fd = new FormData();
-  fd.append('payload', JSON.stringify({ action:'saveLibraryState', key:key, data:data }));
-  fetch(WEB_APP_URL, { method:'POST', mode:'no-cors', body:fd })
-    .catch(function(e){ console.log('[Sheets] save error:', key, e); });
+  if (!_sbReady()) return;
+  sbSet(key, data).then(function(ok){
+    if(!ok) showToast('⚠️ Could not save to the database. Check your internet and try again.');
+  });
 }
 
-// Called on page load — shows books instantly, then silently updates from Sheets
+// Called on page load — shows books instantly, then loads the live copy from Supabase.
 function loadLibraryState() {
-  // Render immediately (with baked-in data on first deploy, or Sheets data thereafter)
+  // Render immediately with the baked-in data so the page is never blank
   _libLoaded = true;
   updStats(); updTabs(); render(); renderSaleBooks(); renderComingBooks();
 
-  if (!backendReady()) return;
+  if (!_sbReady()) return;
 
-  // Fetch live Sheets data in the background
-  fetch(WEB_APP_URL + '?action=getLibraryState', { mode:'cors' })
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      var sheetsHasData = d && !d.error &&
-        (Array.isArray(d.customBooks) && d.customBooks.length > 0 ||
-         Array.isArray(d.deletedKeys) && d.deletedKeys.length > 0);
-      if (sheetsHasData) {
-        // Sheets has live data — use it
-        _libState.customBooks = Array.isArray(d.customBooks) ? d.customBooks : [];
-        _libState.deletedKeys = Array.isArray(d.deletedKeys) ? d.deletedKeys : [];
-        _libState.statuses    = (d.statuses && typeof d.statuses==='object') ? d.statuses : {};
-        _libState.comingSoon  = Array.isArray(d.comingSoon)  ? d.comingSoon  : [];
-        _libState.forSale     = Array.isArray(d.forSale)     ? d.forSale     : null;
-        _libSeeded = false;
-        updStats(); updTabs(); render(); renderSaleBooks(); renderComingBooks();
-      } else if (_libSeeded) {
-        // Sheets is empty — push the baked-in data up to Sheets automatically
-        _saveSheetState('customBooks', _libState.customBooks);
-        _saveSheetState('deletedKeys', _libState.deletedKeys);
-        _saveSheetState('statuses',    _libState.statuses);
-        _saveSheetState('comingSoon',  _libState.comingSoon);
-        if (_libState.forSale !== null) _saveSheetState('forSale', _libState.forSale);
-        _libSeeded = false;
-        console.log('[Sheets] Seeded library state from baked-in data.');
-      }
-    })
-    .catch(function(e){ console.log('[Sheets] background load failed.', e); });
+  sbGetAll().then(function(store){
+    if (store === null) {
+      // Could NOT reach the database (offline / error). Keep showing what we have.
+      // Critically, do NOT re-upload the baked-in data — that would wipe real changes.
+      console.log('[Supabase] load failed; keeping current data on screen.');
+      return;
+    }
+
+    var hasCatalog = Array.isArray(store.customBooks) || Array.isArray(store.deletedKeys) ||
+                     (store.statuses && typeof store.statuses === 'object');
+
+    if (hasCatalog) {
+      // Database has the live catalog — this is the source of truth
+      if (Array.isArray(store.customBooks)) _libState.customBooks = store.customBooks;
+      if (Array.isArray(store.deletedKeys)) _libState.deletedKeys = store.deletedKeys;
+      if (store.statuses && typeof store.statuses === 'object') _libState.statuses = store.statuses;
+      if (Array.isArray(store.comingSoon))  _libState.comingSoon  = store.comingSoon;
+      if (Array.isArray(store.forSale))     _libState.forSale     = store.forSale;
+      updStats(); updTabs(); render(); renderSaleBooks(); renderComingBooks();
+    } else {
+      // Brand-new empty database — seed it ONCE from the baked-in data
+      _saveSheetState('customBooks', _libState.customBooks);
+      _saveSheetState('deletedKeys', _libState.deletedKeys);
+      _saveSheetState('statuses',    _libState.statuses);
+      _saveSheetState('comingSoon',  _libState.comingSoon);
+      if (_libState.forSale !== null) _saveSheetState('forSale', _libState.forSale);
+      console.log('[Supabase] Seeded initial library data.');
+    }
+
+    // Load the cheshbon from the same response
+    if (Array.isArray(store.cheshbon)) {
+      _cheshCache = store.cheshbon;
+      try{ localStorage.setItem(CHESH_KEY, JSON.stringify(store.cheshbon)); }catch(e){}
+    }
+    _cheshLoaded = true;              // we now know the database's cheshbon state
+    if (typeof renderCheshbon === 'function') { try{ renderCheshbon(); }catch(e){} }
+    if (isAdmin()) initCheshbon();    // seeds the opening balance if the cheshbon is empty
+  });
 }
 
 // One-time migration: uploads the hardcoded BASE array to Google Sheets

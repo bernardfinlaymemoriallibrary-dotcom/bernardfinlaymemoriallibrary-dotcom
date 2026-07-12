@@ -995,6 +995,7 @@ function initCheshbon(){
 var pendingBorrowEmails = {}; // keyed by borrower email (lowercase)
 
 function scheduleBorrowConfirmation(borrowerEmail, borrowerName, bookTitle, dueDate) {
+  return; // Automated reminder emails disabled
   var key = borrowerEmail.toLowerCase();
   var stored = JSON.parse(localStorage.getItem('bf_pending_reminders') || '{}');
   if (!stored[key]) {
@@ -1045,6 +1046,8 @@ function fireBorrowEmail(key){
 }
 
 function checkPendingReminders() {
+  try{ localStorage.removeItem('bf_pending_reminders'); }catch(e){}
+  return; // Automated reminders disabled — stale queue cleared above
   var stored = JSON.parse(localStorage.getItem('bf_pending_reminders') || '{}');
   var now = Date.now();
   Object.keys(stored).forEach(function(key) {
@@ -1803,6 +1806,7 @@ function adminLogout(){
 
 // WAITLIST NOTIFY ON RETURN
 function notifyWaitlistOnReturn(b){
+  return; // Automated waitlist emails disabled
   if(!EMAILJS_PUBLIC_KEY||!EMAILJS_SERVICE_ID||!EMAILJS_REMINDER_ID) return;
   if(!backendReady()) return;
   fetch(WEB_APP_URL + '?action=reservations', { mode: 'cors' })

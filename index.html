@@ -898,6 +898,7 @@ function updateBorrowLogReturn(title,name,date){
   saveBorrowLog(log);
 }
 function getMemberBorrowHistory(name){return getBorrowLog().filter(function(e){return e.name===name;});}
+function getMemberCurrentLoans(name){var o=getLoans();var out=[];for(var k in o){if(o.hasOwnProperty(k)&&o[k]&&(o[k].name||'')===name){out.push(o[k]);}}return out;}
 var BAL_KEY='bf_member_balances';
 function getBalances(){try{return JSON.parse(localStorage.getItem(BAL_KEY)||'{}');}catch(e){return{};}}
 function saveBalances(o){localStorage.setItem(BAL_KEY,JSON.stringify(o));}
@@ -1580,13 +1581,15 @@ function buildMemberList(){
   var members=getMembers();
   var html=members.length?members.map(function(m,i){
     var bal=getMemberBalance(m.name||'');
+    var outN=getMemberCurrentLoans(m.name||'').length;
+    var outBadge=outN?'<span style="background:#fbe7d2;color:#7a4a10;border:1px solid #e6c691;border-radius:10px;padding:1px 8px;font-size:.7rem;font-weight:700;margin-left:6px">&#128218; '+outN+' out</span>':'';
     var badge=bal===0?'':bal>0
       ?'<span style="background:#eaf4ee;color:#1a4d2e;border:1px solid #b6dfc4;border-radius:10px;padding:1px 8px;font-size:.7rem;font-weight:700;margin-left:6px">Credit &#8362;'+bal.toFixed(2)+'</span>'
       :'<span style="background:#fdf0f0;color:#9b2020;border:1px solid #ffd0d0;border-radius:10px;padding:1px 8px;font-size:.7rem;font-weight:700;margin-left:6px">Owes &#8362;'+Math.abs(bal).toFixed(2)+'</span>';
     return '<div class="li"><span>'+
       '<button class="mdb" data-i="'+i+'" style="background:none;border:none;padding:0;cursor:pointer;font-family:inherit">'+
         '<strong style="color:var(--copper);text-decoration:underline dotted">'+htmlEsc(m.name||'')+'</strong>'+
-      '</button>'+badge+
+      '</button>'+badge+outBadge+
       '<br><em style="color:#888;font-size:.8rem">'+htmlEsc(m.email||'')+(m.phone?' · '+htmlEsc(m.phone):'')+'</em>'+
     '</span><div class="li-act"><button class="ib r" data-i="'+i+'">Remove</button></div></div>';
   }).join(''):'<p class="smallnote">No saved members yet.</p>';
@@ -1683,6 +1686,20 @@ function openMemberDetail(idx){
   html+='<div style="flex:1"><label style="display:block;font-size:.68rem;font-weight:600;color:var(--copper);margin-bottom:4px;text-transform:uppercase;letter-spacing:.7px">Adjust balance (&#8362;)</label>';
   html+='<input type="number" id="mdAdj" step="0.5" placeholder="+ credit  or  &#8722; debt" style="width:100%;padding:8px 12px;border:1.5px solid var(--warm);border-radius:var(--rs);font-size:.87rem;font-family:inherit;background:var(--linen);outline:none"></div>';
   html+='<button onclick="doBalAdj()" class="ib g" style="height:38px">Apply</button></div>';
+  var curOut=getMemberCurrentLoans(name).slice().sort(function(a,b){return (a.dueDate||'').localeCompare(b.dueDate||'');});
+  html+='<label style="display:block;font-size:.68rem;font-weight:600;color:var(--copper);margin-bottom:6px;text-transform:uppercase;letter-spacing:.7px">Currently out ('+curOut.length+')</label>';
+  if(!curOut.length){html+='<p style="color:var(--soft);font-size:.84rem;margin-bottom:16px">No books out right now.</p>';}
+  else{
+    html+='<div style="border:1px solid var(--warm);border-radius:var(--rs);overflow:hidden;margin-bottom:18px">';
+    curOut.forEach(function(L){
+      html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:9px 14px;border-bottom:1px solid var(--linen2);gap:8px">'+
+        '<span><strong style="font-size:.84rem">'+htmlEsc(L.title||'')+'</strong>'+(L.author?'<br><em style="color:var(--mid);font-size:.76rem">'+htmlEsc(L.author)+'</em>':'')+
+        '<br><span style="color:var(--soft);font-size:.74rem">Borrowed: '+htmlEsc(L.dateBorrowed||'')+(L.dueDate?' &#183; Due: '+htmlEsc(L.dueDate):'')+'</span></span>'+
+        '<button class="md-ret-btn" data-title="'+htmlEsc(L.title||'')+'" style="font-size:.68rem;padding:3px 10px;background:var(--green);color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:inherit;font-weight:700;white-space:nowrap;flex-shrink:0">&#8617; Return</button>'+
+      '</div>';
+    });
+    html+='</div>';
+  }
   html+='<label style="display:block;font-size:.68rem;font-weight:600;color:var(--copper);margin-bottom:6px;text-transform:uppercase;letter-spacing:.7px">History ('+history.length+')</label>';
   if(!history.length){html+='<p style="color:var(--soft);font-size:.84rem">No history recorded yet.</p>';}
   else{

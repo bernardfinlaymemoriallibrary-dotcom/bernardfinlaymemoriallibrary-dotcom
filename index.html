@@ -955,7 +955,7 @@ function renderCheshbon(){
   if(!hist) return;
   if(!arr.length){ hist.innerHTML = '<p class="smallnote">No entries yet — fees will appear here automatically when books are borrowed.</p>'; return; }
 
-  var rows = arr.slice().sort(function(a,b){return b.ts-a.ts;}).map(function(e){
+  var rows = arr.slice().reverse().sort(function(a,b){var f=function(x){return x.type==='opening'?'':(x.date||'0000-00-00');};var p=f(a),q=f(b);return p<q?1:p>q?-1:0;}).map(function(e){
     var pos = e.amount >= 0;
     return '<div class="li"><div>'+
       '<strong style="font-size:.84rem">'+htmlEsc(e.label)+'</strong>'+
@@ -1674,7 +1674,7 @@ function returnBookFromLog(title, memberName){
 function openMemberDetail(idx){
   var members=getMembers(),m=members[idx]; if(!m) return;
   var name=m.name||'';
-  var history=getMemberBorrowHistory(name).slice().sort(function(a,b){return b.ts-a.ts;});
+  var history=getMemberBorrowHistory(name).slice().reverse().sort(function(a,b){var p=a.dateBorrowed||'0000-00-00',q=b.dateBorrowed||'0000-00-00';return p<q?1:p>q?-1:0;});
   var bal=getMemberBalance(name);
   var bc=bal>0?'var(--green)':bal<0?'var(--red)':'var(--mid)';
   var bl=bal>0?' Credit':bal<0?' Owes':'';

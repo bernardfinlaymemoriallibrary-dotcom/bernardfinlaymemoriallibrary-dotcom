@@ -564,9 +564,11 @@ hr.div{border:none;border-top:1px solid var(--warm);margin:40px 0}
         <span class="lk">🔐</span>
         <h3>Admin Login</h3>
         <p>Only the library admin should use this area.</p>
-        <label class="fl">Password</label>
-        <input class="fi" type="password" id="adminPass" placeholder="Enter password" style="text-align:center">
-        <button class="sbtn" style="margin-top:18px" onclick="adminLogin()">Unlock Admin</button>
+        <label class="fl">Email</label>
+        <input class="fi" type="email" id="adminEmail" autocomplete="username" style="text-align:center">
+        <label class="fl" style="margin-top:10px">Password</label>
+        <input class="fi" type="password" id="adminPass" autocomplete="current-password" placeholder="Enter password" style="text-align:center" onkeydown="if(event.key==='Enter')adminLogin()">
+        <button class="sbtn" id="adminLoginBtn" style="margin-top:18px" onclick="adminLogin()">Unlock Admin</button>
       </div>
     </div>
     <div id="adminPanelSection" style="display:none">
@@ -813,7 +815,7 @@ var ENTRY_DATE   = "";  // Date Borrowed
 var LIBRARY_EMAIL = "bernardfinlaymemoriallibrary@gmail.com";
 // After you deploy the Google Apps Script, paste the Web App URL here.
 var WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxB2gtzqFvm98iuv1E8yOELc2w-kfdGTY7FwU0qWpHn8UaDWrOVb415iAzgsD9erUdn/exec";
-var ADMIN_PASSWORD = "libraryadmin";
+var ADMIN_EMAIL = "bernardfinlaymemoriallibrary@gmail.com"; // admin sign-in is a Supabase Auth user
 
 // ════════════════════════════════════════════════════════
 // SUPABASE — durable storage for the book catalog + cheshbon.
@@ -828,30 +830,83 @@ function _sbReady(){
       && SUPABASE_URL.indexOf('YOUR-PROJECT')===-1
       && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY.indexOf('YOUR-')===-1;
 }
-function _sbHeaders(extra){
-  var h = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY, 'Content-Type': 'application/json' };
+// ── Admin sign-in (Supabase Auth). Private records (members, loans, borrow log,
+// balances, cheshbon) can only be read/written with a signed-in admin token.
+var SB_SESSION_KEY = 'bf_sb_session';
+var _sbRefreshing = null;
+function _sbSession(){ try{ return JSON.parse(localStorage.getItem(SB_SESSION_KEY)||'null'); }catch(e){ return null; } }
+function _sbStoreSession(d){
+  if(!d || !d.access_token) return null;
+  var s = { access_token:d.access_token, refresh_token:d.refresh_token,
+            expires_at: Date.now() + ((d.expires_in||3600) - 60) * 1000,
+            email: (d.user && d.user.email) || '' };
+  try{ localStorage.setItem(SB_SESSION_KEY, JSON.stringify(s)); }catch(e){}
+  return s;
+}
+// Resolves to a valid access token, or null when not signed in.
+function _sbToken(){
+  var s = _sbSession();
+  if(!s) return Promise.resolve(null);
+  if(Date.now() < s.expires_at) return Promise.resolve(s.access_token);
+  if(_sbRefreshing) return _sbRefreshing;
+  _sbRefreshing = fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
+      method:'POST', headers:{ 'apikey':SUPABASE_ANON_KEY, 'Content-Type':'application/json' },
+      body: JSON.stringify({ refresh_token: s.refresh_token })
+    }).then(function(r){
+      if(r.ok) return r.json();
+      if(r.status===400 || r.status===401 || r.status===403) return 'expired';
+      return 'net';
+    }).then(function(d){
+      _sbRefreshing = null;
+      if(d==='net') return s.access_token;            // temporary problem — try the old token
+      if(d==='expired'){
+        try{ localStorage.removeItem(SB_SESSION_KEY); }catch(e){}
+        showToast('🔐 Admin sign-in expired. Please log in again.');
+        try{ refreshAdminState(); render(); }catch(e){}
+        return null;
+      }
+      var n = _sbStoreSession(d); return n ? n.access_token : null;
+    }).catch(function(){ _sbRefreshing = null; return s.access_token; });
+  return _sbRefreshing;
+}
+function _sbHeaders(extra, token){
+  var h = { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + (token || SUPABASE_ANON_KEY), 'Content-Type': 'application/json' };
   if(extra){ for(var k in extra){ h[k]=extra[k]; } }
   return h;
 }
-// Read every stored key at once → resolves to { key: value, ... }, or null on failure
+// Read every stored key at once → resolves to { key: value, ... }, or null on failure.
+// The result carries _authed=true when it was read as the signed-in admin.
 function sbGetAll(){
   if(!_sbReady()) return Promise.resolve(null);
-  return fetch(SUPABASE_URL + '/rest/v1/bf_store?select=key,value', { headers: _sbHeaders() })
-    .then(function(r){ return r.ok ? r.json() : null; })
-    .then(function(rows){ if(!rows) return null; var o={}; rows.forEach(function(x){ o[x.key]=x.value; }); return o; })
-    .catch(function(){ return null; });
+  return _sbToken().then(function(token){
+    return fetch(SUPABASE_URL + '/rest/v1/bf_store?select=key,value', { headers: _sbHeaders(null, token) })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(rows){ if(!rows) return null; var o={}; rows.forEach(function(x){ o[x.key]=x.value; });
+        Object.defineProperty(o, '_authed', { value: !!token, enumerable: false }); return o; });
+  }).catch(function(){ return null; });
 }
 // Save one key (insert or update). Resolves true on success, false on failure.
 function sbSet(key, value){
   if(!_sbReady()) return Promise.resolve(false);
-  return fetch(SUPABASE_URL + '/rest/v1/bf_store?on_conflict=key', {
-    method: 'POST',
-    headers: _sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
-    body: JSON.stringify({ key: key, value: value, updated_at: new Date().toISOString() })
-  }).then(function(r){
-    if(!r.ok){ console.log('[Supabase] save failed for', key, r.status); return false; }
-    return true;
+  return _sbToken().then(function(token){
+    return fetch(SUPABASE_URL + '/rest/v1/bf_store?on_conflict=key', {
+      method: 'POST',
+      headers: _sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }, token),
+      body: JSON.stringify({ key: key, value: value, updated_at: new Date().toISOString() })
+    }).then(function(r){
+      if(!r.ok){ console.log('[Supabase] save failed for', key, r.status); return false; }
+      return true;
+    });
   }).catch(function(e){ console.log('[Supabase] save error', key, e); return false; });
+}
+
+// ── Private records: kept in this browser as a fast cache AND saved to Supabase.
+var PRIVATE_KEYS = { loans:'bf_loans', members:'bf_members', borrowLog:'bf_borrow_log', balances:'bf_member_balances' };
+var _privLoaded = false;   // true once this browser has pulled the admin's records from Supabase
+function _savePrivate(name, value){
+  if(!isAdmin()) return;
+  if(!_privLoaded){ showToast('⚠️ Still loading member data — wait a moment, then try again.'); return; }
+  _saveSheetState(name, value);
 }
 // ════════════════════════════════════════════════════════
 
@@ -886,7 +941,7 @@ function cheshSave(a){
 
 var BORROW_LOG_KEY='bf_borrow_log';
 function getBorrowLog(){try{return JSON.parse(localStorage.getItem(BORROW_LOG_KEY)||'[]');}catch(e){return[];}}
-function saveBorrowLog(a){localStorage.setItem(BORROW_LOG_KEY,JSON.stringify(a));}
+function saveBorrowLog(a){localStorage.setItem(BORROW_LOG_KEY,JSON.stringify(a));_savePrivate('borrowLog',a);}
 function addBorrowLogEntry(name,title,author,category,date){
   var log=getBorrowLog();
   log.push({name:name,title:title,author:author||'',category:category||'',dateBorrowed:date,dateReturned:null,ts:Date.now()});
@@ -901,7 +956,7 @@ function getMemberBorrowHistory(name){return getBorrowLog().filter(function(e){r
 function getMemberCurrentLoans(name){var o=getLoans();var out=[];for(var k in o){if(o.hasOwnProperty(k)&&o[k]&&(o[k].name||'')===name){out.push(o[k]);}}return out;}
 var BAL_KEY='bf_member_balances';
 function getBalances(){try{return JSON.parse(localStorage.getItem(BAL_KEY)||'{}');}catch(e){return{};}}
-function saveBalances(o){localStorage.setItem(BAL_KEY,JSON.stringify(o));}
+function saveBalances(o){localStorage.setItem(BAL_KEY,JSON.stringify(o));_savePrivate('balances',o);}
 function getMemberBalance(name){return getBalances()[name]||0;}
 function adjustMemberBalance(name,delta){var b=getBalances();b[name]=(b[name]||0)+delta;if(b[name]===0)delete b[name];saveBalances(b);}
 
@@ -1161,14 +1216,36 @@ function loadLibraryState() {
       console.log('[Supabase] Seeded initial library data.');
     }
 
-    // Load the cheshbon from the same response
-    if (Array.isArray(store.cheshbon)) {
-      _cheshCache = store.cheshbon;
-      try{ localStorage.setItem(CHESH_KEY, JSON.stringify(store.cheshbon)); }catch(e){}
+    // Private records are only trusted from a read made as the signed-in admin
+    if (store._authed) {
+      if (Array.isArray(store.cheshbon)) {
+        _cheshCache = store.cheshbon;
+        try{ localStorage.setItem(CHESH_KEY, JSON.stringify(store.cheshbon)); }catch(e){}
+      }
+      _cheshLoaded = true;              // we now know the database's cheshbon state
+      if (typeof renderCheshbon === 'function') { try{ renderCheshbon(); }catch(e){} }
+
+      Object.keys(PRIVATE_KEYS).forEach(function(name){
+        var lk = PRIVATE_KEYS[name];
+        if (store[name] !== undefined && store[name] !== null) {
+          try{ localStorage.setItem(lk, JSON.stringify(store[name])); }catch(e){}
+        } else {
+          // Not in the database yet — upload what this browser has (one-time move)
+          var raw = localStorage.getItem(lk);
+          if (raw) { try{ var val = JSON.parse(raw);
+            sbSet(name, val).then(function(ok){
+              if (ok) console.log('[Supabase] moved', name, 'to the database');
+              else showToast('⚠️ Could not upload ' + name + ' to the database.');
+            }); }catch(e){} }
+        }
+      });
+      _privLoaded = true;
+      try{ buildMemberList(); }catch(e){}
+      try{ buildReturnList(); }catch(e){}
+      try{ renderBorrowLog(); }catch(e){}
+      try{ render(); }catch(e){}
     }
-    _cheshLoaded = true;              // we now know the database's cheshbon state
-    if (typeof renderCheshbon === 'function') { try{ renderCheshbon(); }catch(e){} }
-    if (isAdmin()) initCheshbon();    // seeds the opening balance if the cheshbon is empty
+    if (isAdmin() && store._authed) initCheshbon();    // seeds the opening balance only if the database's cheshbon is really empty
   });
 }
 
@@ -1215,11 +1292,12 @@ function getStatuses(){return Object.assign({},_libState.statuses);}
 function saveStatuses(o){_libState.statuses=o;_saveSheetState('statuses',o);}
 function statusOf(b){var o=getStatuses();return o[bookKey(b)]||b.status||'Available'}
 function setBookStatus(b,st){var o=getStatuses();o[bookKey(b)]=st;saveStatuses(o);b.status=st;updStats();updTabs();}
-function isAdmin(){return localStorage.getItem('bf_admin_unlocked')==='yes'}
+function isAdmin(){return !!_sbSession()}
+try{localStorage.removeItem('bf_admin_unlocked')}catch(e){} // old password flag no longer used
 function todayISO(){return new Date().toISOString().slice(0,10)}
 function addDaysISO(d,n){var x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10)}
 function getMembers(){try{return JSON.parse(localStorage.getItem('bf_members')||'[]')}catch(e){return[]}}
-function saveMembers(a){localStorage.setItem('bf_members',JSON.stringify(a))}
+function saveMembers(a){localStorage.setItem('bf_members',JSON.stringify(a));_savePrivate('members',a)}
 function memberKey(m){return (m.email||m.phone||m.name||'').toLowerCase()}
 function upsertMember(m){
   var a=getMembers();
@@ -1233,7 +1311,7 @@ function upsertMember(m){
   saveMembers(a);
 }
 function getLoans(){try{return JSON.parse(localStorage.getItem('bf_loans')||'{}')}catch(e){return{}}}
-function saveLoans(o){localStorage.setItem('bf_loans',JSON.stringify(o))}
+function saveLoans(o){localStorage.setItem('bf_loans',JSON.stringify(o));_savePrivate('loans',o)}
 function setLoan(b,loan){var o=getLoans();o[bookKey(b)]=loan;saveLoans(o)}
 function getLoan(b){return getLoans()[bookKey(b)]||null}
 function clearLoan(b){var o=getLoans();delete o[bookKey(b)];saveLoans(o)}
@@ -1793,14 +1871,28 @@ function refreshAdminState(){
 function openAdmin(){showPage('admin');buildReturnList();buildMemberList();initCheshbon();}
 
 function adminLogin(){
+  var em=(document.getElementById('adminEmail').value||'').trim();
   var p=document.getElementById('adminPass').value;
-  if(p!==ADMIN_PASSWORD){alert('Incorrect password.');return}
-  localStorage.setItem('bf_admin_unlocked','yes');
-  document.getElementById('adminPass').value='';
-  refreshAdminState();buildReturnList();render();
+  if(!em||!p){alert('Please enter the admin email and password.');return}
+  var btn=document.getElementById('adminLoginBtn'); if(btn){btn.disabled=true;btn.textContent='Signing in…';}
+  fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+    method:'POST', headers:{ 'apikey':SUPABASE_ANON_KEY, 'Content-Type':'application/json' },
+    body: JSON.stringify({ email: em, password: p })
+  }).then(function(r){ return r.json().then(function(d){ return { ok:r.ok, d:d }; }); })
+    .then(function(res){
+      if(btn){btn.disabled=false;btn.textContent='Unlock Admin';}
+      if(!res.ok || !_sbStoreSession(res.d)){ alert('Incorrect email or password.'); return; }
+      document.getElementById('adminPass').value='';
+      refreshAdminState();buildReturnList();render();
+      loadLibraryState();   // pull members, loans, borrow log, balances and cheshbon
+    })
+    .catch(function(){ if(btn){btn.disabled=false;btn.textContent='Unlock Admin';} alert('Could not reach the login server. Check your internet and try again.'); });
 }
 function adminLogout(){
-  localStorage.removeItem('bf_admin_unlocked');
+  var s=_sbSession();
+  if(s){ fetch(SUPABASE_URL + '/auth/v1/logout', { method:'POST', headers:_sbHeaders(null, s.access_token) }).catch(function(){}); }
+  try{ localStorage.removeItem(SB_SESSION_KEY); }catch(e){}
+  _privLoaded=false;
   refreshAdminState();render();
 }
 
